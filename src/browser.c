@@ -434,6 +434,7 @@ void browseDir(void) {
   for(i=1; i<fls; i++)
     itrows[i] = itrows[0] + i*wincols;
 
+  s = 0;
   switch(bgraph) {
     case 0:
       sprintf(tmp, "%%c %%7s  %%c%%-%ds", wincols-12);

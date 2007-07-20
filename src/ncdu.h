@@ -47,6 +47,14 @@
 #endif
 #include <dirent.h>
 
+/* PATH_MAX 260 on Cygwin is too small for /proc/registry */
+#ifdef __CYGWIN__
+# if PATH_MAX < 1024
+#  undef PATH_MAX
+#  define PATH_MAX 1024
+# endif
+#endif
+
 /* get PATH_MAX */
 #ifndef PATH_MAX
 # ifdef _POSIX_PATH_MAX

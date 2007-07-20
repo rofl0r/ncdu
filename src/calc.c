@@ -140,16 +140,17 @@ int calcUsage() {
   WINDOW *calc;
   DIR *dir;
   char antext[15] = "Calculating...";
-  int ch, anpos = 0, level = 0, i;
-  char cdir[PATH_MAX], emsg[PATH_MAX], tmp[PATH_MAX], err = 0, *f;
-  dev_t dev;
+  int ch, anpos = 0, level = 0, i, cdir1len;
+  char cdir[PATH_MAX], emsg[PATH_MAX], tmp[PATH_MAX], err = 0, *f,
+       *cdir1, direrr, staterr;
+  dev_t dev = (dev_t) NULL;
   struct dirent *dr;
   struct stat fs;
   struct dir *d, *dirs[512]; /* 512 recursive directories should be enough for everyone! */
 #ifdef HAVE_GETTIMEOFDAY
   struct timeval tv; suseconds_t l;
   gettimeofday(&tv, (void *)NULL);
-  tv.tv_usec = (1000*(tv.tv_sec % 1000) + (tv.tv_usec / 1000)) / sdelay - 1;
+  l = (1000*(tv.tv_sec % 1000) + (tv.tv_usec / 1000)) / sdelay - 1;
 #else
   time_t tv; time_t l;
   l = time(NULL) - 1;
@@ -184,6 +185,9 @@ int calcUsage() {
   nodelay(calc, 1);
  /* main loop */
   while((ch = wgetch(calc)) != 'q') {
+    direrr = staterr = 0;
+    cdir1 = cdir;
+
     if(ch == KEY_RESIZE) {
       delwin(calc);
       ncresize();
@@ -199,6 +203,10 @@ int calcUsage() {
       if(i > 0 && !(i == 1 && dat.name[strlen(dat.name)-1] == '/')) strcat(cdir, "/");
       strcat(cdir, dirs[i]->name);
     }
+    /* avoid lstat("//name", .) -- Linux:OK, Cygwin:UNC path, POSIX:Implementation-defined */
+    if(cdir[0] == '/' && cdir[1] == '\0')
+      cdir1++;
+    cdir1len = strlen(cdir1);
     /* opendir */
     if((dir = opendir(cdir)) == NULL) {
       dirs[level]->flags |= FF_ERR;
@@ -213,19 +221,31 @@ int calcUsage() {
     /* readdir */
     errno = 0;
     while((dr = readdir(dir)) != NULL) {
+      int namelen;
       f = dr->d_name;
       if(f[0] == '.' && (f[1] == '\0' || (f[1] == '.' && f[2] == '\0')))
         continue;
+      namelen = strlen(f);
+      if(cdir1len+namelen+1 >= PATH_MAX) {
+        direrr = 1;
+        errno = 0;
+        continue;
+      }
       d = calloc(sizeof(struct dir), 1);
-      d->name = malloc(strlen(f)+1);
+      d->name = malloc(namelen+1);
       strcpy(d->name, f);
       if(dirs[level] != NULL) dirs[level]->next = d;
       d->prev = dirs[level];
       d->parent = dirs[level-1];
       dirs[level-1]->sub = d;
       dirs[level] = d;
-      sprintf(tmp, "%s/%s", cdir, d->name);
-      lstat(tmp, &fs);
+      sprintf(tmp, "%s/%s", cdir1, d->name);
+      if(lstat(tmp, &fs)) {
+        staterr = 1;
+        d->flags = FF_ERR;
+        errno = 0;
+        continue;
+      }
      /* check filetype */
       if(sflags & SF_SMFS && dev != fs.st_dev)
         d->flags |= FF_OTHFS;
@@ -247,10 +267,13 @@ int calcUsage() {
       if(d->flags & FF_OTHFS) d->size = 0;
       for(i=level; i-->0;)
         dirs[i]->size += d->size;
+      errno = 0;
     }
+    if(errno)
+      direrr = 1;
     closedir(dir);
-    if(errno) {
-      dirs[level-1]->flags |= FF_ERR;
+    if(direrr || staterr) {
+      dirs[level-1]->flags |= (direrr ? FF_ERR : FF_SERR);
       for(i=level-1; i-->0;)
         dirs[i]->flags |= FF_SERR;
     }
