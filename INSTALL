@@ -1,0 +1,5 @@
+The usual:
+ 
+  ./configure
+  make
+  make install
