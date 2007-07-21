@@ -1,8 +1,7 @@
 
-AC_INIT(ncdu, 1.1, projects@yorhel.nl)
+AC_INIT(ncdu, 1.2, projects@yorhel.nl)
 AC_CONFIG_SRCDIR([src/ncdu.h])
 AC_CONFIG_HEADER([config.h])
-AC_PREFIX_DEFAULT(/usr)
 AM_INIT_AUTOMAKE
 
 # Checks for programs.

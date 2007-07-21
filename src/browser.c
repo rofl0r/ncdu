@@ -471,8 +471,14 @@ void browseDir(void) {
       d = d->next;
       continue;
     }
-    ct = d->flags & FF_ERR ? '!' : d->flags & FF_SERR ? '.' : d->flags & FF_OTHFS ? '>' :
-         d->flags & FF_OTHER ? '@' : d->flags & FF_DIR && d->sub == NULL ? 'e' : ' ';
+    ct =  d->flags & FF_ERR ? '!' :
+         d->flags & FF_SERR ? '.' :
+        d->flags & FF_OTHFS ? '>' :
+          d->flags & FF_EXL ? '<' :
+        d->flags & FF_OTHER ? '@' :
+          d->flags & FF_DIR
+          && d->sub == NULL ? 'e' :
+                              ' ' ;
     switch(bgraph) {
       case 0:
         sprintf(itrows[i], tmp, ct, cropsize(d->size),

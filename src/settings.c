@@ -38,8 +38,21 @@ int settingsCli(int argc, char **argv) {
   bflags = BF_SIZE | BF_DESC;
 
  /* read from commandline */
-  for(i=1; i<argc;i++) {
+  for(i=1; i<argc; i++) {
     if(argv[i][0] == '-') {
+      if(argv[i][1] == 'X' || strcmp(argv[i], "--exclude-from") == 0 || strcmp(argv[i], "--exclude") == 0) {
+        if(i+1 >= argc) {
+          printf("Option %s requires an argument\n", argv[i]);
+          exit(1);
+        }
+        if(strcmp(argv[i], "--exclude") == 0)
+          addExclude(argv[++i]);
+        else if(addExcludeFile(argv[++i])) {
+          printf("Can't open %s: %s\n", argv[i], strerror(errno));
+          exit(1);
+        }
+        continue;
+      }
       for(j=1; j < strlen(argv[i]); j++)
         switch(argv[i][j]) {
           case 'a': sflags |= SF_AS;   break;
@@ -56,7 +69,7 @@ int settingsCli(int argc, char **argv) {
             exit(0);
           case 'v':
             printf("ncdu %s\n", PACKAGE_VERSION);
-            exit(0);
+            exit(0);  
           default:
             printf("Unknown option: -%c\n", argv[i][j]);
             exit(1);

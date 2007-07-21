@@ -140,7 +140,7 @@ int calcUsage() {
   WINDOW *calc;
   DIR *dir;
   char antext[15] = "Calculating...";
-  int ch, anpos = 0, level = 0, i, cdir1len;
+  int ch, anpos = 0, level = 0, i, cdir1len, namelen;
   char cdir[PATH_MAX], emsg[PATH_MAX], tmp[PATH_MAX], err = 0, *f,
        *cdir1, direrr, staterr;
   dev_t dev = (dev_t) NULL;
@@ -221,7 +221,6 @@ int calcUsage() {
     /* readdir */
     errno = 0;
     while((dr = readdir(dir)) != NULL) {
-      int namelen;
       f = dr->d_name;
       if(f[0] == '.' && (f[1] == '\0' || (f[1] == '.' && f[2] == '\0')))
         continue;
@@ -240,6 +239,12 @@ int calcUsage() {
       dirs[level-1]->sub = d;
       dirs[level] = d;
       sprintf(tmp, "%s/%s", cdir1, d->name);
+     /* check if file/dir is excluded */
+      if(matchExclude(tmp)) {
+        d->flags = FF_EXL;
+        continue;
+      }
+     /* stat */
       if(lstat(tmp, &fs)) {
         staterr = 1;
         d->flags = FF_ERR;
@@ -316,14 +321,15 @@ int calcUsage() {
     wmove(calc, 8, 58);
     wrefresh(calc);
 
-   /* select new directory */
+
     newdir:
 #ifdef HAVE_GETTIMEOFDAY
     l = tv.tv_usec;
 #else
     l = tv;
 #endif
-    while(dirs[level] == NULL || !(dirs[level]->flags & FF_DIR) || dirs[level]->flags & FF_OTHFS) {
+   /* select new directory */
+    while(dirs[level] == NULL || !(dirs[level]->flags & FF_DIR) || dirs[level]->flags & FF_OTHFS || dirs[level]->flags & FF_EXL) {
       if(dirs[level] != NULL && dirs[level]->prev != NULL)
         dirs[level] = dirs[level]->prev;
       else {

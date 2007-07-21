@@ -32,8 +32,9 @@
 #include <ctype.h>
 #include <limits.h>
 #include <errno.h>
+#include <fnmatch.h>
 
-#include <curses.h>
+#include <ncurses.h>
 #include <form.h>
 #include <menu.h>
 
@@ -90,6 +91,7 @@
 #define FF_OTHFS 16
 #define FF_SERR  32 /* error in subdirectory */
 #define FF_BSEL  64 /* selected */
+#define FF_EXL  128 /* excluded using exlude patterns */
 
 /* Settings Flags (int sflags) */
 #define SF_SMFS   1 /* same filesystem */
@@ -150,4 +152,8 @@ extern int settingsWin(void);
 extern int calcUsage();
 /* browser.c */
 extern void showBrowser(void);
+/* exclude.c */
+extern void addExclude(char *);
+extern int addExcludeFile(char *);
+extern int matchExclude(char *);
 

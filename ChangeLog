@@ -1,3 +1,7 @@
+1.2 - ?
+  - Fixed some bugs on cygwin
+  - Added du-like exclude patterns
+
 1.1 - 2007-04-30
   - Deleting files and directories is now possible from
     within ncdu.
