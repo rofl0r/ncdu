@@ -579,7 +579,6 @@ PACKAGE_STRING='ncdu 1.2'
 PACKAGE_BUGREPORT='projects@yorhel.nl'
 
 ac_unique_file="src/ncdu.h"
-ac_default_prefix=/usr
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>
@@ -1729,7 +1728,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 ac_config_headers="$ac_config_headers config.h"
-
 
 am__api_version='1.10'
 
@@ -4581,7 +4579,8 @@ done
 
 
 
-for ac_header in limits.h stdlib.h string.h sys/time.h unistd.h
+
+for ac_header in limits.h stdlib.h string.h sys/time.h unistd.h fnmatch.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
@@ -5971,7 +5970,8 @@ fi
 
 
 
-for ac_func in getcwd gettimeofday memset
+
+for ac_func in getcwd gettimeofday memset fnmatch
 do
 as_ac_var=`echo "ac_cv_func_$ac_func" | $as_tr_sh`
 { echo "$as_me:$LINENO: checking for $ac_func" >&5

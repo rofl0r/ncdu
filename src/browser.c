@@ -284,14 +284,16 @@ int helpScreen(void) {
         mvwaddch(hlp, 6, 4, '!');
         mvwaddch(hlp, 7, 4, '.');
         mvwaddch(hlp, 8, 4, '>');
-        mvwaddch(hlp, 9, 4, '@');
-        mvwaddch(hlp,10, 4, 'e');
+        mvwaddch(hlp, 9, 4, '<');
+        mvwaddch(hlp,10, 4, '@');
+        mvwaddch(hlp,11, 4, 'e');
         wattroff(hlp, A_BOLD);
         mvwaddstr(hlp, 6, 7, "An error occured while reading this directory");
         mvwaddstr(hlp, 7, 7, "An error occured while reading a subdirectory");
-        mvwaddstr(hlp, 8, 7, "Directory was on an other filesystem");
-        mvwaddstr(hlp, 9, 7, "This is not a file nor a dir (symlink, socket, ...)");
-        mvwaddstr(hlp,10, 7, "Empty directory");
+        mvwaddstr(hlp, 8, 7, "File or directory is excluded from the statistics");
+        mvwaddstr(hlp, 9, 7, "Directory was on an other filesystem");
+        mvwaddstr(hlp,10, 7, "This is not a file nor a dir (symlink, socket, ...)");
+        mvwaddstr(hlp,11, 7, "Empty directory");
         break;
       case 3:
         /* Indeed, too much spare time */
