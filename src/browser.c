@@ -284,7 +284,7 @@ void showBrowser(void) {
   bcur = dat.sub;
   bgraph = 1;
   nodelay(stdscr, 0);
-  bflags = BF_SIZE;
+  bflags = BF_SIZE | BF_DESC | BF_NDIRF;
 
   drawBrowser(0);
   refresh();
@@ -324,7 +324,7 @@ void showBrowser(void) {
         if(bflags & BF_SIZE)
           toggle(bflags, BF_DESC);
         else
-          bflags = (bflags & BF_HIDE) + (bflags & BF_NDIRF) + BF_SIZE;
+          bflags = (bflags & BF_HIDE) + (bflags & BF_NDIRF) + BF_SIZE + BF_DESC;
         break;
       case 'p':
         toggle(sflags, SF_SI);

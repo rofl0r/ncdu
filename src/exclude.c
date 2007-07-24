@@ -89,7 +89,7 @@ int matchExclude(char *path) {
     for(c = path; *c && !matched; c++)
       if(*c == '/' && c[1] != '/')
         matched = !fnmatch(n->pattern, c+1, 0);
-  } while((n = n->next) != NULL);
+  } while((n = n->next) != NULL && !matched);
 
   return(matched);
 }
