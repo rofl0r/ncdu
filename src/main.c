@@ -42,7 +42,6 @@ int main(int argc, char **argv) {
   keypad(stdscr, TRUE);
   ncresize();
   
-  bgraph = 0;
   if(gd && settingsWin()) goto mainend;
   while((r = calcUsage()) != 0) {
     if(r == 1 && settingsWin()) goto mainend;
@@ -57,3 +56,4 @@ int main(int argc, char **argv) {
 
   return(0);
 }
+

@@ -12,7 +12,6 @@ AC_PROG_RANLIB
 # Checks for libraries.
 AC_CHECK_LIB(ncurses, initscr)
 AC_CHECK_LIB(form, new_form)
-AC_CHECK_LIB(menu, new_menu)
 
 # Checks for header files.
 AC_HEADER_DIRENT

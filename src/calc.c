@@ -147,14 +147,9 @@ int calcUsage() {
   struct dirent *dr;
   struct stat fs;
   struct dir *d, *dirs[512]; /* 512 recursive directories should be enough for everyone! */
-#ifdef HAVE_GETTIMEOFDAY
   struct timeval tv; suseconds_t l;
   gettimeofday(&tv, (void *)NULL);
   l = (1000*(tv.tv_sec % 1000) + (tv.tv_usec / 1000)) / sdelay - 1;
-#else
-  time_t tv; time_t l;
-  l = time(NULL) - 1;
-#endif
 
   calc = calcWin();
   wrefresh(calc);
@@ -222,7 +217,9 @@ int calcUsage() {
     errno = 0;
     while((dr = readdir(dir)) != NULL) {
       f = dr->d_name;
-      if(f[0] == '.' && (f[1] == '\0' || (f[1] == '.' && f[2] == '\0')))
+      if(f[0] == '.' && f[1] == '\0')
+        continue;
+      if(f[0] == '.' && f[1] == '.' && f[2] == '\0' && level == 1)
         continue;
       namelen = strlen(f);
       if(cdir1len+namelen+1 >= PATH_MAX) {
@@ -238,12 +235,12 @@ int calcUsage() {
       d->parent = dirs[level-1];
       dirs[level-1]->sub = d;
       dirs[level] = d;
-      sprintf(tmp, "%s/%s", cdir1, d->name);
-     /* check if file/dir is excluded */
-      if(matchExclude(tmp)) {
-        d->flags = FF_EXL;
+     /* reference to parent directory, no need to stat */
+      if(f[0] == '.' && f[1] == '.' && f[2] == '\0') {
+        d->flags = FF_PAR;
         continue;
       }
+      sprintf(tmp, "%s/%s", cdir1, d->name);
      /* stat */
       if(lstat(tmp, &fs)) {
         staterr = 1;
@@ -251,19 +248,26 @@ int calcUsage() {
         errno = 0;
         continue;
       }
+     /* check if file/dir is excluded */
+      if(matchExclude(tmp))
+        d->flags = FF_EXL;
      /* check filetype */
       if(sflags & SF_SMFS && dev != fs.st_dev)
         d->flags |= FF_OTHFS;
       if(S_ISREG(fs.st_mode)) {
         d->flags |= FF_FILE;
-        for(i=level; i-->0;)
-          dirs[i]->files++;
+        if(!(d->flags & FF_EXL))
+          for(i=level; i-->0;)
+            dirs[i]->files++;
       } else if(S_ISDIR(fs.st_mode)) {
         d->flags |= FF_DIR;
-        for(i=level; i-->0;) 
-          dirs[i]->dirs++;
+        if(!(d->flags & FF_EXL))
+          for(i=level; i-->0;) 
+            dirs[i]->dirs++;
       } else
         d->flags |= FF_OTHER;
+      if(d->flags & FF_EXL)
+        continue;
      /* count size */
       if(sflags & SF_AS)
         d->size = fs.st_size;
@@ -274,6 +278,14 @@ int calcUsage() {
         dirs[i]->size += d->size;
       errno = 0;
     }
+   /* empty dir - remove the reference to the parent dir */
+    if(dirs[level]->next == NULL && dirs[level]->prev == NULL) {
+      dirs[level]->parent->sub = NULL;
+      free(dirs[level]->name);
+      free(dirs[level]);
+      dirs[level] = NULL;
+    }
+   /* check for errors */
     if(errno)
       direrr = 1;
     closedir(dir);
@@ -285,14 +297,9 @@ int calcUsage() {
 
    /* show progress status */
     showstatus:
-#ifdef HAVE_GETTIMEOFDAY
     gettimeofday(&tv, (void *)NULL);
     tv.tv_usec = (1000*(tv.tv_sec % 1000) + (tv.tv_usec / 1000)) / sdelay;
     if(l == tv.tv_usec) goto newdir;
-#else
-    time(&tv);
-    if(l == tv) goto newdir;
-#endif
     mvwprintw(calc, 3, 15, "%-43s", cropdir(cdir, 43));
     mvwprintw(calc, 2, 15, "%d", dat.files);
     mvwprintw(calc, 2, 30, "%d", dat.dirs);
@@ -323,11 +330,7 @@ int calcUsage() {
 
 
     newdir:
-#ifdef HAVE_GETTIMEOFDAY
     l = tv.tv_usec;
-#else
-    l = tv;
-#endif
    /* select new directory */
     while(dirs[level] == NULL || !(dirs[level]->flags & FF_DIR) || dirs[level]->flags & FF_OTHFS || dirs[level]->flags & FF_EXL) {
       if(dirs[level] != NULL && dirs[level]->prev != NULL)

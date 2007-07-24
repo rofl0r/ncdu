@@ -41,11 +41,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#if defined(HAVE_SYS_TIME_H) && defined(HAVE_GETTIMEOFDAY)
-# include <sys/time.h>
-#else
-# include <time.h>
-#endif
+#include <sys/time.h>
 #include <dirent.h>
 
 /* PATH_MAX 260 on Cygwin is too small for /proc/registry */
@@ -92,6 +88,7 @@
 #define FF_SERR  32 /* error in subdirectory */
 #define FF_BSEL  64 /* selected */
 #define FF_EXL  128 /* excluded using exlude patterns */
+#define FF_PAR  256 /* reference to parent directory (hack) */
 
 /* Settings Flags (int sflags) */
 #define SF_SMFS   1 /* same filesystem */
@@ -107,7 +104,7 @@
 #define BF_FILES  4
 #define BF_NDIRF 32 /* Normally, dirs before files, setting this disables it */
 #define BF_DESC  64
-#define BF_HIDE 128 /* don't show hidden files... doesn't have anything to do with sorting though */
+#define BF_HIDE 128 /* don't show hidden files... */
 
 
 /*
@@ -118,7 +115,7 @@ struct dir {
   char *name;
   off_t size;
   unsigned int files, dirs;
-  unsigned char flags;
+  unsigned short flags;
 };
 
 
@@ -151,7 +148,12 @@ extern int settingsWin(void);
 /* calc.c */
 extern int calcUsage();
 /* browser.c */
+extern void drawBrowser(int);
 extern void showBrowser(void);
+/* help.c */
+extern void showHelp(void);
+/* delete.c */
+extern struct dir *showDelete(struct dir *);
 /* exclude.c */
 extern void addExclude(char *);
 extern int addExcludeFile(char *);
