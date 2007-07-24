@@ -48,15 +48,16 @@ int cmp(struct dir *x, struct dir *y) {
     b = y; a = x;
   }
   if(!(bflags & BF_NDIRF) && y->flags & FF_DIR && !(x->flags & FF_DIR))
-    r = 1;
-  else if(!(bflags & BF_NDIRF) && !(y->flags & FF_DIR) && x->flags & FF_DIR)
-    r = -1;
-  else if(bflags & BF_NAME)
+    return(1);
+  if(!(bflags & BF_NDIRF) && !(y->flags & FF_DIR) && x->flags & FF_DIR)
+    return(-1);
+
+  if(bflags & BF_NAME)
     r = strcmp(a->name, b->name);
-  else if(bflags & BF_FILES)
-    r = (a->files - b->files);
   if(r == 0)
     r = a->size > b->size ? 1 : (a->size == b->size ? 0 : -1);
+  if(r == 0)
+    r = strcmp(a->name, b->name);
   return(r);
 }
 

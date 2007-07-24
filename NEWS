@@ -1,6 +1,10 @@
-1.2 - ?
+1.2 - 2007-07-24
   - Fixed some bugs on cygwin
   - Added du-like exclude patterns
+	- Fixed bug #1758403: large directories work fine now
+	- Rewrote a large part of the code
+	- Fixed a bug with wide characters
+	- Performance improvements when browsing large dirs
 
 1.1 - 2007-04-30
   - Deleting files and directories is now possible from

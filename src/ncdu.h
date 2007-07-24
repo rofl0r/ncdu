@@ -101,7 +101,6 @@
 /* Browse Flags (int bflags) */
 #define BF_NAME   1
 #define BF_SIZE   2
-#define BF_FILES  4
 #define BF_NDIRF 32 /* Normally, dirs before files, setting this disables it */
 #define BF_DESC  64
 #define BF_HIDE 128 /* don't show hidden files... */
