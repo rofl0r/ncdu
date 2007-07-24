@@ -63,7 +63,7 @@ void drawHelp(int page) {
       mvwaddstr(hlp, 8, 16, "Toggle dirs before files when sorting");
       mvwaddstr(hlp, 9, 16, "Show percentage and/or graph");
       mvwaddstr(hlp,10, 16, "Toggle between powers of 1000 and 1024");
-      mvwaddstr(hlp,11, 16, "Show/hide hidden files");
+      mvwaddstr(hlp,11, 16, "Show/hide hidden or excluded files");
       mvwaddstr(hlp,12, 16, "Quit ncdu");
       break;
     case 2:
