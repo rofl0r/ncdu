@@ -285,7 +285,7 @@ void showBrowser(void) {
   int ch, change;
   struct dir *n;
   
-  bcur = dat.sub;
+  bcur = dat->sub;
   bgraph = 1;
   nodelay(stdscr, 0);
   bflags = BF_SIZE | BF_DESC | BF_NDIRF;

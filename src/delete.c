@@ -61,7 +61,7 @@ void drawConfirm(struct dir *del, int sel) {
 
 
 /* show progress */
-void drawProgress(char *file) {
+static void drawProgress(char *file) {
   WINDOW *prg;
 
   prg = newwin(6, 60, winrows/2-3, wincols/2-30);
@@ -80,7 +80,7 @@ void drawProgress(char *file) {
 
 
 /* show error dialog */
-void drawError(int sel, char *file) {
+static void drawError(int sel, char *file) {
   WINDOW *err;
 
   err = newwin(6, 60, winrows/2-3, wincols/2-30);

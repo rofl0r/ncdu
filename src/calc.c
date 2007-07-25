@@ -26,6 +26,19 @@
 #include "ncdu.h"
 
 
+/* parent dir we are calculating */
+struct dir *parent;
+/* current device we are on */
+dev_t curdev;
+/* path of the last dir we couldn't read */
+char lasterr[PATH_MAX];
+/* and for the animation... */
+int anpos;
+char antext[15] = "Calculating...";
+suseconds_t lastupdate;
+
+
+
 /* My own implementation of realpath()
     - assumes that *every* possible path fits in PATH_MAX bytes
     - does not set errno on error
@@ -120,239 +133,272 @@ char *rpath(const char *from, char *to) {
 }
 
 
-WINDOW* calcWin() {
-  WINDOW *calc;
-  calc = newwin(10, 60, winrows/2 - 5, wincols/2 - 30);
-  keypad(calc, TRUE);
-  box(calc, 0, 0);
-  wattron(calc, A_BOLD);
-  mvwaddstr(calc, 0, 4, "Calculating...");
-  wattroff(calc, A_BOLD);
-  mvwaddstr(calc, 2, 2, "Total files:");
-  mvwaddstr(calc, 2, 24, "dirs:");
-  mvwaddstr(calc, 2, 39, "size:");
-  mvwaddstr(calc, 3, 2, "Current dir:");
-  mvwaddstr(calc, 8, 43, "Press q to quit");
-  return(calc);
-}
+/* the progress window */
+static void drawProgress(char *cdir) {
+  WINDOW *prg;
+  char ani[15];
+  int i;
 
-int calcUsage() {
-  WINDOW *calc;
-  DIR *dir;
-  char antext[15] = "Calculating...";
-  int ch, anpos = 0, level = 0, i, cdir1len, namelen;
-  char cdir[PATH_MAX], emsg[PATH_MAX], tmp[PATH_MAX], err = 0, *f,
-       *cdir1, direrr, staterr;
-  dev_t dev = (dev_t) NULL;
-  struct dirent *dr;
-  struct stat fs;
-  struct dir *d, *dirs[512]; /* 512 recursive directories should be enough for everyone! */
-  struct timeval tv; suseconds_t l;
-  gettimeofday(&tv, (void *)NULL);
-  l = (1000*(tv.tv_sec % 1000) + (tv.tv_usec / 1000)) / sdelay - 1;
+  prg = newwin(10, 60, winrows/2-3, wincols/2-30);
+  box(prg, 0, 0);
+  wattron(prg, A_BOLD);
+  mvwaddstr(prg, 0, 4, "Calculating...");
+  wattroff(prg, A_BOLD);
 
-  calc = calcWin();
-  wrefresh(calc);
-  
-  memset(dirs, 0, sizeof(struct dir *)*512);
-  level = 0;
-  dirs[level] = &dat;
-  memset(&dat, 0, sizeof(dat));
+  mvwprintw(prg, 2, 2, "Total files: %-8d dirs: %-8d size: %s",
+    parent->files, parent->dirs, cropsize(parent->size));
+  mvwprintw(prg, 3, 2, "Current dir: %s", cropdir(cdir, 43));
+  mvwaddstr(prg, 8, 43, "Press q to quit");
 
-  if(rpath(sdir, tmp) == NULL || stat(tmp, &fs) != 0 || !S_ISDIR(fs.st_mode)) {
-    mvwaddstr(calc, 8, 1, "                                                         ");
-    wattron(calc, A_BOLD);
-    mvwaddstr(calc, 5, 2, "Error:");
-    wattroff(calc, A_BOLD);
-    mvwprintw(calc, 5, 9, "could not open %s", cropdir(tmp, 34));
-    mvwaddstr(calc, 6, 3, "press any key to continue...");
-    wrefresh(calc);
-    wgetch(calc);
-    delwin(calc);
-    return(1);
+ /* show warning if we couldn't open a dir */
+  if(lasterr[0] != '\0') {
+     wattron(prg, A_BOLD);
+     mvwaddstr(prg, 5, 2, "Warning:");
+     wattroff(prg, A_BOLD);
+     mvwprintw(prg, 5, 11, "could not open %-32s", cropdir(lasterr, 32));
+     mvwaddstr(prg, 6, 3, "some directory sizes may not be correct");  
   }
-  if(sflags & SF_AS) dat.size = fs.st_size;
-  else               dat.size = fs.st_blocks * 512;
-  if(sflags & SF_SMFS) dev = fs.st_dev;
-  dat.name = malloc(strlen(tmp)+1);
-  strcpy(dat.name, tmp);
 
-  nodelay(calc, 1);
- /* main loop */
-  while((ch = wgetch(calc)) != 'q') {
-    direrr = staterr = 0;
-    cdir1 = cdir;
-
-    if(ch == KEY_RESIZE) {
-      delwin(calc);
-      ncresize();
-      calc = calcWin();
-      nodelay(calc, 1);
-      erase();
-      refresh();
-    }
-
-    /* calculate full path of the dir */
-    cdir[0] = '\0';
-    for(i=0; i<=level; i++) {
-      if(i > 0 && !(i == 1 && dat.name[strlen(dat.name)-1] == '/')) strcat(cdir, "/");
-      strcat(cdir, dirs[i]->name);
-    }
-    /* avoid lstat("//name", .) -- Linux:OK, Cygwin:UNC path, POSIX:Implementation-defined */
-    if(cdir[0] == '/' && cdir[1] == '\0')
-      cdir1++;
-    cdir1len = strlen(cdir1);
-    /* opendir */
-    if((dir = opendir(cdir)) == NULL) {
-      dirs[level]->flags |= FF_ERR;
-      for(i=level; i-->0;)
-        dirs[i]->flags |= FF_SERR;
-      err = 1;
-      strcpy(emsg, cdir);
-      dirs[++level] = NULL;
-      goto showstatus;
-    }
-    dirs[++level] = NULL;
-    /* readdir */
-    errno = 0;
-    while((dr = readdir(dir)) != NULL) {
-      f = dr->d_name;
-      if(f[0] == '.' && f[1] == '\0')
-        continue;
-      if(f[0] == '.' && f[1] == '.' && f[2] == '\0' && level == 1)
-        continue;
-      namelen = strlen(f);
-      if(cdir1len+namelen+1 >= PATH_MAX) {
-        direrr = 1;
-        errno = 0;
-        continue;
-      }
-      d = calloc(sizeof(struct dir), 1);
-      d->name = malloc(namelen+1);
-      strcpy(d->name, f);
-      if(dirs[level] != NULL) dirs[level]->next = d;
-      d->prev = dirs[level];
-      d->parent = dirs[level-1];
-      dirs[level-1]->sub = d;
-      dirs[level] = d;
-     /* reference to parent directory, no need to stat */
-      if(f[0] == '.' && f[1] == '.' && f[2] == '\0') {
-        d->flags = FF_PAR;
-        continue;
-      }
-      sprintf(tmp, "%s/%s", cdir1, d->name);
-     /* stat */
-      if(lstat(tmp, &fs)) {
-        staterr = 1;
-        d->flags = FF_ERR;
-        errno = 0;
-        continue;
-      }
-     /* check if file/dir is excluded */
-      if(matchExclude(tmp))
-        d->flags = FF_EXL;
-     /* check filetype */
-      if(sflags & SF_SMFS && dev != fs.st_dev)
-        d->flags |= FF_OTHFS;
-      if(S_ISREG(fs.st_mode)) {
-        d->flags |= FF_FILE;
-        if(!(d->flags & FF_EXL))
-          for(i=level; i-->0;)
-            dirs[i]->files++;
-      } else if(S_ISDIR(fs.st_mode)) {
-        d->flags |= FF_DIR;
-        if(!(d->flags & FF_EXL))
-          for(i=level; i-->0;) 
-            dirs[i]->dirs++;
-      } else
-        d->flags |= FF_OTHER;
-      if(d->flags & FF_EXL)
-        continue;
-     /* count size */
-      if(sflags & SF_AS)
-        d->size = fs.st_size;
-      else
-        d->size = fs.st_blocks * 512;
-      if(d->flags & FF_OTHFS) d->size = 0;
-      for(i=level; i-->0;)
-        dirs[i]->size += d->size;
-      errno = 0;
-    }
-   /* empty dir - remove the reference to the parent dir */
-    if(dirs[level]->next == NULL && dirs[level]->prev == NULL) {
-      dirs[level]->parent->sub = NULL;
-      free(dirs[level]->name);
-      free(dirs[level]);
-      dirs[level] = NULL;
-    }
-   /* check for errors */
-    if(errno)
-      direrr = 1;
-    closedir(dir);
-    if(direrr || staterr) {
-      dirs[level-1]->flags |= (direrr ? FF_ERR : FF_SERR);
-      for(i=level-1; i-->0;)
-        dirs[i]->flags |= FF_SERR;
-    }
-
-   /* show progress status */
-    showstatus:
-    gettimeofday(&tv, (void *)NULL);
-    tv.tv_usec = (1000*(tv.tv_sec % 1000) + (tv.tv_usec / 1000)) / sdelay;
-    if(l == tv.tv_usec) goto newdir;
-    mvwprintw(calc, 3, 15, "%-43s", cropdir(cdir, 43));
-    mvwprintw(calc, 2, 15, "%d", dat.files);
-    mvwprintw(calc, 2, 30, "%d", dat.dirs);
-    mvwaddstr(calc, 2, 45, cropsize(dat.size));
-
-    if(err == 1) {
-      wattron(calc, A_BOLD);
-      mvwaddstr(calc, 5, 2, "Warning:");
-      wattroff(calc, A_BOLD);
-      mvwprintw(calc, 5, 11, "could not open %-32s", cropdir(emsg, 32));
-      mvwaddstr(calc, 6, 3, "some directory sizes may not be correct");
-    }
-
-    /* animation */
-    if(sdelay < 1000) {
-      if(++anpos == 28) anpos = 0;
-      mvwaddstr(calc, 8, 3, "              ");
+ /* animation - but only if the screen refreshes more than or once every second */
+  if(sdelay <= 1000) {
+    if(++anpos == 28) anpos = 0;
+      strcpy(ani, "              ");
       if(anpos < 14)
         for(i=0; i<=anpos; i++)
-          mvwaddch(calc, 8, i+3, antext[i]);
+          ani[i] = antext[i];
       else
         for(i=13; i>anpos-14; i--)
-          mvwaddch(calc, 8, i+3, antext[i]);
-    } else
-      mvwaddstr(calc, 8, 3, antext);
-    wmove(calc, 8, 58);
-    wrefresh(calc);
+          ani[i] = antext[i];
+  } else
+    strcpy(ani, antext);
+  mvwaddstr(prg, 8, 3, ani);
+
+  wrefresh(prg);
+  delwin(prg);
+}
 
 
-    newdir:
-    l = tv.tv_usec;
-   /* select new directory */
-    while(dirs[level] == NULL || !(dirs[level]->flags & FF_DIR) || dirs[level]->flags & FF_OTHFS || dirs[level]->flags & FF_EXL) {
-      if(dirs[level] != NULL && dirs[level]->prev != NULL)
-        dirs[level] = dirs[level]->prev;
-      else {
-        while(level-- > 0) {
-          if(dirs[level]->prev != NULL) {
-            dirs[level] = dirs[level]->prev;
-            break;
-          }
-        }
-        if(level < 1) goto endloop;
-      }
+/* show error if can't open parent dir */
+static void drawError(char *dir) {
+  WINDOW *err;
+
+  err = newwin(10, 60, winrows/2-3, wincols/2-30);
+  box(err, 0, 0);
+  wattron(err, A_BOLD);
+  mvwaddstr(err, 0, 4, "Error!");
+
+  mvwaddstr(err, 5, 2, "Error:");
+  wattroff(err, A_BOLD);
+  mvwprintw(err, 5, 9, "could not open %s", cropdir(dir, 34));
+  mvwaddstr(err, 6, 3, "press any key to continue...");
+
+  wrefresh(err);
+  delwin(err);
+}
+
+
+/* checks for input and calls drawProgress */
+int updateProgress(char *path) {
+  struct timeval tv;
+  int ch;
+
+ /* check for input or screen resizes */
+  nodelay(stdscr, 1);
+  while((ch = getch()) != ERR) {
+    if(ch == 'q')
+      return(0);
+    if(ch == KEY_RESIZE) {
+      ncresize();
+      drawProgress(path);
     }
   }
-  endloop:
-  nodelay(calc, 0);
-  delwin(calc);
-  erase();
-  refresh();
-  if(ch == 'q')
-    return(2);
-  return(0);
+  nodelay(stdscr, 0);
+ 
+ /* don't update the screen with shorter intervals than sdelay */
+  gettimeofday(&tv, (void *)NULL);
+  tv.tv_usec = (1000*(tv.tv_sec % 1000) + (tv.tv_usec / 1000)) / sdelay;
+  if(lastupdate != tv.tv_usec) {
+    drawProgress(path);
+    lastupdate = tv.tv_usec;
+  }
+  return(1);
 }
+
+
+/* recursive */
+int calcDir(struct dir *dest, char *path) {
+  struct dir *d, *t;
+  struct stat fs;
+  DIR *dir;
+  struct dirent *dr;
+  char *f, tmp[PATH_MAX];
+  int len, derr = 0, serr = 0;
+
+  if(!updateProgress(path))
+    return(0);
+
+ /* open directory */
+  if((dir = opendir(path)) == NULL) {
+    strcpy(lasterr, path);
+    dest->flags |= FF_ERR;
+    t = dest;
+    while((t = t->parent) != NULL)
+      t->flags |= FF_SERR;
+    return(1);
+  }
+  len = strlen(path);
+
+ /* add leading slash */
+  if(path[len-1] != '/') {
+    path[len] = '/';
+    path[++len] = '\0';
+  }
+ 
+ /* read directory */
+  while((dr = readdir(dir)) != NULL) {
+    f = dr->d_name;
+    if(f[0] == '.' && (f[1] == '\0' || (f[1] == '.' && f[2] == '\0')))
+      continue;
+
+   /* path too long - ignore file */
+    if(len+strlen(f)+1 > PATH_MAX) {
+      derr = 1;
+      errno = 0;
+      continue;
+    }
+
+   /* allocate dir and fix references */
+    d = calloc(sizeof(struct dir), 1);
+    d->parent = dest;
+    if(dest->sub != NULL) {
+      d->prev = dest->sub;
+      d->prev->next = d;
+    }
+    d->parent->sub = d;
+
+   /* set d->name */
+    d->name = malloc(strlen(f)+1);
+    strcpy(d->name, f);
+
+   /* get full path */
+    strcpy(tmp, path);
+    strcat(tmp, f);
+
+   /* lstat */
+    if(lstat(tmp, &fs)) {
+      serr = 1;
+      errno = 0;
+      d->flags |= FF_ERR;
+      continue;
+    }
+
+   /* check for excludes and same filesystem */
+    if(matchExclude(tmp))
+      d->flags |= FF_EXL;
+
+    if(sflags & SF_SMFS && curdev != fs.st_dev)
+      d->flags |= FF_OTHFS;
+
+   /* determine type of this item and update parent dirs */
+    if(S_ISREG(fs.st_mode)) {
+      d->flags |= FF_FILE;
+      if(!(d->flags & FF_EXL))
+        for(t = dest; t != NULL; t = t->parent)
+          t->files++;
+    } else if(S_ISDIR(fs.st_mode)) {
+      d->flags |= FF_DIR;
+      if(!(d->flags & FF_EXL))
+        for(t = dest; t != NULL; t = t->parent)
+          t->dirs++;
+    } else
+      d->flags |= FF_OTHER;
+
+   /* count the size */
+    if(!(d->flags & FF_EXL || d->flags & FF_OTHFS)) {
+      d->size = sflags & SF_AS ? fs.st_size : fs.st_blocks * 512;
+      for(t = dest; t != NULL; t = t->parent)
+        t->size += d->size;
+    }
+
+   /* show status */
+    if(!updateProgress(tmp))
+      return(0);   
+
+    errno = 0;
+  }
+  derr = derr || errno;
+  closedir(dir);
+ 
+ /* error occured while reading this dir, update parent dirs */
+  if(derr || serr) {
+    dest->flags |= derr ? FF_ERR : FF_SERR;
+    for(t = dest; (t = t->parent) != NULL; )
+      t->flags |= FF_SERR;
+  }
+
+  if(dest->sub) {
+   /* update dest->sub to point to the first item */
+    while(dest->sub->prev)
+      dest->sub = dest->sub->prev;
+
+   /* add reference to parent dir */
+    d = calloc(sizeof(struct dir), 1);
+    d->flags |= FF_PAR;
+    d->name = malloc(3);
+    strcpy(d->name, "..");
+    d->next = dest->sub;
+    d->parent = dest;
+    d->next->prev = d;
+    dest->sub = d;
+
+   /* calculate subdirectories */
+    while((d = d->next) != NULL)
+      if(d->flags & FF_DIR && !(d->flags & FF_EXL || d->flags & FF_OTHFS)) {
+        strcpy(tmp, path);
+        strcat(tmp, d->name);
+        if(!calcDir(d, tmp))
+          return(0);
+      }
+  }
+
+  return(1);
+}
+
+
+struct dir *showCalc(char *path) {
+  char tmp[PATH_MAX];
+  struct stat fs;
+
+ /* init/reset global vars */
+  *lasterr = '\0';
+  anpos = 0;
+  lastupdate = 999;
+
+ /* init parent dir */
+  if(rpath(path, tmp) == NULL || lstat(tmp, &fs) != 0) {
+    do {
+      ncresize();
+      drawError(path);
+    } while (getch() == KEY_RESIZE);
+    return(NULL);
+  }
+  parent = calloc(sizeof(struct dir), 1);
+  parent->size = sflags & SF_AS ? fs.st_size : fs.st_blocks * 512;
+  curdev = fs.st_dev;
+  parent->name = malloc(strlen(tmp)+1);
+  strcpy(parent->name, tmp);
+
+ /* start calculating */
+  if(!calcDir(parent, tmp)) {
+    freedir(parent);
+    return(NULL);
+  }
+  return(parent);
+}
+
+
+
+
+
+
 

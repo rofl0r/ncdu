@@ -124,7 +124,7 @@ struct dir {
  * (all defined in main.c)
  */
 /* main directory data */
-extern struct dir dat;
+extern struct dir *dat;
 /* updated when window is resized */
 extern int winrows, wincols;
 /* global settings */
@@ -145,7 +145,7 @@ extern char *getpath(struct dir *, char *);
 extern int settingsCli(int, char **);
 extern int settingsWin(void);
 /* calc.c */
-extern int calcUsage();
+extern struct dir *showCalc(char *);
 /* browser.c */
 extern void drawBrowser(int);
 extern void showBrowser(void);

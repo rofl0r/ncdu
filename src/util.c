@@ -131,7 +131,7 @@ struct dir *freedir(struct dir *dr) {
   if(cur != NULL)
     cur->flags |= FF_BSEL;
 
-  if(dr->parent->sub == dr) {
+  if(dr->parent && dr->parent->sub == dr) {
     if(dr->prev != NULL)
       dr->parent->sub = dr->prev;
     else if(dr->next != NULL)

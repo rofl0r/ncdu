@@ -26,14 +26,15 @@
 #include "ncdu.h"
 
 /* check ncdu.h what these are for */
-struct dir dat;
+struct dir *dat;
 int winrows, wincols;
 char sdir[PATH_MAX];
 int sflags, bflags, sdelay, bgraph;
 
 /* main program */
 int main(int argc, char **argv) {
-  int r, gd;
+  int gd;
+
   gd = settingsCli(argc, argv);
   initscr();
   cbreak();
@@ -42,11 +43,13 @@ int main(int argc, char **argv) {
   keypad(stdscr, TRUE);
   ncresize();
   
-  if(gd && settingsWin()) goto mainend;
-  while((r = calcUsage()) != 0) {
-    if(r == 1 && settingsWin()) goto mainend;
-    else if(r == 2) goto mainend;
-  }
+  if(gd && settingsWin())
+    goto mainend;
+
+  while((dat = showCalc(sdir)) == NULL)
+    if(settingsWin())
+      goto mainend;
+
   showBrowser();
 
   mainend:
