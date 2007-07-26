@@ -1,5 +1,5 @@
 
-AC_INIT(ncdu, 1.2, projects@yorhel.nl)
+AC_INIT(ncdu, svn, projects@yorhel.nl)
 AC_CONFIG_SRCDIR([src/ncdu.h])
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE

@@ -1,40 +1,43 @@
+svn - ?
+	- Added 'r'-key to refresh the current directory
+
 1.2 - 2007-07-24
-  - Fixed some bugs on cygwin
-  - Added du-like exclude patterns
+	- Fixed some bugs on cygwin
+	- Added du-like exclude patterns
 	- Fixed bug #1758403: large directories work fine now
 	- Rewrote a large part of the code
 	- Fixed a bug with wide characters
 	- Performance improvements when browsing large dirs
 
 1.1 - 2007-04-30
-  - Deleting files and directories is now possible from
-    within ncdu.
-  - The key for sorting directories between files has
-    changed to 't' instead of 'd'. The 'd'-key is now
-    used for deleting files.
+	- Deleting files and directories is now possible from
+	  within ncdu.
+	- The key for sorting directories between files has
+	  changed to 't' instead of 'd'. The 'd'-key is now
+	  used for deleting files.
 
 1.0 - 2007-04-06
-  - First stable release
-  - Small code cleanup
-  - Added a key to toggle between sorting dirs before
-    files and dirs between files
-  - Added graphs and percentages to the directory
-    browser (can be enabled or disabled with the 'g'-key)
+	- First stable release
+	- Small code cleanup
+	- Added a key to toggle between sorting dirs before
+	  files and dirs between files
+	- Added graphs and percentages to the directory
+	  browser (can be enabled or disabled with the 'g'-key)
 
 0.3 - 2007-03-04
-  - When browsing back to the previous directory, the
-    directory you're getting back from will be selected.
-  - Added directory scanning in quiet mode to save
-    bandwidth on remote connections.
+	- When browsing back to the previous directory, the
+	  directory you're getting back from will be selected.
+	- Added directory scanning in quiet mode to save
+	  bandwidth on remote connections.
 
 0.2 - 2007-02-26
-  - Fixed POSIX compliance: replaced realpath() with my
-    own implementation, and gettimeofday() is not
-    required anymore (but highly recommended)
-  - Added a warning for terminals smaller than 60x16
-  - Mountpoints (or any other directory pointing to
-    another	filesystem) are now considered to be
-    directories rather than files.
+	- Fixed POSIX compliance: replaced realpath() with my
+	  own implementation, and gettimeofday() is not
+	  required anymore (but highly recommended)
+	- Added a warning for terminals smaller than 60x16
+	- Mountpoints (or any other directory pointing to
+	  another	filesystem) are now considered to be
+	  directories rather than files.
 
 0.1 - 2007-02-21
-  - Initial version
+	- Initial version
