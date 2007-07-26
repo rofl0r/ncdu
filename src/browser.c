@@ -283,7 +283,8 @@ struct dir * selected(void) {
 
 void showBrowser(void) {
   int ch, change;
-  struct dir *n;
+  char tmp[PATH_MAX];
+  struct dir *n, *t, *d;
   
   bcur = dat->sub;
   bgraph = 1;
@@ -352,6 +353,54 @@ void showBrowser(void) {
       case KEY_LEFT:
         if(bcur->parent->parent != NULL) {
           bcur = bcur->parent;
+        }
+        break;
+
+     /* refresh */
+      case 'r':
+        if((n = showCalc(getpath(bcur, tmp))) != NULL) {
+         /* free current items */
+          t = bcur;
+          bcur = bcur->parent;
+          while(t->prev != NULL)
+            t = t->prev;
+          d = t;
+          while(d != NULL) {
+            t = d;
+            d = t->next;
+            freedir(t);
+          }
+         
+         /* update parent dir */
+          bcur->sub = n->sub;
+          bcur->files = n->files;
+          bcur->dirs = n->dirs;
+          bcur->size = n->size;
+          for(t = bcur->sub; t != NULL; t = t->next)
+            t->parent = bcur;
+
+         /* update sizes of parent dirs */
+          for(t = bcur; (t = t->parent) != NULL; ) {
+            t->size += bcur->size;
+            t->files += bcur->files;
+            t->dirs += bcur->dirs+1;
+          }
+
+         /* add reference to parent dir */
+          if(bcur->parent) {
+            t = calloc(sizeof(struct dir), 1);
+            t->name = malloc(3);
+            t->flags |= FF_PAR;
+            strcpy(t->name, "..");
+            t->parent = bcur;
+            t->next = bcur->sub;
+            t->next->prev = t;
+            bcur->sub = t;
+          }
+
+          bcur = bcur->sub;
+          free(n->name);
+          free(n);
         }
         break;
 

@@ -90,6 +90,7 @@ void ncresize(void) {
     if(ch == 'i')
       sflags |= SF_IGNS;
   }
+  erase();
 }
 
 

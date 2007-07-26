@@ -142,7 +142,7 @@ static void drawProgress(char *cdir) {
   prg = newwin(10, 60, winrows/2-3, wincols/2-30);
   box(prg, 0, 0);
   wattron(prg, A_BOLD);
-  mvwaddstr(prg, 0, 4, "Calculating...");
+  mvwaddstr(prg, 0, 4, dat == NULL ? "Calculating..." : "Recalculating...");
   wattroff(prg, A_BOLD);
 
   mvwprintw(prg, 2, 2, "Total files: %-8d dirs: %-8d size: %s",
@@ -209,6 +209,8 @@ int updateProgress(char *path) {
       return(0);
     if(ch == KEY_RESIZE) {
       ncresize();
+      if(dat != NULL)
+        drawBrowser(0);
       drawProgress(path);
     }
   }
@@ -368,6 +370,7 @@ int calcDir(struct dir *dest, char *path) {
 struct dir *showCalc(char *path) {
   char tmp[PATH_MAX];
   struct stat fs;
+  struct dir *t;
 
  /* init/reset global vars */
   *lasterr = '\0';
@@ -378,12 +381,15 @@ struct dir *showCalc(char *path) {
   if(rpath(path, tmp) == NULL || lstat(tmp, &fs) != 0) {
     do {
       ncresize();
+      if(dat != NULL)
+        drawBrowser(0);
       drawError(path);
     } while (getch() == KEY_RESIZE);
     return(NULL);
   }
   parent = calloc(sizeof(struct dir), 1);
   parent->size = sflags & SF_AS ? fs.st_size : fs.st_blocks * 512;
+  parent->flags |= FF_DIR;
   curdev = fs.st_dev;
   parent->name = malloc(strlen(tmp)+1);
   strcpy(parent->name, tmp);
@@ -393,6 +399,14 @@ struct dir *showCalc(char *path) {
     freedir(parent);
     return(NULL);
   }
+ 
+ /* remove reference to parent dir if we are in the parent dir */
+  t = parent->sub;
+  parent->sub = t->next;
+  parent->sub->prev = NULL;
+  free(t->name);
+  free(t);
+
   return(parent);
 }
 

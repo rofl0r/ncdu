@@ -46,6 +46,7 @@ int main(int argc, char **argv) {
   if(gd && settingsWin())
     goto mainend;
 
+  dat = NULL;
   while((dat = showCalc(sdir)) == NULL)
     if(settingsWin())
       goto mainend;
