@@ -229,7 +229,7 @@ int updateProgress(char *path) {
 
 /* recursive */
 int calcDir(struct dir *dest, char *path) {
-  struct dir *d, *t;
+  struct dir *d, *t, *last;
   struct stat fs;
   DIR *dir;
   struct dirent *dr;
@@ -257,6 +257,7 @@ int calcDir(struct dir *dest, char *path) {
   }
  
  /* read directory */
+  last = NULL;
   while((dr = readdir(dir)) != NULL) {
     f = dr->d_name;
     if(f[0] == '.' && (f[1] == '\0' || (f[1] == '.' && f[2] == '\0')))
@@ -272,11 +273,11 @@ int calcDir(struct dir *dest, char *path) {
    /* allocate dir and fix references */
     d = calloc(sizeof(struct dir), 1);
     d->parent = dest;
-    if(dest->sub != NULL) {
-      d->prev = dest->sub;
-      d->prev->next = d;
-    }
-    d->parent->sub = d;
+    if(dest->sub == NULL)
+      dest->sub = d;
+    if(last != NULL)
+      last->next = d;
+    last = d;
 
    /* set d->name */
     d->name = malloc(strlen(f)+1);
@@ -339,10 +340,6 @@ int calcDir(struct dir *dest, char *path) {
   }
 
   if(dest->sub) {
-   /* update dest->sub to point to the first item */
-    while(dest->sub->prev)
-      dest->sub = dest->sub->prev;
-
    /* add reference to parent dir */
     d = calloc(sizeof(struct dir), 1);
     d->flags |= FF_PAR;
@@ -350,7 +347,6 @@ int calcDir(struct dir *dest, char *path) {
     strcpy(d->name, "..");
     d->next = dest->sub;
     d->parent = dest;
-    d->next->prev = d;
     dest->sub = d;
 
    /* calculate subdirectories */
@@ -403,7 +399,6 @@ struct dir *showCalc(char *path) {
  /* remove reference to parent dir if we are in the parent dir */
   t = parent->sub;
   parent->sub = t->next;
-  parent->sub->prev = NULL;
   free(t->name);
   free(t);
 

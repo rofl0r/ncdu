@@ -26,12 +26,7 @@
 #include "ncdu.h"
 
 struct dir *bcur;
-int helpwin;
 
-
-struct dir * removedir(struct dir *dr) {
-  return(dr);
-}
 
 int cmp(struct dir *x, struct dir *y) {
   struct dir *a, *b;
@@ -57,7 +52,7 @@ int cmp(struct dir *x, struct dir *y) {
   if(r == 0)
     r = a->size > b->size ? 1 : (a->size == b->size ? 0 : -1);
   if(r == 0)
-    r = strcmp(a->name, b->name);
+    r = strcmp(x->name, y->name);
   return(r);
 }
 
@@ -68,8 +63,6 @@ struct dir *sortFiles(struct dir *list) {
   struct dir *p, *q, *e, *tail;
   int insize, nmerges, psize, qsize, i;
 
-  while(list->prev != NULL)
-    list = list->prev;
   insize = 1;
   while(1) {
     p = list;
@@ -98,7 +91,6 @@ struct dir *sortFiles(struct dir *list) {
         }
         if(tail) tail->next = e;
         else     list = e;
-        e->prev = tail;
         tail = e;
       }
       p = q;
@@ -135,8 +127,8 @@ void drawBrowser(int change) {
   erase();
 
  /* exit if there are no items to display */
-  if(bcur->parent == NULL) {
-    if(bcur->sub == NULL) {
+  if(bcur == NULL || bcur->parent == NULL) {
+    if(bcur == NULL || bcur->sub == NULL) {
       erase();
       refresh();
       endwin();
@@ -159,10 +151,9 @@ void drawBrowser(int change) {
   mvhline(1, 0, '-', wincols);
   mvaddstr(1, 3, cropdir(getpath(bcur, tmp), wincols-5));
 
- /* make sure we have the first item, and the items are in correct order */
+/* make sure the items are in correct order */
   bcur = sortFiles(bcur);
-  while(bcur->prev != NULL)
-    bcur = bcur->prev;
+  bcur->parent->sub = bcur;
 
  /* get maximum size and selected item */
   for(n = bcur, selected = i = 0; n != NULL; n = n->next, i++) {
@@ -346,13 +337,13 @@ void showBrowser(void) {
       case KEY_RIGHT:
         n = selected();
         if(n->flags & FF_PAR)
-          bcur = bcur->parent;
+          bcur = bcur->parent->parent->sub;
         else if(n->sub != NULL)
           bcur = n->sub;
         break;
       case KEY_LEFT:
         if(bcur->parent->parent != NULL) {
-          bcur = bcur->parent;
+          bcur = bcur->parent->parent->sub;
         }
         break;
 
@@ -360,17 +351,14 @@ void showBrowser(void) {
       case 'r':
         if((n = showCalc(getpath(bcur, tmp))) != NULL) {
          /* free current items */
-          t = bcur;
+          d = bcur;
           bcur = bcur->parent;
-          while(t->prev != NULL)
-            t = t->prev;
-          d = t;
           while(d != NULL) {
             t = d;
             d = t->next;
             freedir(t);
           }
-         
+
          /* update parent dir */
           bcur->sub = n->sub;
           bcur->files = n->files;
@@ -394,7 +382,6 @@ void showBrowser(void) {
             strcpy(t->name, "..");
             t->parent = bcur;
             t->next = bcur->sub;
-            t->next->prev = t;
             bcur->sub = t;
           }
 
@@ -418,6 +405,8 @@ void showBrowser(void) {
         n = selected();
         if(!(n->flags & FF_PAR))
           bcur = showDelete(n);
+        if(bcur && bcur->parent)
+          bcur = bcur->parent->sub;
         break;
       case 'q':
         goto endloop;

@@ -98,8 +98,6 @@ void ncresize(void) {
 void freedir_rec(struct dir *dr) {
   struct dir *tmp, *tmp2;
   tmp2 = dr;
-  while(tmp2->prev != NULL)
-    tmp2 = tmp2->prev;
   while((tmp = tmp2) != NULL) {
     if(tmp->sub) freedir_rec(tmp->sub);
     free(tmp->name);
@@ -127,21 +125,22 @@ struct dir *freedir(struct dir *dr) {
  
  /* update references */
   cur = NULL;
-  if(dr->next != NULL) { dr->next->prev = dr->prev; cur = dr->next; }
-  if(dr->prev != NULL) { dr->prev->next = dr->next; cur = dr->prev; }
+  if(dr->parent) {
+   /* item is at the top of the dir, refer to next item */
+    if(dr->parent->sub == dr) {
+      dr->parent->sub = dr->next;
+      cur = dr->next;
+    }
+   /* else, get the previous item and update it's "next"-reference */
+    else
+      for(tmp = dr->parent->sub; tmp != NULL; tmp = tmp->next)
+        if(tmp->next == dr) {
+          tmp->next = dr->next;
+          cur = tmp;
+        }
+  }
   if(cur != NULL)
     cur->flags |= FF_BSEL;
-
-  if(dr->parent && dr->parent->sub == dr) {
-    if(dr->prev != NULL)
-      dr->parent->sub = dr->prev;
-    else if(dr->next != NULL)
-      dr->parent->sub = dr->next;
-    else {
-      dr->parent->sub = NULL;
-      cur = dr->parent;
-    }
-  }
 
   free(dr->name);
   free(dr);
@@ -150,18 +149,18 @@ struct dir *freedir(struct dir *dr) {
 }
 
 char *getpath(struct dir *cur, char *to) {
-  struct dir *d;
-  d = cur;
-  while(d->parent != NULL) {
-    d->parent->sub = d;
-    d = d->parent;
-  }
+  struct dir *d, *list[100];
+  int c = 0;
+
+  for(d = cur; (d = d->parent) != NULL; )
+    list[c++] = d;
+
   to[0] = '\0';
-  while(d->parent != cur->parent) {
-    if(d->parent != NULL && d->parent->name[strlen(d->parent->name)-1] != '/')
+  while(c--) {
+    if(list[c]->parent && list[c]->name[strlen(list[c]->name)-1] != '/')
       strcat(to, "/");
-    strcat(to, d->name);
-    d = d->sub;
+    strcat(to, list[c]->name);
   }
+
   return to;
 }

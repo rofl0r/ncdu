@@ -110,7 +110,7 @@
  *    S T R U C T U R E S
  */
 struct dir {
-  struct dir *parent, *next, *prev, *sub;
+  struct dir *parent, *next, *sub;
   char *name;
   off_t size;
   unsigned int files, dirs;

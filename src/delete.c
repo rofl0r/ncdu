@@ -117,7 +117,8 @@ struct dir *deleteDir(struct dir *dr) {
   struct timeval tv;
 
   getpath(dr, file);
-  strcat(file, "/");
+  if(file[strlen(file)-1] != '/')
+    strcat(file, "/");
   strcat(file, dr->name);
 
  /* check for input or screen resizes */
@@ -145,15 +146,11 @@ struct dir *deleteDir(struct dir *dr) {
   if(dr->flags & FF_DIR) {
     if(dr->sub != NULL) {
       nxt = dr->sub;
-      while(nxt->prev != NULL)
-        nxt = nxt->prev;
       while(nxt != NULL) {
         cur = nxt;
         nxt = cur->next;
-        if(cur->flags & FF_PAR) {
-          freedir(cur);
+        if(cur->flags & FF_PAR)
           continue;
-        }
         if(deleteDir(cur) == NULL)
           return(NULL);
       }
