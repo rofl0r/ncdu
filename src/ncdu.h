@@ -104,6 +104,7 @@
 #define BF_NDIRF 32 /* Normally, dirs before files, setting this disables it */
 #define BF_DESC  64
 #define BF_HIDE 128 /* don't show hidden files... */
+#define BF_SORT 256 /* no need to resort, list is already in correct order */
 
 
 /*

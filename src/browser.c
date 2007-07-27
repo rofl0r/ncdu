@@ -151,9 +151,12 @@ void drawBrowser(int change) {
   mvhline(1, 0, '-', wincols);
   mvaddstr(1, 3, cropdir(getpath(bcur, tmp), wincols-5));
 
-/* make sure the items are in correct order */
-  bcur = sortFiles(bcur);
-  bcur->parent->sub = bcur;
+ /* make sure the items are in correct order */
+  if(!(bflags & BF_SORT)) {
+    bcur = sortFiles(bcur);
+    bcur->parent->sub = bcur;
+    bflags |= BF_SORT;
+  }
 
  /* get maximum size and selected item */
   for(n = bcur, selected = i = 0; n != NULL; n = n->next, i++) {
@@ -271,11 +274,12 @@ struct dir * selected(void) {
 
 
 #define toggle(x,y) if(x & y) x -=y; else x |= y
+#define resort if(bflags & BF_SORT) bflags -= BF_SORT
 
 void showBrowser(void) {
-  int ch, change;
+  int ch, change, oldflags;
   char tmp[PATH_MAX];
-  struct dir *n, *t, *d;
+  struct dir *n, *t, *d, *last;
   
   bcur = dat->sub;
   bgraph = 1;
@@ -287,6 +291,9 @@ void showBrowser(void) {
 
   while((ch = getch())) {
     change = 0;
+    last = bcur;
+    oldflags = bflags;
+    
     switch(ch) {
      /* selecting items */
       case KEY_UP:
@@ -411,6 +418,9 @@ void showBrowser(void) {
       case 'q':
         goto endloop;
     }
+    if((last != bcur || (oldflags | BF_HIDE) != (bflags | BF_HIDE)) && bflags & BF_SORT)
+      bflags -= BF_SORT;
+    
     drawBrowser(change);
     refresh();
   }
