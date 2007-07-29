@@ -227,7 +227,8 @@ void drawBrowser(int change) {
           n->flags & FF_ERR ? '!' :
          n->flags & FF_SERR ? '.' :
         n->flags & FF_OTHFS ? '>' :
-        n->flags & FF_OTHER ? '@' :
+       !(n->flags & FF_FILE
+      || n->flags & FF_DIR) ? '@' :
           n->flags & FF_DIR
           && n->sub == NULL ? 'e' :
                               ' ' ;

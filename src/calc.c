@@ -313,8 +313,7 @@ int calcDir(struct dir *dest, char *path) {
       if(!(d->flags & FF_EXL))
         for(t = dest; t != NULL; t = t->parent)
           t->dirs++;
-    } else
-      d->flags |= FF_OTHER;
+    }
 
    /* count the size */
     if(!(d->flags & FF_EXL || d->flags & FF_OTHFS)) {

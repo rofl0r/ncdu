@@ -80,15 +80,14 @@
  *    G L O B A L   F L A G S
  */
 /* File Flags (struct dir -> flags) */
-#define FF_DIR    1
-#define FF_FILE   2
-#define FF_OTHER  4
-#define FF_ERR    8
-#define FF_OTHFS 16
-#define FF_SERR  32 /* error in subdirectory */
-#define FF_BSEL  64 /* selected */
-#define FF_EXL  128 /* excluded using exlude patterns */
-#define FF_PAR  256 /* reference to parent directory (hack) */
+#define FF_DIR    0x01
+#define FF_FILE   0x02
+#define FF_ERR    0x04 /* error while reading this item */
+#define FF_OTHFS  0x08 /* excluded because it was an other filesystem */
+#define FF_EXL    0x10 /* excluded using exlude patterns */
+#define FF_SERR   0x20 /* error in subdirectory */
+#define FF_BSEL   0x40 /* selected */
+#define FF_PAR    0x80 /* reference to parent directory (hack) */
 
 /* Settings Flags (int sflags) */
 #define SF_SMFS   1 /* same filesystem */
