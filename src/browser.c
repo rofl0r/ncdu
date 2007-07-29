@@ -122,7 +122,7 @@ void drawBrowser(int change) {
   struct dir *n;
   char tmp[PATH_MAX], ct, dt;
   int selected, i, o;
-  off_t max;
+  off_t max = 1;
 
   erase();
 
@@ -270,6 +270,7 @@ struct dir * selected(void) {
     if(n->flags & FF_BSEL)
       return n;
   } while((n = n->next) != NULL);
+  return NULL;
 }
 
 
