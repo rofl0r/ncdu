@@ -112,12 +112,9 @@ struct dir *freedir(struct dir *dr) {
 
  /* update sizes of parent directories */
   tmp = dr;
-  if(dr->flags & FF_FILE) dr->files++;
-  if(dr->flags & FF_DIR) dr->dirs++;
   while((tmp = tmp->parent) != NULL) {
     tmp->size -= dr->size;
-    tmp->files -= dr->files;
-    tmp->dirs -= dr->dirs;
+    tmp->items -= dr->items+1;
   }
 
  /* free dr->sub recursive */

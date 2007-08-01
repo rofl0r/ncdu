@@ -13,3 +13,7 @@ Small list of planned features/changes, suggestions are always welcome.
 - Improve browser interface
   * Mutt-like status bar?
   * Browser always on background, even on startup
+
+- Remove...
+  * Switching to powers of 1000 (is there *anyone* who actually uses that
+    feature?)

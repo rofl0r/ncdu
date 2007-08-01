@@ -145,8 +145,8 @@ static void drawProgress(char *cdir) {
   mvwaddstr(prg, 0, 4, dat == NULL ? "Calculating..." : "Recalculating...");
   wattroff(prg, A_BOLD);
 
-  mvwprintw(prg, 2, 2, "Total files: %-8d dirs: %-8d size: %s",
-    parent->files, parent->dirs, cropsize(parent->size));
+  mvwprintw(prg, 2, 2, "Total items: %-8d size: %s",
+    parent->items, cropsize(parent->size));
   mvwprintw(prg, 3, 2, "Current dir: %s", cropdir(cdir, 43));
   mvwaddstr(prg, 8, 43, "Press q to quit");
 
@@ -302,24 +302,25 @@ int calcDir(struct dir *dest, char *path) {
     if(sflags & SF_SMFS && curdev != fs.st_dev)
       d->flags |= FF_OTHFS;
 
-   /* determine type of this item and update parent dirs */
-    if(S_ISREG(fs.st_mode)) {
+   /* determine type of this item */
+    if(S_ISREG(fs.st_mode))
       d->flags |= FF_FILE;
-      if(!(d->flags & FF_EXL))
-        for(t = dest; t != NULL; t = t->parent)
-          t->files++;
-    } else if(S_ISDIR(fs.st_mode)) {
+    else if(S_ISDIR(fs.st_mode))
       d->flags |= FF_DIR;
-      if(!(d->flags & FF_EXL))
-        for(t = dest; t != NULL; t = t->parent)
-          t->dirs++;
-    }
+
+   /* update parent dirs */
+    if(!(d->flags & FF_EXL))
+      for(t = dest; t != NULL; t = t->parent)
+        t->items++;
 
    /* count the size */
     if(!(d->flags & FF_EXL || d->flags & FF_OTHFS)) {
-      d->size = sflags & SF_AS ? fs.st_size : fs.st_blocks * 512;
-      for(t = dest; t != NULL; t = t->parent)
+      d->size = fs.st_blocks * 512;
+      d->asize = fs.st_size;
+      for(t = dest; t != NULL; t = t->parent) {
         t->size += d->size;
+        t->asize += d->asize;
+      }
     }
 
    /* show status */
@@ -383,7 +384,8 @@ struct dir *showCalc(char *path) {
     return(NULL);
   }
   parent = calloc(sizeof(struct dir), 1);
-  parent->size = sflags & SF_AS ? fs.st_size : fs.st_blocks * 512;
+  parent->size = fs.st_blocks * 512;
+  parent->asize = fs.st_size;
   parent->flags |= FF_DIR;
   curdev = fs.st_dev;
   parent->name = malloc(strlen(tmp)+1);

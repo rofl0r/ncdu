@@ -55,13 +55,11 @@ int settingsCli(int argc, char **argv) {
       }
       for(j=1; j < strlen(argv[i]); j++)
         switch(argv[i][j]) {
-          case 'a': sflags |= SF_AS;   break;
           case 'x': sflags |= SF_SMFS; break;
           case 'q': sdelay = 2000;     break;
           case '?':
           case 'h':
             printf("ncdu [-ahvx] [dir]\n\n");
-            printf("  -a    Apparent sizes\n");
             printf("  -h    This help message\n");
             printf("  -q x  Set the refresh interval in seconds\n");
             printf("  -v    Print version\n");
@@ -97,12 +95,9 @@ int settingsGet(void) {
   fields[2] = new_field(1, 16, 1, 11, 0, 0);
   fields[3] = new_field(1,  1, 1, 27, 0, 0);
   fields[4] = new_field(1,  1, 1, 28, 0, 0);
-  fields[5] = new_field(1, 16, 2, 12, 0, 0);
-  fields[6] = new_field(1,  1, 2, 27, 0, 0);
-  fields[7] = new_field(1,  1, 2, 28, 0, 0);
-  fields[8] = new_field(1,  6, 3, 11, 0, 0);
-  fields[9] = new_field(1,  9, 3, 19, 0, 0);
-  fields[10] = NULL;
+  fields[5] = new_field(1,  6, 3, 11, 0, 0);
+  fields[6] = new_field(1,  9, 3, 19, 0, 0);
+  fields[7] = NULL;
 
  /* Directory */
   field_opts_off(fields[0], O_ACTIVE);
@@ -120,17 +115,9 @@ int settingsGet(void) {
   set_field_buffer(fields[3], 0, sflags & SF_SMFS ? "X" : " ");
   field_opts_off(fields[4], O_ACTIVE);
   set_field_buffer(fields[4], 0, "]");
- /* Apparent sizes */
-  field_opts_off(fields[5], O_ACTIVE);
-  set_field_buffer(fields[5], 0, "Apparent size [");
-  field_opts_off(fields[6], O_AUTOSKIP);
-  set_field_back(fields[6], A_UNDERLINE);
-  set_field_buffer(fields[6], 0, sflags & SF_AS ? "X" : " ");
-  field_opts_off(fields[7], O_ACTIVE);
-  set_field_buffer(fields[7], 0, "]");
  /* buttons */
-  set_field_buffer(fields[8], 0, "[OK]");
-  set_field_buffer(fields[9], 0, "[CLOSE]");
+  set_field_buffer(fields[5], 0, "[OK]");
+  set_field_buffer(fields[6], 0, "[CLOSE]");
 
   setf = new_form(fields);
   h=8;w=60;
@@ -184,16 +171,16 @@ int settingsGet(void) {
       case '\t':          form_driver(setf, REQ_NEXT_FIELD); break;
       case KEY_RESIZE:    rst = 1; goto setend; break;
       default:
-        if(i == 9) {
+        if(i == 6) {
           rst = 2;
           goto setend;
         }
-        if(i == 8 || ch == '\n')
+        if(i == 5 || ch == '\n')
           goto setend;
-        if(i == 3 || i == 6)
+        if(i == 3)
           set_field_buffer(fields[i], 0, buf[0] == ' ' ? "X" : " ");
         else if(!isprint(ch)) break;
-        else if(i == 9) {
+        else if(i == 6) {
           if(!isdigit(ch)) strcpy(tmp, " 0");
           else if(buf[0] != ' ' || buf[1] == ' ' || buf[1] == '0') sprintf(tmp, " %c", ch);
           else sprintf(tmp, "%c%c", buf[1], ch);
@@ -221,11 +208,9 @@ int settingsGet(void) {
   sflags = sflags & SF_IGNS;
   buf = field_buffer(fields[3], 0);
   if(buf[0] != ' ') sflags |= SF_SMFS;
-  buf = field_buffer(fields[6], 0);
-  if(buf[0] != ' ') sflags |= SF_AS;
   
   unpost_form(setf);
-  for(i=10;--i>=0;)
+  for(i=7;--i>=0;)
     free_field(fields[i]);
   werase(set);
   delwin(set);

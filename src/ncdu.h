@@ -91,7 +91,6 @@
 
 /* Settings Flags (int sflags) */
 #define SF_SMFS   1 /* same filesystem */
-#define SF_AS     2 /* apparent sizes */
 #define SF_SI     4 /* use powers of 1000 instead of 1024 */
 #define SF_IGNS   8 /* ignore too small terminal sizes */
 #define SF_NOCFM 16 /* don't confirm file deletion */
@@ -112,10 +111,10 @@
 struct dir {
   struct dir *parent, *next, *sub;
   char *name;
-  off_t size;
-  unsigned int files, dirs;
-  unsigned short flags;
-};
+  off_t size, asize;
+  unsigned int items;
+  unsigned char flags;
+}; 
 
 
 /*

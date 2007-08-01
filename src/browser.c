@@ -143,11 +143,11 @@ void drawBrowser(int change) {
   mvhline(0, 0, ' ', wincols);
   mvhline(winrows-1, 0, ' ', wincols);
   mvprintw(0,0,"%s %s ~ Use the arrow keys to navigate, press ? for help", PACKAGE_NAME, PACKAGE_VERSION);
-  
-  mvprintw(winrows-1, 0, " Total size: %s   Files: %-6d   Dirs: %-6d",
-      cropsize(bcur->parent->size), bcur->parent->files, bcur->parent->dirs);
-  attroff(A_REVERSE);
 
+  mvprintw(winrows-1, 0, " Total disk usage: %s  Apparent size: %s  Items: %d",
+    cropsize(bcur->parent->size), cropsize(bcur->parent->asize), bcur->parent->items);
+  attroff(A_REVERSE);
+  
   mvhline(1, 0, '-', wincols);
   mvaddstr(1, 3, cropdir(getpath(bcur, tmp), wincols-5));
 
@@ -370,8 +370,7 @@ void showBrowser(void) {
 
          /* update parent dir */
           bcur->sub = n->sub;
-          bcur->files = n->files;
-          bcur->dirs = n->dirs;
+          bcur->items = n->items;
           bcur->size = n->size;
           for(t = bcur->sub; t != NULL; t = t->next)
             t->parent = bcur;
@@ -379,8 +378,7 @@ void showBrowser(void) {
          /* update sizes of parent dirs */
           for(t = bcur; (t = t->parent) != NULL; ) {
             t->size += bcur->size;
-            t->files += bcur->files;
-            t->dirs += bcur->dirs+1;
+            t->items += bcur->items;
           }
 
          /* add reference to parent dir */
