@@ -26,6 +26,7 @@
 #include "ncdu.h"
 
 char cropsizedat[8];
+char fullsizedat[20]; /* max: 999.999.999.999.999 */
 char cropdirdat[4096];
 
 char *cropdir(const char *from, int s) {
@@ -67,6 +68,25 @@ char *cropsize(const off_t from) {
   sprintf(cropsizedat, "%5.1f%cB", r, c);
   return(cropsizedat);
 }
+
+/* returns integer as a string with thousand seperators
+   BUG: Uses a dot as seperator, ignores current locale */
+char *fullsize(const off_t from) {
+  char tmp[20];
+  int i, j, len;
+
+  sprintf(tmp, "%lld", from);
+  
+  fullsizedat[19] = '\0';
+  len = strlen(tmp);
+  for(i=len, j=18; i >= 0; i--) {
+    if(len-i != 1 && (len-i-1) % 3 == 0)
+      fullsizedat[j--] = '.';
+    fullsizedat[j--] = tmp[i];
+  }
+  return fullsizedat+j+1;
+}
+
 
 void ncresize(void) {
   int ch;

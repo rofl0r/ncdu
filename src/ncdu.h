@@ -90,19 +90,20 @@
 #define FF_PAR    0x80 /* reference to parent directory (hack) */
 
 /* Settings Flags (int sflags) */
-#define SF_SMFS   1 /* same filesystem */
-#define SF_SI     4 /* use powers of 1000 instead of 1024 */
-#define SF_IGNS   8 /* ignore too small terminal sizes */
-#define SF_NOCFM 16 /* don't confirm file deletion */
-#define SF_IGNE  32 /* ignore errors when deleting */
+#define SF_SMFS   0x01 /* same filesystem */
+#define SF_SI     0x02 /* use powers of 1000 instead of 1024 */
+#define SF_IGNS   0x04 /* ignore too small terminal sizes */
+#define SF_NOCFM  0x08 /* don't confirm file deletion */
+#define SF_IGNE   0x10 /* ignore errors when deleting */
 
 /* Browse Flags (int bflags) */
-#define BF_NAME   1
-#define BF_SIZE   2
-#define BF_NDIRF 32 /* Normally, dirs before files, setting this disables it */
-#define BF_DESC  64
-#define BF_HIDE 128 /* don't show hidden files... */
-#define BF_SORT 256 /* no need to resort, list is already in correct order */
+#define BF_NAME   0x01
+#define BF_SIZE   0x02
+#define BF_NDIRF  0x04 /* Normally, dirs before files, setting this disables it */
+#define BF_DESC   0x08
+#define BF_HIDE   0x10 /* don't show hidden files... */
+#define BF_SORT   0x20 /* no need to resort, list is already in correct order */
+#define BF_AS     0x40 /* show apparent sizes instead of disk usage */
 
 
 /*
@@ -137,6 +138,7 @@ extern int sflags, bflags, sdelay, bgraph;
 /* util.c */
 extern char *cropdir(const char *, int);
 extern char *cropsize(const off_t);
+extern char *fullsize(const off_t);
 extern void ncresize(void);
 extern struct dir * freedir(struct dir *);
 extern char *getpath(struct dir *, char *);

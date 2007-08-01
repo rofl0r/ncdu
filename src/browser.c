@@ -28,6 +28,35 @@
 struct dir *bcur;
 
 
+void drawInfo(struct dir *dr) {
+  WINDOW *nfo;
+  char path[PATH_MAX];
+
+  nfo = newwin(11, 60, winrows/2-5, wincols/2-30);
+  box(nfo, 0, 0);
+  wattron(nfo, A_BOLD);
+  mvwaddstr(nfo, 0, 4, "Item info");
+
+  mvwaddstr(nfo, 2, 3, "Name:");
+  mvwaddstr(nfo, 3, 3, "Path:");
+  mvwaddstr(nfo, 4, 3, "Type:");
+  mvwaddstr(nfo, 6, 3, "   Disk usage:");
+  mvwaddstr(nfo, 7, 3, "Apparent size:");
+  wattroff(nfo, A_BOLD);
+
+  mvwaddstr(nfo, 2,  9, cropdir(dr->name, 49));
+  mvwaddstr(nfo, 3,  9, cropdir(getpath(dr, path), 49));
+  mvwaddstr(nfo, 4,  9, dr->flags & FF_DIR ? "Directory"
+      : dr->flags & FF_FILE ? "File" : "Other (link, device, socket, ..)");
+  mvwprintw(nfo, 6, 18, "%s (%s B)", cropsize(dr->size),  fullsize(dr->size));
+  mvwprintw(nfo, 7, 18, "%s (%s B)", cropsize(dr->asize), fullsize(dr->asize));
+
+  mvwaddstr(nfo, 9, 32, "Press any key to continue");
+  wrefresh(nfo);
+  delwin(nfo);
+}
+
+
 int cmp(struct dir *x, struct dir *y) {
   struct dir *a, *b;
   int r = 0;
@@ -51,6 +80,8 @@ int cmp(struct dir *x, struct dir *y) {
     r = strcmp(a->name, b->name);
   if(r == 0)
     r = a->size > b->size ? 1 : (a->size == b->size ? 0 : -1);
+  if(r == 0)
+    r = a->asize > b->asize ? 1 : (a->asize == b->asize ? 0 : -1);
   if(r == 0)
     r = strcmp(x->name, y->name);
   return(r);
@@ -120,7 +151,7 @@ char *graph(off_t max, off_t size) {
 
 void drawBrowser(int change) {
   struct dir *n;
-  char tmp[PATH_MAX], ct, dt;
+  char tmp[PATH_MAX], ct, dt, *size;
   int selected, i, o;
   off_t max = 1;
 
@@ -233,28 +264,29 @@ void drawBrowser(int change) {
           && n->sub == NULL ? 'e' :
                               ' ' ;
     dt = n->flags & FF_DIR ? '/' : ' ';
+    size = cropsize(bflags & BF_AS ? n->asize : n->size);
 
    /* format and add item to the list */
     switch(bgraph) {
       case 0:
-        mvprintw(i+2, 0, tmp, ct, cropsize(n->size),
+        mvprintw(i+2, 0, tmp, ct, size,
           dt, cropdir(n->name, wincols-12)
         );
         break;
       case 1:
-        mvprintw(i+2, 0, tmp, ct, cropsize(n->size),
+        mvprintw(i+2, 0, tmp, ct, size,
           graph(max, n->size),
           dt, cropdir(n->name, wincols-24)
         );
         break;
       case 2:
-        mvprintw(i+2, 0, tmp, ct, cropsize(n->size),
+        mvprintw(i+2, 0, tmp, ct, size,
           ((float) n->size / (float) n->parent->size) * 100.0f,
           dt, cropdir(n->name, wincols-19)
         );
         break;
       case 3:
-        mvprintw(i+2, 0, tmp, ct, cropsize(n->size),
+        mvprintw(i+2, 0, tmp, ct, size,
           ((float) n->size / (float) n->parent->size) * 100.0f, graph(max, n->size),
           dt, cropdir(n->name, wincols-30)
         );
@@ -340,6 +372,9 @@ void showBrowser(void) {
       case 't':
         toggle(bflags, BF_NDIRF);
         break;
+      case 'a':
+        toggle(bflags, BF_AS);
+        break;
 
      /* browsing */
       case 10:
@@ -408,6 +443,16 @@ void showBrowser(void) {
       case '?':
         showHelp();
         break;
+      case 'i':
+        n = selected();
+        if(!(n->flags & FF_PAR)) {
+          drawInfo(n);
+          while(getch() == KEY_RESIZE) {
+            drawBrowser(0);
+            drawInfo(n);
+          }
+        }
+        break;
       case 'd':
         n = selected();
         if(!(n->flags & FF_PAR))
@@ -418,7 +463,7 @@ void showBrowser(void) {
       case 'q':
         goto endloop;
     }
-    if((last != bcur || (oldflags | BF_HIDE) != (bflags | BF_HIDE)) && bflags & BF_SORT)
+    if((last != bcur || (oldflags | BF_HIDE | BF_AS) != (bflags | BF_HIDE | BF_AS)) && bflags & BF_SORT)
       bflags -= BF_SORT;
     
     drawBrowser(change);
