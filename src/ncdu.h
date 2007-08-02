@@ -36,7 +36,6 @@
 
 #include <ncurses.h>
 #include <form.h>
-#include <menu.h>
 
 #include <unistd.h>
 #include <sys/types.h>
