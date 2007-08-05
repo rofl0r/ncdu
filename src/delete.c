@@ -72,7 +72,7 @@ static void drawProgress(char *file) {
   wattroff(prg, A_BOLD); 
 
   mvwaddstr(prg, 1, 2, cropdir(file, 47));
-  mvwaddstr(prg, 5, 41, "Press q to abort");
+  mvwaddstr(prg, 4, 41, "Press q to abort");
 
   wrefresh(prg);
   delwin(prg);

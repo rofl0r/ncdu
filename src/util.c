@@ -174,7 +174,7 @@ char *getpath(struct dir *cur, char *to) {
 
   to[0] = '\0';
   while(c--) {
-    if(list[c]->parent && list[c]->name[strlen(list[c]->name)-1] != '/')
+    if(list[c]->parent && list[c]->parent->name[strlen(list[c]->parent->name)-1] != '/')
       strcat(to, "/");
     strcat(to, list[c]->name);
   }
