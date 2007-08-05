@@ -25,16 +25,38 @@
 
 #include "ncdu.h"
 
+#define KEYS 14
 
-void drawHelp(int page) {
+char *keys[KEYS*2] = {
+/*|----key----|  |----------------description----------------|*/
+      "up/down", "Cycle through the items",
+  "right/enter", "Open directory",
+         "left", "Previous directory",
+            "n", "Sort by name (ascending/descending)",
+            "s", "Sort by size (ascending/descending)",
+            "d", "Delete selected file or directory",
+            "t", "Toggle dirs before files when sorting",
+            "g", "Show percentage and/or graph",
+            "p", "Toggle between powers of 1000 and 1024",
+            "a", "Toggle between apparent size and disk usage",
+            "h", "Show/hide hidden or excluded files",
+            "i", "Show information about selected item",
+            "r", "Recalculate the current directory",
+            "q", "Quit ncdu"
+};
+
+
+
+void drawHelp(int page, int start) {
   WINDOW *hlp;
+  int i, line;
 
   hlp = newwin(15, 60, winrows/2-7, wincols/2-30);
   box(hlp, 0, 0);
   wattron(hlp, A_BOLD);
   mvwaddstr(hlp, 0, 4, "ncdu help");
   wattroff(hlp, A_BOLD);
-  mvwaddstr(hlp, 13, 32, "Press any key to continue");
+  mvwaddstr(hlp, 13, 38, "Press q to continue");
 
   if(page == 1)
     wattron(hlp, A_REVERSE);
@@ -51,30 +73,15 @@ void drawHelp(int page) {
 
   switch(page) {
     case 1:
-      wattron(hlp, A_BOLD);
-      mvwaddstr(hlp, 2,  7, "up/down");
-      mvwaddstr(hlp, 3,  3, "right/enter");
-      mvwaddstr(hlp, 4, 10, "left");
-      mvwaddstr(hlp, 5, 11, "n/s");
-      mvwaddch( hlp, 6, 13, 'd');
-      mvwaddch( hlp, 7, 13, 't');
-      mvwaddch( hlp, 8, 13, 'g');
-      mvwaddch( hlp, 9, 13, 'p');
-      mvwaddch( hlp,10, 13, 'h');
-      mvwaddch( hlp,11, 13, 'r');
-      mvwaddch( hlp,12, 13, 'q');
-      wattroff(hlp, A_BOLD);
-      mvwaddstr(hlp, 2, 16, "Cycle through the items");
-      mvwaddstr(hlp, 3, 16, "Open directory");
-      mvwaddstr(hlp, 4, 16, "Previous directory");
-      mvwaddstr(hlp, 5, 16, "Sort by name or size (asc/desc)");
-      mvwaddstr(hlp, 6, 16, "Delete selected file or directory");
-      mvwaddstr(hlp, 7, 16, "Toggle dirs before files when sorting");
-      mvwaddstr(hlp, 8, 16, "Show percentage and/or graph");
-      mvwaddstr(hlp, 9, 16, "Toggle between powers of 1000 and 1024");
-      mvwaddstr(hlp,10, 16, "Show/hide hidden or excluded files");
-      mvwaddstr(hlp,11, 16, "Recalculate the current directory");
-      mvwaddstr(hlp,12, 16, "Quit ncdu");
+      line = 1;
+      for(i=start*2; i<start*2+20; i+=2) {
+        wattron(hlp, A_BOLD);
+        mvwaddstr(hlp, ++line, 13-strlen(keys[i]), keys[i]);
+        wattroff(hlp, A_BOLD);
+        mvwaddstr(hlp, line, 15, keys[i+1]);
+      }
+      if(start != KEYS-10)
+        mvwaddstr(hlp, 12, 25, "-- more --");
       break;
     case 2:
       wattron(hlp, A_BOLD);
@@ -149,31 +156,39 @@ void drawHelp(int page) {
 
 
 void showHelp(void) {
-  int p = 1, ch;
+  int p = 1, st = 0, ch;
 
-  drawHelp(p);
+  drawHelp(p, st);
   while((ch = getch())) {
     switch(ch) {
       case ERR:
         break;
       case '1':
-        p = 1;
-        break;
       case '2':
-        p = 2;
-        break;
       case '3':
-        p = 3;
+        p = ch-'0';
+        st = 0;
         break;
       case KEY_RIGHT:
       case KEY_NPAGE:
         if(++p > 3)
           p = 3;
+        st = 0;
         break;
       case KEY_LEFT:
       case KEY_PPAGE:
         if(--p < 1)
           p = 1;
+        st = 0;
+        break;
+      case KEY_DOWN:
+      case ' ':
+        if(st < KEYS-10)
+          st++;
+        break;
+      case KEY_UP:
+        if(st > 0)
+          st--;
         break;
       case KEY_RESIZE:
         ncresize();
@@ -182,7 +197,7 @@ void showHelp(void) {
       default:
         return;
     }
-    drawHelp(p);
+    drawHelp(p, st);
   }
 }
 

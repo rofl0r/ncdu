@@ -5,7 +5,7 @@
 .SH SYNOPSIS
 .nf
 .fam C
-\fBncdu\fP [\fB-ahqvx\fP] [\fIdir\fP]
+\fBncdu\fP [\fB-hqvx\fP] [\fIdir\fP]
 .fam T
 .fi
 .SH DESCRIPTION
@@ -20,11 +20,6 @@ with a small configuration window.
 For a more detailed explanation of \fBncdu\fP, please check
 http://dev.yorhel.nl/ncdu/
 .SH OPTIONS
-.TP
-\fB-a\fP
-Apparent sizes. Normally, \fBncdu\fP would calculate the
-disk usage of each file, setting \fB-a\fP will tell \fBncdu\fP
-to simply calculate the actual size of the files.
 .TP
 \fB-h\fP
 Print a small help message
@@ -92,6 +87,10 @@ s
 Order by filesize (press again for descending order)
 .TP
 .B
+a
+Toggle between showing disk usage and showing apparent size.
+.TP
+.B
 d
 Delete the selected file or directory. An error message will be shown
 when the contents of the directory do not match or do not exist anymore
@@ -118,6 +117,10 @@ even though you can't see the hidden files and directories, they are still
 there and they are still included in the directory sizes. If you suspect
 that the totals shown at the bottom of the screen are not correct, make
 sure you haven't enabled this option.
+.TP
+.B
+i
+Show information about the current selected item.
 .TP
 .B
 r

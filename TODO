@@ -4,8 +4,8 @@ Small list of planned features/changes, suggestions are always welcome.
 - Improve configuration interface (settings.c)
   * All command line options should be accessible in the GUI
   * Tabs?
-  * Still use the ncurses forms library, or implement our own? (hopefully less
-    buggy and more control) - shouldn't be too hard to do.
+  * Still use the ncurses forms library, or implement our own?
+    (hopefully less buggy and more control)
 
 - Add export/import feature for filelists
   * Also comparing two filelists
@@ -13,7 +13,3 @@ Small list of planned features/changes, suggestions are always welcome.
 - Improve browser interface
   * Mutt-like status bar?
   * Browser always on background, even on startup
-
-- Remove...
-  * Switching to powers of 1000 (is there *anyone* who actually uses that
-    feature?)
