@@ -1,5 +1,13 @@
-svn - ?
+1.3 - 2007-08-05
 	- Added 'r'-key to refresh the current directory
+	- Removed option to calculate apparent size: both
+	  the disk usage and the apparent size are calculated.
+	- Added 'a'-key to switch between showing apparent
+	  size and disk usage.
+	- Added 'i'-key to display information about the
+	  selected item.
+	- Small performance improvements
+	- configure checks for ncurses.h (bug #1764304)
 
 1.2 - 2007-07-24
 	- Fixed some bugs on cygwin

@@ -21,7 +21,7 @@ INSTALL
 
   The usual:
 
-    ./configure
+    ./configure --prefix=/usr
     make
     make install
 
