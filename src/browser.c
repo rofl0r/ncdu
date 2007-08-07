@@ -145,7 +145,7 @@ char *graph(off_t max, off_t size) {
 
 
 #define exlhid(x) if(bflags & BF_HIDE && (\
-    (!(x->flags & FF_PAR) && x->name[0] == '.')\
+    (!(x->flags & FF_PAR) && (x->name[0] == '.' || x->name[strlen(x->name)-1] == '~'))\
     || x->flags & FF_EXL)\
   ) { i--; continue; }
 
