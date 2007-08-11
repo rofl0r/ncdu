@@ -28,14 +28,107 @@
 /* check ncdu.h what these are for */
 struct dir *dat;
 int winrows, wincols;
-char sdir[PATH_MAX];
+char sdir[PATH_MAX], *s_export;
 int sflags, bflags, sdelay, bgraph;
+
+
+/* parse command line */
+void parseCli(int argc, char **argv) {
+  int i, j;
+
+ /* load defaults */
+  memset(sdir, 0, PATH_MAX);
+  getcwd(sdir, PATH_MAX);
+  sflags = 0;
+  sdelay = 100;
+  bflags = BF_SIZE | BF_DESC;
+  s_export = NULL;
+  sdir[0] = '\0';
+
+ /* read from commandline */
+  for(i=1; i<argc; i++) {
+    if(argv[i][0] == '-') {
+     /* flags requiring arguments */
+      if(argv[i][1] == 'X' || !strcmp(argv[i], "--exclude-from") || !strcmp(argv[i], "--exclude")
+          || argv[i][1] == 'e' || argv[i][1] == 'l') {
+        if(i+1 >= argc) {
+          printf("Option %s requires an argument\n", argv[i]);
+          exit(1);
+        }
+        if(argv[i][1] == 'e')
+          s_export = argv[++i];
+        else if(strcmp(argv[i], "--exclude") == 0)
+          addExclude(argv[++i]);
+        else if(addExcludeFile(argv[++i])) {
+          printf("Can't open %s: %s\n", argv[i], strerror(errno));
+          exit(1);
+        }
+        continue;
+      }
+     /* small flags */
+      for(j=1; j < strlen(argv[i]); j++)
+        switch(argv[i][j]) {
+          case 'x': sflags |= SF_SMFS; break;
+          case 'q': sdelay = 2000;     break;
+          case '?':
+          case 'h':
+            printf("ncdu [-ahvx] [dir]\n\n");
+            printf("  -h  This help message\n");
+            printf("  -q  Low screen refresh interval when calculating\n");
+            printf("  -v  Print version\n");
+            printf("  -x  Same filesystem\n");
+            exit(0);
+          case 'v':
+            printf("ncdu %s\n", PACKAGE_VERSION);
+            exit(0);  
+          default:
+            printf("Unknown option: -%c\n", argv[i][j]);
+            exit(1);
+        }
+    } else {
+      strcpy(sdir, argv[i]);
+    }
+  }
+  if(s_export && !sdir[0]) {
+    printf("Can't export file list: no directory specified!\n");
+    exit(1);
+  }
+}
+
+
+/* if path is a file: import file list
+ * if path is a dir:  calculate directory */
+struct dir *loadDir(char *path) {
+  struct stat st;
+  
+  if(stat(path, &st) < 0) {
+    if(s_export) {
+      printf("Error: Can't open %s!", path);
+      exit(1);
+    }
+    return(showCalc(path));
+  }
+
+  if(S_ISREG(st.st_mode))
+    return(importFile(path));
+  else
+    return(showCalc(path));
+}
+
 
 /* main program */
 int main(int argc, char **argv) {
-  int gd;
+  dat = NULL;
 
-  gd = settingsCli(argc, argv);
+  parseCli(argc, argv);
+
+ /* only export file, don't init ncurses */
+  if(s_export) {
+    dat = loadDir(sdir);
+    exportFile(s_export, dat);
+    exit(0);
+  }
+
   initscr();
   cbreak();
   noecho();
@@ -43,11 +136,10 @@ int main(int argc, char **argv) {
   keypad(stdscr, TRUE);
   ncresize();
   
-  if(gd && settingsWin())
+  if(!sdir[0] && settingsWin())
     goto mainend;
 
-  dat = NULL;
-  while((dat = showCalc(sdir)) == NULL)
+  while((dat = loadDir(sdir)) == NULL)
     if(settingsWin())
       goto mainend;
 

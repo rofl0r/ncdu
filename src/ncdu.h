@@ -75,6 +75,14 @@
 # define S_ISLNK(x) (x & S_IFLNK)
 #endif
 
+/* There are many ways to test the endianness on a system, however, I couldn't
+ * find a universal way to do this, so I used this small hack that should work
+ * on any system. */
+static unsigned int endian_test = 1;
+#define IS_BIG_ENDIAN (!(*(char *) &endian_test))
+
+
+
 /*
  *    G L O B A L   F L A G S
  */
@@ -104,15 +112,23 @@
 #define BF_SORT   0x20 /* no need to resort, list is already in correct order */
 #define BF_AS     0x40 /* show apparent sizes instead of disk usage */
 
+/* Export Flags */
+#define EF_DIR    0x01
+#define EF_FILE   0x02
+#define EF_ERR    0x04
+#define EF_OTHFS  0x08
+#define EF_EXL    0x10
+
+
 
 /*
  *    S T R U C T U R E S
  */
 struct dir {
   struct dir *parent, *next, *sub;
-  char *name;
+  unsigned char *name;
   off_t size, asize;
-  unsigned int items;
+  unsigned long items;
   unsigned char flags;
 }; 
 
@@ -127,7 +143,7 @@ extern struct dir *dat;
 /* updated when window is resized */
 extern int winrows, wincols;
 /* global settings */
-extern char sdir[PATH_MAX];
+extern char sdir[PATH_MAX], *s_export;
 extern int sflags, bflags, sdelay, bgraph;
 
 
@@ -142,7 +158,6 @@ extern void ncresize(void);
 extern struct dir * freedir(struct dir *);
 extern char *getpath(struct dir *, char *);
 /* settings.c */
-extern int settingsCli(int, char **);
 extern int settingsWin(void);
 /* calc.c */
 extern struct dir *showCalc(char *);
@@ -157,4 +172,6 @@ extern struct dir *showDelete(struct dir *);
 extern void addExclude(char *);
 extern int addExcludeFile(char *);
 extern int matchExclude(char *);
-
+/* export.c */
+extern void exportFile(char *, struct dir *);
+extern struct dir *importFile(char *);

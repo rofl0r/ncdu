@@ -26,60 +26,6 @@
 #include "ncdu.h"
 
 
-int settingsCli(int argc, char **argv) {
-  int i, j;
-  char gotdir = 0;
-
- /* load defaults */
-  memset(sdir, 0, PATH_MAX);
-  getcwd(sdir, PATH_MAX);
-  sflags = 0;
-  sdelay = 100;
-  bflags = BF_SIZE | BF_DESC;
-
- /* read from commandline */
-  for(i=1; i<argc; i++) {
-    if(argv[i][0] == '-') {
-      if(argv[i][1] == 'X' || strcmp(argv[i], "--exclude-from") == 0 || strcmp(argv[i], "--exclude") == 0) {
-        if(i+1 >= argc) {
-          printf("Option %s requires an argument\n", argv[i]);
-          exit(1);
-        }
-        if(strcmp(argv[i], "--exclude") == 0)
-          addExclude(argv[++i]);
-        else if(addExcludeFile(argv[++i])) {
-          printf("Can't open %s: %s\n", argv[i], strerror(errno));
-          exit(1);
-        }
-        continue;
-      }
-      for(j=1; j < strlen(argv[i]); j++)
-        switch(argv[i][j]) {
-          case 'x': sflags |= SF_SMFS; break;
-          case 'q': sdelay = 2000;     break;
-          case '?':
-          case 'h':
-            printf("ncdu [-ahvx] [dir]\n\n");
-            printf("  -h    This help message\n");
-            printf("  -q x  Set the refresh interval in seconds\n");
-            printf("  -v    Print version\n");
-            printf("  -x    Same filesystem\n");
-            exit(0);
-          case 'v':
-            printf("ncdu %s\n", PACKAGE_VERSION);
-            exit(0);  
-          default:
-            printf("Unknown option: -%c\n", argv[i][j]);
-            exit(1);
-        }
-    } else {
-      strcpy(sdir, argv[i]);
-      gotdir = 1;
-    }
-  }
-  return(gotdir ? 0 : 1);
-}
-
 int settingsGet(void) {
   WINDOW *set;
   FORM *setf;
@@ -87,6 +33,10 @@ int settingsGet(void) {
   int w, h, cx, cy, i, j, ch;
   int fw, fh, fy, fx, fnrow, fnbuf;
   char tmp[10], *buf = "", rst = 0;
+
+  if(!sdir[0])
+    getcwd(sdir, PATH_MAX);
+
   erase();
   refresh();
                     /*  h,  w, y,  x  */

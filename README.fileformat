@@ -1,0 +1,80 @@
+                         ncdu file list format v1                    11-08-2007
+
+
+This document describes the file format of the file list export feature of
+ncdu. This document was used as a reference for implementing the export
+feature, and may be useful to anyone who wants to read or write these files.
+
+
+
+definitions
+  byte  = unsigned 8bit integer
+  2uint = unsigned 16bit integer
+  4uint = unsigned 32bit integer
+  8int  = signed 64bit integer
+  8uint = unsigned 64bit integer
+
+  All integers are in network (big-endian) byte order.
+
+
+
+header
+ ssssvnttttttttiiii
+
+  s = "ncdu" (hex: 6e 63 64 75)
+  v = version of the file format, always 1 (hex: 01)
+  n = NULL-terminated string containing the package name and version of the
+      program that created this file. ncdu 1.3 would be "ncdu 1.3\0". Maximum
+      of 64 bytes including the terminating NULL byte.
+  t = 8int, unix timestamp of when the file was created
+  i = 4uint, total number of directory items
+
+
+
+directory item
+ llfssssssssaaaaaaaaddddn
+
+  l = 2uint, level. 0 for parent, 1 for sub, 2 for sub sub, etc. (see below)
+  f = byte, flags: (mostly the same as defined in ncdu.h)
+       01  item is a directory
+       02  item is a file
+       04  error while reading this item
+       08  item was excluded because it was on an other filesystem
+       10  item was exluded using exclude patterns
+  s = 8uint, disk usage of current item (st_blocks * 512)
+  a = 8uint, apparent size of current item (st_size)
+  n = NULL-terminated string, name of the current item, absolute maximum length
+      of 8192 bytes including the terminating NULL-byte.
+
+
+
+global layout
+  An ncdu datafile always starts with the header, this header also specifies
+  the number of directory items. All data after the last item should be
+  ignored.
+
+  After the header follows the list of directory items. The first directory
+  item should be the parent directory. This is the only item to have a full and
+  absolute path as name, all other items should only include the name of the
+  item itself. This is also the only item to have a level of 0.
+
+  The second directory item should level set to 1, and should be an item
+  located in the parent directory. Any higher level than the previous item
+  indicates that the item is located in the previous item, the same level
+  indicates this item is located in the same directory as the previous item,
+  and a lower level indicates that this item is located in de same directory
+  as the parent directory of the previous item.
+
+  The disk usage and apparent size of each directory item is accumulated, it
+  should already include the sizes of the subitems.
+
+  Example showing the use of levels and names:
+
+    [header](items=7)
+    [directory item](level=0, name=/parent/dir)       /parent/dir
+    [directory item](level=1, name=file1)             /parent/dir/file1
+    [directory item](level=1, name=dir1)              /parent/dir/dir1
+    [directory item](level=2, name=sfile1)            /parent/dir/dir1/sfile1
+    [directory item](level=2, name=sfile2)            /parent/dir/dir1/sfile2
+    [directory item](level=1, name=file2)             /parent/dir/file2
+    [directory item](level=1, name=file3)             /parent/dir/file3

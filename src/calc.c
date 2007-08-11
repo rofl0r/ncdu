@@ -192,6 +192,7 @@ static void drawError(char *dir) {
   mvwprintw(err, 5, 9, "could not open %s", cropdir(dir, 34));
   mvwaddstr(err, 6, 3, "press any key to continue...");
 
+  refresh();
   wrefresh(err);
   delwin(err);
 }
@@ -201,6 +202,10 @@ static void drawError(char *dir) {
 int updateProgress(char *path) {
   struct timeval tv;
   int ch;
+
+ /* don't do anything if s_export is set (ncurses isn't initialized) */
+  if(s_export)
+    return(1);
 
  /* check for input or screen resizes */
   nodelay(stdscr, 1);
@@ -374,12 +379,17 @@ struct dir *showCalc(char *path) {
   lastupdate = 999;
 
  /* init parent dir */
-  if(rpath(path, tmp) == NULL || lstat(tmp, &fs) != 0) {
+  if(rpath(path, tmp) == NULL || lstat(tmp, &fs) != 0 || !S_ISDIR(fs.st_mode)) {
+    if(s_export) {
+      printf("Error: could not open %s\n", path);
+      exit(1);
+    }
     do {
       ncresize();
       if(dat != NULL)
         drawBrowser(0);
       drawError(path);
+      refresh();
     } while (getch() == KEY_RESIZE);
     return(NULL);
   }
