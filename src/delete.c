@@ -149,15 +149,13 @@ struct dir *deleteDir(struct dir *dr) {
       while(nxt != NULL) {
         cur = nxt;
         nxt = cur->next;
-        if(cur->flags & FF_PAR)
-          continue;
         if(deleteDir(cur) == NULL)
           return(NULL);
       }
     }
     ch = rmdir(file);
   } else
-    ch = unlink(file); 
+    ch = unlink(file);
 
  /* error occured, ask user what to do */
   if(ch == -1 && !(sflags & SF_IGNE)) {

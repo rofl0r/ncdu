@@ -69,8 +69,6 @@ void _writeInt(FILE *wr, unsigned char *word, int storage, int size) {
 long calcItems(struct dir *dr) {
   int count = 0;
   do {
-    if(dr->flags & FF_PAR)
-      continue;
     if(dr->sub)
       count += calcItems(dr->sub);
     count++;
@@ -84,9 +82,6 @@ void writeDirs(FILE *wr, struct dir *dr) {
   unsigned char f;
   
   do {
-    if(dr->flags & FF_PAR)
-      continue;
-  
    /* flags - the slow but portable way */
     f = 0;
     if(dr->flags & FF_DIR)   f += EF_DIR;
@@ -202,17 +197,7 @@ struct dir *importFile(char *filename) {
     if(!prev)
       parent = cur;
     else if(curlev > level) {
-     /* create a reference to the parent dir... meh, stupid hack */
-      if(curlev > 1) {
-        tmp = calloc(sizeof(struct dir), 1);
-        tmp->name = malloc(3);
-        strcpy(tmp->name, "..");
-        tmp->flags |= FF_PAR;
-        prev->sub = tmp;
-        tmp->next = cur;
-        tmp->parent = prev;
-      } else
-        prev->sub = cur;
+      prev->sub = cur;
       cur->parent = prev;
     } else if(curlev == level) {
       prev->next = cur;

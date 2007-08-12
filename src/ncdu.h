@@ -94,7 +94,7 @@ static unsigned int endian_test = 1;
 #define FF_EXL    0x10 /* excluded using exlude patterns */
 #define FF_SERR   0x20 /* error in subdirectory */
 #define FF_BSEL   0x40 /* selected */
-#define FF_PAR    0x80 /* reference to parent directory (hack) */
+#define FF_PAR    0x80 /* reference to parent directory (hack - only used in browser.c) */
 
 /* Settings Flags (int sflags) */
 #define SF_SMFS   0x01 /* same filesystem */

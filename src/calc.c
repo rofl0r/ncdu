@@ -345,17 +345,8 @@ int calcDir(struct dir *dest, char *path) {
   }
 
   if(dest->sub) {
-   /* add reference to parent dir */
-    d = calloc(sizeof(struct dir), 1);
-    d->flags |= FF_PAR;
-    d->name = malloc(3);
-    strcpy(d->name, "..");
-    d->next = dest->sub;
-    d->parent = dest;
-    dest->sub = d;
-
    /* calculate subdirectories */
-    while((d = d->next) != NULL)
+    for(d = dest->sub; d != NULL; d = d->next)
       if(d->flags & FF_DIR && !(d->flags & FF_EXL || d->flags & FF_OTHFS)) {
         strcpy(tmp, path);
         strcat(tmp, d->name);
@@ -406,12 +397,6 @@ struct dir *showCalc(char *path) {
     freedir(parent);
     return(NULL);
   }
- 
- /* remove reference to parent dir if we are in the parent dir */
-  t = parent->sub;
-  parent->sub = t->next;
-  free(t->name);
-  free(t);
 
   return(parent);
 }

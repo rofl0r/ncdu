@@ -61,11 +61,6 @@ int cmp(struct dir *x, struct dir *y) {
   struct dir *a, *b;
   int r = 0;
 
-  if(y->flags & FF_PAR)
-    return(1);
-  if(x->flags & FF_PAR)
-    return(-1);
-
   if(bflags & BF_DESC) {
     a = y; b = x;
   } else {
@@ -150,7 +145,7 @@ char *graph(off_t max, off_t size) {
   ) { i--; continue; }
 
 void drawBrowser(int change) {
-  struct dir *n;
+  struct dir *n, ref;
   char tmp[PATH_MAX], ct, dt, *size;
   int selected, i, o;
   off_t max = 1;
@@ -187,6 +182,16 @@ void drawBrowser(int change) {
     bcur = sortFiles(bcur);
     bcur->parent->sub = bcur;
     bflags |= BF_SORT;
+  }
+
+ /* add reference to parent dir */
+  memset(&ref, 0, sizeof(struct dir));
+  if(bcur->parent->parent) {
+    ref.flags |= FF_PAR;
+    ref.name = "..";
+    ref.next = bcur;
+    ref.parent = bcur->parent;
+    bcur = &ref;
   }
 
  /* get maximum size and selected item */
@@ -295,6 +300,10 @@ void drawBrowser(int change) {
     if(i == selected)
       attroff(A_REVERSE);
   }
+
+ /* remove reference to parent dir */
+  if(bcur == &ref)
+    bcur = ref.next;
 }
 
 struct dir * selected(void) {
@@ -303,6 +312,8 @@ struct dir * selected(void) {
     if(n->flags & FF_BSEL)
       return n;
   } while((n = n->next) != NULL);
+  if(bcur->parent->parent)
+    return(bcur->parent);
   return NULL;
 }
 
@@ -380,7 +391,7 @@ void showBrowser(void) {
       case 10:
       case KEY_RIGHT:
         n = selected();
-        if(n->flags & FF_PAR)
+        if(n == bcur->parent)
           bcur = bcur->parent->parent->sub;
         else if(n->sub != NULL)
           bcur = n->sub;
@@ -416,17 +427,6 @@ void showBrowser(void) {
             t->items += bcur->items;
           }
 
-         /* add reference to parent dir */
-          if(bcur->parent) {
-            t = calloc(sizeof(struct dir), 1);
-            t->name = malloc(3);
-            t->flags |= FF_PAR;
-            strcpy(t->name, "..");
-            t->parent = bcur;
-            t->next = bcur->sub;
-            bcur->sub = t;
-          }
-
           bcur = bcur->sub;
           free(n->name);
           free(n);
@@ -445,7 +445,7 @@ void showBrowser(void) {
         break;
       case 'i':
         n = selected();
-        if(!(n->flags & FF_PAR)) {
+        if(n != bcur->parent) {
           drawInfo(n);
           while(getch() == KEY_RESIZE) {
             drawBrowser(0);
@@ -455,7 +455,7 @@ void showBrowser(void) {
         break;
       case 'd':
         n = selected();
-        if(!(n->flags & FF_PAR))
+        if(n != bcur->parent)
           bcur = showDelete(n);
         if(bcur && bcur->parent)
           bcur = bcur->parent->sub;

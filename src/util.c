@@ -134,6 +134,7 @@ struct dir *freedir(struct dir *dr) {
   tmp = dr;
   while((tmp = tmp->parent) != NULL) {
     tmp->size -= dr->size;
+    tmp->asize -= dr->asize;
     tmp->items -= dr->items+1;
   }
 
@@ -155,6 +156,9 @@ struct dir *freedir(struct dir *dr) {
           tmp->next = dr->next;
           cur = tmp;
         }
+   /* no previous item, refer to parent dir */
+    if(cur == NULL && dr->parent->parent)
+      cur = dr->parent;
   }
   if(cur != NULL)
     cur->flags |= FF_BSEL;
