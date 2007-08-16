@@ -39,7 +39,7 @@ unsigned int ilevel;
 
 #define writeInt(hl, word, bytes) _writeInt(hl, (unsigned char *) &word, bytes, sizeof(word))
 
-/* Write any integer in network byte order.
+/* Write any unsigned integer in network byte order.
  * This function always writes the number of bytes specified by storage to the
  * file, disregarding the actual size of word. If the actual size is smaller
  * than the storage, the number will be preceded by null-bytes. If the actual
@@ -116,6 +116,7 @@ void exportFile(char *dest, struct dir *src) {
   /* header */
   fprintf(wr, "ncdu%c%s%c", 1, PACKAGE_STRING, 0);
 
+ /* we assume timestamp > 0 */
   gettimeofday(&tv, NULL);
   writeInt(wr, tv.tv_sec, 8);
 
@@ -137,10 +138,10 @@ void exportFile(char *dest, struct dir *src) {
 */
 
 
-#define readInt(hl, word, bytes) _readInt(hl, (unsigned char *) &word, bytes, sizeof(word))
+#define readInt(hl, word, bytes) if(!_readInt(hl, (unsigned char *) &word, bytes, sizeof(word))) return(NULL)
 
 /* reverse of writeInt */
-void _readInt(FILE *rd, unsigned char *word, int storage, int size) {
+int _readInt(FILE *rd, unsigned char *word, int storage, int size) {
   unsigned char buf[8];
   int i;
 
@@ -148,7 +149,8 @@ void _readInt(FILE *rd, unsigned char *word, int storage, int size) {
   memset(buf, 0, 8);
 
  /* read integer to the end of the buffer */
-  fread(buf+(8-storage), 1, storage, rd);
+  if(fread(buf+(8-storage), 1, storage, rd) != storage)
+    return(0);
 
  /* copy buf to word, in host byte order */
   if(IS_BIG_ENDIAN)
@@ -156,6 +158,7 @@ void _readInt(FILE *rd, unsigned char *word, int storage, int size) {
   else
     for(i=0; i<size; i++)
       word[i] = buf[7-i];
+  return(1);
 }
 
 
@@ -167,17 +170,21 @@ struct dir *importFile(char *filename) {
   unsigned int level;
   struct dir *prev, *cur, *tmp, *parent;
 
-  rd = fopen(filename, "r");
+  if(!(rd = fopen(filename, "r")))
+    return(NULL);
 
  /* check filetype */
-  fread(buf, 1, 5, rd);
+  if(fread(buf, 1, 5, rd) != 5)
+    return(NULL);
+  
   if(buf[0] != 'n' || buf[1] != 'c' || buf[2] != 'd'
       || buf[3] != 'u' || buf[4] != (char) 1)
     return(NULL);
 
  /* package name, version and timestamp are ignored for now */
   for(i=0; i<=64 && fgetc(rd) != 0; i++) ;
-  fread(buf, 1, 8, rd);
+  if(fread(buf, 1, 8, rd) != 8)
+    return(NULL);
 
  /* number of items is not ignored */
   readInt(rd, items, 4);
@@ -187,11 +194,14 @@ struct dir *importFile(char *filename) {
   prev = NULL;
   for(item=0; item<items; item++) {
     unsigned int curlev;
-    unsigned char flags, name[8192];
-    int ch;
+    unsigned char name[8192];
+    int ch, flags;
     
     readInt(rd, curlev, 2);
     flags = fgetc(rd);
+
+    if(flags == EOF || (prev && curlev == 0) || (!prev && curlev != 0) || curlev > level+1)
+      return(NULL);
 
     cur = calloc(sizeof(struct dir), 1);
     if(!prev)
@@ -199,9 +209,6 @@ struct dir *importFile(char *filename) {
     else if(curlev > level) {
       prev->sub = cur;
       cur->parent = prev;
-    } else if(curlev == level) {
-      prev->next = cur;
-      cur->parent = prev->parent;
     } else {
       for(i=level; i>curlev; i--)
         prev = prev->parent;
@@ -227,6 +234,8 @@ struct dir *importFile(char *filename) {
    /* name */
     for(i=0; i<8192; i++) {
       ch = fgetc(rd);
+      if(ch == EOF)
+        return(NULL);
       name[i] = (unsigned char) ch;
       if(ch == 0)
         break;
@@ -247,4 +256,29 @@ struct dir *importFile(char *filename) {
 }
 
 
+struct dir *showImport(char *path) {
+  struct dir *ret;
+
+  nccreate(3, 60, "Importing...");
+  ncprint(1, 2, "Importing '%s'...", cropdir(path, 43));
+  refresh();
+  sleep(2);
+
+  ret = importFile(path);
+  if(ret)
+    return(ret);
+
+  if(s_export) {
+    printf("Error importing '%s'\n", path);
+    exit(1);
+  }
+
+ /* show an error message */
+  nccreate(5, 60, "Error...");
+  ncprint(1, 2, "Can't import '%s'", cropdir(path, 43));
+  ncprint(3, 3, "press any key to continue...");
+  getch();
+
+  return(NULL);
+}
 

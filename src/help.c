@@ -48,110 +48,104 @@ char *keys[KEYS*2] = {
 
 
 void drawHelp(int page, int start) {
-  WINDOW *hlp;
   int i, line;
 
-  hlp = newwin(15, 60, winrows/2-7, wincols/2-30);
-  box(hlp, 0, 0);
-  wattron(hlp, A_BOLD);
-  mvwaddstr(hlp, 0, 4, "ncdu help");
-  wattroff(hlp, A_BOLD);
-  mvwaddstr(hlp, 13, 38, "Press q to continue");
+  nccreate(15, 60, "ncdu help");
+  ncaddstr(13, 38, "Press q to continue");
 
   if(page == 1)
-    wattron(hlp, A_REVERSE);
-  mvwaddstr(hlp, 0, 30, "1:Keys");
-  wattroff(hlp, A_REVERSE);
+    attron(A_REVERSE);
+  ncaddstr(0, 30, "1:Keys");
+  attroff(A_REVERSE);
   if(page == 2)
-    wattron(hlp, A_REVERSE);
-  mvwaddstr(hlp, 0, 39, "2:Format");
-  wattroff(hlp, A_REVERSE);
+    attron(A_REVERSE);
+  ncaddstr(0, 39, "2:Format");
+  attroff(A_REVERSE);
   if(page == 3)
-    wattron(hlp, A_REVERSE);
-  mvwaddstr(hlp, 0, 50, "3:About");
-  wattroff(hlp, A_REVERSE);
+    attron(A_REVERSE);
+  ncaddstr(0, 50, "3:About");
+  attroff(A_REVERSE);
 
   switch(page) {
     case 1:
       line = 1;
       for(i=start*2; i<start*2+20; i+=2) {
-        wattron(hlp, A_BOLD);
-        mvwaddstr(hlp, ++line, 13-strlen(keys[i]), keys[i]);
-        wattroff(hlp, A_BOLD);
-        mvwaddstr(hlp, line, 15, keys[i+1]);
+        attron(A_BOLD);
+        ncaddstr(++line, 13-strlen(keys[i]), keys[i]);
+        attroff(A_BOLD);
+        ncaddstr(line, 15, keys[i+1]);
       }
       if(start != KEYS-10)
-        mvwaddstr(hlp, 12, 25, "-- more --");
+        ncaddstr(12, 25, "-- more --");
       break;
     case 2:
-      wattron(hlp, A_BOLD);
-      mvwaddstr(hlp, 2, 3, "X  [size] [graph] [file or directory]");
-      wattroff(hlp, A_BOLD);
-      mvwaddstr(hlp, 3, 4, "The X is only present in the following cases:");
-      wattron(hlp, A_BOLD);
-      mvwaddch(hlp, 5, 4, '!');
-      mvwaddch(hlp, 6, 4, '.');
-      mvwaddch(hlp, 7, 4, '<');
-      mvwaddch(hlp, 8, 4, '>');
-      mvwaddch(hlp, 9, 4, '@');
-      mvwaddch(hlp,10, 4, 'e');
-      wattroff(hlp, A_BOLD);
-      mvwaddstr(hlp, 5, 7, "An error occured while reading this directory");
-      mvwaddstr(hlp, 6, 7, "An error occured while reading a subdirectory");
-      mvwaddstr(hlp, 7, 7, "File or directory is excluded from the statistics");
-      mvwaddstr(hlp, 8, 7, "Directory was on an other filesystem");
-      mvwaddstr(hlp, 9, 7, "This is not a file nor a dir (symlink, socket, ...)");
-      mvwaddstr(hlp,10, 7, "Empty directory");
+      attron(A_BOLD);
+      ncaddstr(2, 3, "X  [size] [graph] [file or directory]");
+      attroff(A_BOLD);
+      ncaddstr(3, 4, "The X is only present in the following cases:");
+      attron(A_BOLD);
+      ncaddch( 5, 4, '!');
+      ncaddch( 6, 4, '.');
+      ncaddch( 7, 4, '<');
+      ncaddch( 8, 4, '>');
+      ncaddch( 9, 4, '@');
+      ncaddch(10, 4, 'e');
+      attroff(A_BOLD);
+      ncaddstr( 5, 7, "An error occured while reading this directory");
+      ncaddstr( 6, 7, "An error occured while reading a subdirectory");
+      ncaddstr( 7, 7, "File or directory is excluded from the statistics");
+      ncaddstr( 8, 7, "Directory was on an other filesystem");
+      ncaddstr( 9, 7, "This is not a file nor a dir (symlink, socket, ...)");
+      ncaddstr(10, 7, "Empty directory");
       break;
     case 3:
       /* Indeed, too much spare time */
-      wattron(hlp, A_REVERSE);
+      attron(A_REVERSE);
 #define x 12
 #define y 3
       /* N */
-      mvwaddstr(hlp, y+0, x+0, "      ");
-      mvwaddstr(hlp, y+1, x+0, "  ");
-      mvwaddstr(hlp, y+2, x+0, "  ");
-      mvwaddstr(hlp, y+3, x+0, "  ");
-      mvwaddstr(hlp, y+4, x+0, "  ");
-      mvwaddstr(hlp, y+1, x+4, "  ");
-      mvwaddstr(hlp, y+2, x+4, "  ");
-      mvwaddstr(hlp, y+3, x+4, "  ");
-      mvwaddstr(hlp, y+4, x+4, "  ");
+      ncaddstr(y+0, x+0, "      ");
+      ncaddstr(y+1, x+0, "  ");
+      ncaddstr(y+2, x+0, "  ");
+      ncaddstr(y+3, x+0, "  ");
+      ncaddstr(y+4, x+0, "  ");
+      ncaddstr(y+1, x+4, "  ");
+      ncaddstr(y+2, x+4, "  ");
+      ncaddstr(y+3, x+4, "  ");
+      ncaddstr(y+4, x+4, "  ");
       /* C */
-      mvwaddstr(hlp, y+0, x+8, "     ");
-      mvwaddstr(hlp, y+1, x+8, "  ");
-      mvwaddstr(hlp, y+2, x+8, "  ");
-      mvwaddstr(hlp, y+3, x+8, "  ");
-      mvwaddstr(hlp, y+4, x+8, "     ");
+      ncaddstr(y+0, x+8, "     ");
+      ncaddstr(y+1, x+8, "  ");
+      ncaddstr(y+2, x+8, "  ");
+      ncaddstr(y+3, x+8, "  ");
+      ncaddstr(y+4, x+8, "     ");
       /* D */
-      mvwaddstr(hlp, y+0, x+19, "  ");
-      mvwaddstr(hlp, y+1, x+19, "  ");
-      mvwaddstr(hlp, y+2, x+15, "      ");
-      mvwaddstr(hlp, y+3, x+15, "  ");
-      mvwaddstr(hlp, y+3, x+19, "  ");
-      mvwaddstr(hlp, y+4, x+15, "      ");
+      ncaddstr(y+0, x+19, "  ");
+      ncaddstr(y+1, x+19, "  ");
+      ncaddstr(y+2, x+15, "      ");
+      ncaddstr(y+3, x+15, "  ");
+      ncaddstr(y+3, x+19, "  ");
+      ncaddstr(y+4, x+15, "      ");
       /* U */
-      mvwaddstr(hlp, y+0, x+23, "  ");
-      mvwaddstr(hlp, y+1, x+23, "  ");
-      mvwaddstr(hlp, y+2, x+23, "  ");
-      mvwaddstr(hlp, y+3, x+23, "  ");
-      mvwaddstr(hlp, y+0, x+27, "  ");
-      mvwaddstr(hlp, y+1, x+27, "  ");
-      mvwaddstr(hlp, y+2, x+27, "  ");
-      mvwaddstr(hlp, y+3, x+27, "  ");
-      mvwaddstr(hlp, y+4, x+23, "      ");
-      wattroff(hlp, A_REVERSE);
-      mvwaddstr(hlp, y+0, x+30, "NCurses");
-      mvwaddstr(hlp, y+1, x+30, "Disk");
-      mvwaddstr(hlp, y+2, x+30, "Usage");
-      mvwprintw(hlp, y+4, x+30, "%s", PACKAGE_VERSION);
-      mvwaddstr(hlp, 9,  7, "Written by Yoran Heling <projects@yorhel.nl>");
-      mvwaddstr(hlp,10, 16, "http://dev.yorhel.nl/ncdu/");
+      ncaddstr(y+0, x+23, "  ");
+      ncaddstr(y+1, x+23, "  ");
+      ncaddstr(y+2, x+23, "  ");
+      ncaddstr(y+3, x+23, "  ");
+      ncaddstr(y+0, x+27, "  ");
+      ncaddstr(y+1, x+27, "  ");
+      ncaddstr(y+2, x+27, "  ");
+      ncaddstr(y+3, x+27, "  ");
+      ncaddstr(y+4, x+23, "      ");
+      attroff(A_REVERSE);
+      ncaddstr(y+0, x+30, "NCurses");
+      ncaddstr(y+1, x+30, "Disk");
+      ncaddstr(y+2, x+30, "Usage");
+      ncprint( y+4, x+30, "%s", PACKAGE_VERSION);
+      ncaddstr( 9,  7, "Written by Yoran Heling <projects@yorhel.nl>");
+      ncaddstr(10, 16, "http://dev.yorhel.nl/ncdu/");
       break;
   }
-  wrefresh(hlp);
-  delwin(hlp); /* no need to use it anymore - free it */
+  refresh();
 }
 
 

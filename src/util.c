@@ -73,18 +73,26 @@ char *cropsize(const off_t from) {
    BUG: Uses a dot as seperator, ignores current locale */
 char *fullsize(const off_t from) {
   char tmp[20];
-  int i, j, len;
+  off_t n = from;
+  int i, j;
 
-  sprintf(tmp, "%lld", from);
-  
-  fullsizedat[19] = '\0';
-  len = strlen(tmp);
-  for(i=len, j=18; i >= 0; i--) {
-    if(len-i != 1 && (len-i-1) % 3 == 0)
-      fullsizedat[j--] = '.';
-    fullsizedat[j--] = tmp[i];
+ /* the K&R method - more portable than sprintf with %lld */
+  i = 0;
+  do {
+    tmp[i++] = n % 10 + '0';
+  } while((n /= 10) > 0);
+  tmp[i] = '\0';
+
+ /* reverse and add thousand seperators */
+  j = 0;
+  while(i--) {
+    fullsizedat[j++] = tmp[i];
+    if(i != 0 && i%3 == 0)
+      fullsizedat[j++] = '.';
   }
-  return fullsizedat+j+1;
+  fullsizedat[j] = '\0';
+
+  return(fullsizedat);
 }
 
 
@@ -111,6 +119,61 @@ void ncresize(void) {
       sflags |= SF_IGNS;
   }
   erase();
+}
+
+
+/* Instead of using several ncurses windows, we only draw to stdscr.
+ * the functions nccreate, ncprint and the macros ncaddstr and ncaddch
+ * mimic the behaviour of ncurses windows.
+ * This works better than using ncurses windows when all windows are
+ * created in the correct order: it paints directly on stdscr, so
+ * wrefresh, wnoutrefresh and other window-specific functions are not
+ * necessary.
+ * Also, this method doesn't require any window objects, as you can
+ * only create one window at a time.
+ *
+ * This function creates a new window in the center of the screen
+ * with a border and a title.
+*/
+void nccreate(int height, int width, char *title) {
+  int i;
+
+  subwinr = winrows/2-height/2;
+  subwinc = wincols/2-width/2;
+
+ /* clear window */
+  for(i=0; i<height; i++)
+    mvhline(subwinr+i, subwinc, ' ', width);
+
+ /* box() only works around curses windows, so create our own */
+  move(subwinr, subwinc);
+  addch(ACS_ULCORNER);
+  for(i=0; i<width-2; i++)
+    addch(ACS_HLINE);
+  addch(ACS_URCORNER);
+
+  move(subwinr+height-1, subwinc);
+  addch(ACS_LLCORNER);
+  for(i=0; i<width-2; i++)
+    addch(ACS_HLINE);
+  addch(ACS_LRCORNER);
+
+  mvvline(subwinr+1, subwinc, ACS_VLINE, height-2);
+  mvvline(subwinr+1, subwinc+width-1, ACS_VLINE, height-2);
+
+ /* title */
+  attron(A_BOLD);
+  mvaddstr(subwinr, subwinc+4, title);
+  attroff(A_BOLD);
+}
+
+
+void ncprint(int r, int c, char *fmt, ...) {
+  va_list arg;
+  va_start(arg, fmt);
+  move(subwinr+r, subwinc+c);
+  vw_printw(stdscr, fmt, arg);
+  va_end(arg);
 }
 
 

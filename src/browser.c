@@ -29,31 +29,26 @@ struct dir *bcur;
 
 
 void drawInfo(struct dir *dr) {
-  WINDOW *nfo;
   char path[PATH_MAX];
 
-  nfo = newwin(11, 60, winrows/2-5, wincols/2-30);
-  box(nfo, 0, 0);
-  wattron(nfo, A_BOLD);
-  mvwaddstr(nfo, 0, 4, "Item info");
+  nccreate(11, 60, "Item info");
 
-  mvwaddstr(nfo, 2, 3, "Name:");
-  mvwaddstr(nfo, 3, 3, "Path:");
-  mvwaddstr(nfo, 4, 3, "Type:");
-  mvwaddstr(nfo, 6, 3, "   Disk usage:");
-  mvwaddstr(nfo, 7, 3, "Apparent size:");
-  wattroff(nfo, A_BOLD);
+  attron(A_BOLD);
+  ncaddstr(2, 3, "Name:");
+  ncaddstr(3, 3, "Path:");
+  ncaddstr(4, 3, "Type:");
+  ncaddstr(6, 3, "   Disk usage:");
+  ncaddstr(7, 3, "Apparent size:");
+  attroff(A_BOLD);
 
-  mvwaddstr(nfo, 2,  9, cropdir(dr->name, 49));
-  mvwaddstr(nfo, 3,  9, cropdir(getpath(dr, path), 49));
-  mvwaddstr(nfo, 4,  9, dr->flags & FF_DIR ? "Directory"
+  ncaddstr(2,  9, cropdir(dr->name, 49));
+  ncaddstr(3,  9, cropdir(getpath(dr, path), 49));
+  ncaddstr(4,  9, dr->flags & FF_DIR ? "Directory"
       : dr->flags & FF_FILE ? "File" : "Other (link, device, socket, ..)");
-  mvwprintw(nfo, 6, 18, "%s (%s B)", cropsize(dr->size),  fullsize(dr->size));
-  mvwprintw(nfo, 7, 18, "%s (%s B)", cropsize(dr->asize), fullsize(dr->asize));
+  ncprint(6, 18, "%s (%s B)", cropsize(dr->size),  fullsize(dr->size));
+  ncprint(7, 18, "%s (%s B)", cropsize(dr->asize), fullsize(dr->asize));
 
-  mvwaddstr(nfo, 9, 32, "Press any key to continue");
-  wrefresh(nfo);
-  delwin(nfo);
+  ncaddstr(9, 32, "Press any key to continue");
 }
 
 

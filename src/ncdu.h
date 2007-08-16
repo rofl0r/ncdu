@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <ctype.h>
 #include <limits.h>
 #include <errno.h>
@@ -81,6 +82,9 @@
 static unsigned int endian_test = 1;
 #define IS_BIG_ENDIAN (!(*(char *) &endian_test))
 
+/* check nccreate in util.c for more info on these defines */
+#define ncaddstr(r, c, s) mvaddstr(subwinr+(r), subwinc+(c), s)
+#define  ncaddch(r, c, s)  mvaddch(subwinr+(r), subwinc+(c), s)
 
 
 /*
@@ -145,6 +149,8 @@ extern int winrows, wincols;
 /* global settings */
 extern char sdir[PATH_MAX], *s_export;
 extern int sflags, bflags, sdelay, bgraph;
+/* used for creating windows */
+extern int subwinr, subwinc;
 
 
 /*
@@ -155,6 +161,8 @@ extern char *cropdir(const char *, int);
 extern char *cropsize(const off_t);
 extern char *fullsize(const off_t);
 extern void ncresize(void);
+extern void nccreate(int, int, char *);
+extern void ncprint(int, int, char *, ...);
 extern struct dir * freedir(struct dir *);
 extern char *getpath(struct dir *, char *);
 /* settings.c */
@@ -174,4 +182,4 @@ extern int addExcludeFile(char *);
 extern int matchExclude(char *);
 /* export.c */
 extern void exportFile(char *, struct dir *);
-extern struct dir *importFile(char *);
+extern struct dir *showImport(char *);

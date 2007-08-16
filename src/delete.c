@@ -29,84 +29,62 @@ suseconds_t lastupdate;
 
 
 void drawConfirm(struct dir *del, int sel) {
-  WINDOW *cfm;
+  nccreate(6, 60, "Confirm delete");
 
-  cfm = newwin(6, 60, winrows/2-3, wincols/2-30);
-  box(cfm, 0, 0);
-  wattron(cfm, A_BOLD);
-  mvwaddstr(cfm, 0, 4, "Confirm delete");
-  wattroff(cfm, A_BOLD);
-
-  mvwprintw(cfm, 1, 2, "Are you sure you want to delete \"%s\"%c",
+  ncprint(1, 2, "Are you sure you want to delete \"%s\"%c",
     cropdir(del->name, 21), del->flags & FF_DIR ? ' ' : '?');
   if(del->flags & FF_DIR) 
-    mvwprintw(cfm, 2, 18, "and all of its contents?");
+    ncprint(2, 18, "and all of its contents?");
 
   if(sel == 0)
-    wattron(cfm, A_REVERSE);
-  mvwaddstr(cfm, 4, 15, "yes");
-  wattroff(cfm, A_REVERSE);
+    attron(A_REVERSE);
+  ncaddstr(4, 15, "yes");
+  attroff(A_REVERSE);
   if(sel == 1)
-    wattron(cfm, A_REVERSE);
-  mvwaddstr(cfm, 4, 24, "no");
-  wattroff(cfm, A_REVERSE);
+    attron(A_REVERSE);
+  ncaddstr(4, 24, "no");
+  attroff(A_REVERSE);
   if(sel == 2)
-    wattron(cfm, A_REVERSE);
-  mvwaddstr(cfm, 4, 31, "don't ask me again");
-  wattroff(cfm, A_REVERSE);
-
-  wrefresh(cfm);
-  delwin(cfm);
+    attron(A_REVERSE);
+  ncaddstr(4, 31, "don't ask me again");
+  attroff(A_REVERSE);
+  
+  refresh();
 }
 
 
 /* show progress */
 static void drawProgress(char *file) {
-  WINDOW *prg;
+  nccreate(6, 60, "Deleting...");
 
-  prg = newwin(6, 60, winrows/2-3, wincols/2-30);
-  nodelay(prg, 1);
-  box(prg, 0, 0);
-  wattron(prg, A_BOLD);
-  mvwaddstr(prg, 0, 4, "Deleting...");
-  wattroff(prg, A_BOLD); 
+  ncaddstr(1, 2, cropdir(file, 47));
+  ncaddstr(4, 41, "Press q to abort");
 
-  mvwaddstr(prg, 1, 2, cropdir(file, 47));
-  mvwaddstr(prg, 4, 41, "Press q to abort");
-
-  wrefresh(prg);
-  delwin(prg);
+  refresh();
 }
 
 
 /* show error dialog */
 static void drawError(int sel, char *file) {
-  WINDOW *err;
+  nccreate(6, 60, "Error!");
 
-  err = newwin(6, 60, winrows/2-3, wincols/2-30);
-  box(err, 0, 0);
-  wattron(err, A_BOLD);
-  mvwaddstr(err, 0, 4, "Error!");
-  wattroff(err, A_BOLD);
-
-  mvwprintw(err, 1, 2, "Can't delete %s:", cropdir(file, 42));
-  mvwaddstr(err, 2, 4, strerror(errno));
+  ncprint(1, 2, "Can't delete %s:", cropdir(file, 42));
+  ncaddstr(2, 4, strerror(errno));
 
   if(sel == 0)
-    wattron(err, A_REVERSE);
-  mvwaddstr(err, 4, 14, "abort");
-  wattroff(err, A_REVERSE);
+    attron(A_REVERSE);
+  ncaddstr(4, 14, "abort");
+  attroff(A_REVERSE);
   if(sel == 1)
-    wattron(err, A_REVERSE);
-  mvwaddstr(err, 4, 23, "ignore");
-  wattroff(err, A_REVERSE);
+    attron(A_REVERSE);
+  ncaddstr(4, 23, "ignore");
+  attroff(A_REVERSE);
   if(sel == 2)
-    wattron(err, A_REVERSE);
-  mvwaddstr(err, 4, 33, "ignore all");
-  wattroff(err, A_REVERSE);
+    attron(A_REVERSE);
+  ncaddstr(4, 33, "ignore all");
+  attroff(A_REVERSE);
 
-  wrefresh(err);
-  delwin(err); 
+  refresh();
 }
 
 

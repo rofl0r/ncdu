@@ -135,28 +135,23 @@ char *rpath(const char *from, char *to) {
 
 /* the progress window */
 static void drawProgress(char *cdir) {
-  WINDOW *prg;
   char ani[15];
   int i;
 
-  prg = newwin(10, 60, winrows/2-3, wincols/2-30);
-  box(prg, 0, 0);
-  wattron(prg, A_BOLD);
-  mvwaddstr(prg, 0, 4, dat == NULL ? "Calculating..." : "Recalculating...");
-  wattroff(prg, A_BOLD);
+  nccreate(10, 60, dat == NULL ? "Calculating..." : "Recalculating...");
 
-  mvwprintw(prg, 2, 2, "Total items: %-8d size: %s",
+  ncprint(2, 2, "Total items: %-8d size: %s",
     parent->items, cropsize(parent->size));
-  mvwprintw(prg, 3, 2, "Current dir: %s", cropdir(cdir, 43));
-  mvwaddstr(prg, 8, 43, "Press q to quit");
+  ncprint(3, 2, "Current dir: %s", cropdir(cdir, 43));
+  ncaddstr(8, 43, "Press q to quit");
 
  /* show warning if we couldn't open a dir */
   if(lasterr[0] != '\0') {
-     wattron(prg, A_BOLD);
-     mvwaddstr(prg, 5, 2, "Warning:");
-     wattroff(prg, A_BOLD);
-     mvwprintw(prg, 5, 11, "could not open %-32s", cropdir(lasterr, 32));
-     mvwaddstr(prg, 6, 3, "some directory sizes may not be correct");  
+     attron(A_BOLD);
+     ncaddstr(5, 2, "Warning:");
+     attroff(A_BOLD);
+     ncprint(5, 11, "could not open %-32s", cropdir(lasterr, 32));
+     ncaddstr(6, 3, "some directory sizes may not be correct");  
   }
 
  /* animation - but only if the screen refreshes more than or once every second */
@@ -171,30 +166,24 @@ static void drawProgress(char *cdir) {
           ani[i] = antext[i];
   } else
     strcpy(ani, antext);
-  mvwaddstr(prg, 8, 3, ani);
+  ncaddstr(8, 3, ani);
 
-  wrefresh(prg);
-  delwin(prg);
+  refresh();
 }
 
 
 /* show error if can't open parent dir */
 static void drawError(char *dir) {
-  WINDOW *err;
+  nccreate(10, 60, "Error!");
 
-  err = newwin(10, 60, winrows/2-3, wincols/2-30);
-  box(err, 0, 0);
-  wattron(err, A_BOLD);
-  mvwaddstr(err, 0, 4, "Error!");
+  attron(A_BOLD);
+  ncaddstr(5, 2, "Error:");
+  attroff(A_BOLD);
 
-  mvwaddstr(err, 5, 2, "Error:");
-  wattroff(err, A_BOLD);
-  mvwprintw(err, 5, 9, "could not open %s", cropdir(dir, 34));
-  mvwaddstr(err, 6, 3, "press any key to continue...");
+  ncprint(5, 9, "could not open %s", cropdir(dir, 34));
+  ncaddstr(6, 3, "press any key to continue...");
 
   refresh();
-  wrefresh(err);
-  delwin(err);
 }
 
 
@@ -380,7 +369,6 @@ struct dir *showCalc(char *path) {
       if(dat != NULL)
         drawBrowser(0);
       drawError(path);
-      refresh();
     } while (getch() == KEY_RESIZE);
     return(NULL);
   }

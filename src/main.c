@@ -30,6 +30,7 @@ struct dir *dat;
 int winrows, wincols;
 char sdir[PATH_MAX], *s_export;
 int sflags, bflags, sdelay, bgraph;
+int subwinc, subwinr;
 
 
 /* parse command line */
@@ -110,7 +111,7 @@ struct dir *loadDir(char *path) {
   }
 
   if(S_ISREG(st.st_mode))
-    return(importFile(path));
+    return(showImport(path));
   else
     return(showCalc(path));
 }
