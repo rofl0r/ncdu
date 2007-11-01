@@ -87,7 +87,10 @@ void parseCli(int argc, char **argv) {
             exit(1);
         }
     } else {
-      strcpy(sdir, argv[i]);
+      sdir[PATH_MAX - 1] = 0;
+      strncpy(sdir, argv[i], PATH_MAX);
+      if(sdir[PATH_MAX - 1] != 0)
+        sdir[0] = 0;
     }
   }
   if(s_export && !sdir[0]) {

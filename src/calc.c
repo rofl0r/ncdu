@@ -60,6 +60,8 @@ char *rpath(const char *from, char *to) {
       strcpy(tmp, cwd);
     else
       tmp[0] = 0;
+    if(strlen(cur) + 2 > PATH_MAX - strlen(tmp))
+      return(NULL);
     strcat(tmp, "/");
     strcat(tmp, cur);
   } else
@@ -357,6 +359,7 @@ struct dir *showCalc(char *path) {
   *lasterr = '\0';
   anpos = 0;
   lastupdate = 999;
+  memset(tmp, 0, PATH_MAX);
 
  /* init parent dir */
   if(rpath(path, tmp) == NULL || lstat(tmp, &fs) != 0 || !S_ISDIR(fs.st_mode)) {
