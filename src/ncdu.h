@@ -44,6 +44,11 @@
 #include <sys/time.h>
 #include <dirent.h>
 
+/* set S_BLKSIZE if not defined already in sys/stat.h */
+#ifndef S_BLKSIZE
+# define S_BLKSIZE 512
+#endif
+
 /* PATH_MAX 260 on Cygwin is too small for /proc/registry */
 #ifdef __CYGWIN__
 # if PATH_MAX < 1024

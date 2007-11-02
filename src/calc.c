@@ -311,7 +311,7 @@ int calcDir(struct dir *dest, char *path) {
 
    /* count the size */
     if(!(d->flags & FF_EXL || d->flags & FF_OTHFS)) {
-      d->size = fs.st_blocks * 512;
+      d->size = fs.st_blocks * S_BLKSIZE;
       d->asize = fs.st_size;
       for(t = dest; t != NULL; t = t->parent) {
         t->size += d->size;
@@ -376,7 +376,7 @@ struct dir *showCalc(char *path) {
     return(NULL);
   }
   parent = calloc(sizeof(struct dir), 1);
-  parent->size = fs.st_blocks * 512;
+  parent->size = fs.st_blocks * S_BLKSIZE;
   parent->asize = fs.st_size;
   parent->flags |= FF_DIR;
   curdev = fs.st_dev;
