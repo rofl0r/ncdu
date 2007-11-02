@@ -165,8 +165,9 @@ void drawBrowser(int change) {
   mvhline(winrows-1, 0, ' ', wincols);
   mvprintw(0,0,"%s %s ~ Use the arrow keys to navigate, press ? for help", PACKAGE_NAME, PACKAGE_VERSION);
 
+  strcpy(tmp, cropsize(bcur->parent->size));
   mvprintw(winrows-1, 0, " Total disk usage: %s  Apparent size: %s  Items: %d",
-    cropsize(bcur->parent->size), cropsize(bcur->parent->asize), bcur->parent->items);
+    tmp, cropsize(bcur->parent->asize), bcur->parent->items);
   attroff(A_REVERSE);
   
   mvhline(1, 0, '-', wincols);
