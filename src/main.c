@@ -73,11 +73,13 @@ void parseCli(int argc, char **argv) {
           case 'q': sdelay = 2000;     break;
           case '?':
           case 'h':
-            printf("ncdu [-ahvx] [dir]\n\n");
-            printf("  -h  This help message\n");
-            printf("  -q  Low screen refresh interval when calculating\n");
-            printf("  -v  Print version\n");
-            printf("  -x  Same filesystem\n");
+            printf("ncdu [-hqvx] [--exclude PATTERN] [-X FILE] [dir]\n\n");
+            printf("  -h                         This help message\n");
+            printf("  -q                         Quiet mode, refresh interval 2 seconds\n");
+            printf("  -v                         Print version\n");
+            printf("  -x                         Same filesystem\n");
+            printf("  --exclude PATTERN          Exclude files that match PATTERN\n");
+            printf("  -X, --exclude-from FILE    Exclude files that match any pattern in FILE\n");
             exit(0);
           case 'v':
             printf("ncdu %s\n", PACKAGE_VERSION);
