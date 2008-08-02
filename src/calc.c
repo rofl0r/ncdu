@@ -275,6 +275,16 @@ int calcDir(struct dir *dest, char *path) {
     d->name = malloc(strlen(f)+1);
     strcpy(d->name, f);
 
+#ifdef __CYGWIN__
+   /* /proc/registry names may contain slashes */
+    if(strchr(d->name, '/') || strchr(d->name,  '\\')) {
+      serr = 1;
+      errno = 0;
+      d->flags |= FF_ERR;
+      continue;
+    }
+#endif
+
    /* get full path */
     strcpy(tmp, path);
     strcat(tmp, f);
