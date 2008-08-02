@@ -135,7 +135,7 @@ char *graph(off_t max, off_t size) {
 
 
 #define exlhid(x) if(bflags & BF_HIDE && (\
-    (!(x->flags & FF_PAR) && (x->name[0] == '.' || x->name[strlen(x->name)-1] == '~'))\
+    (x != &ref && (x->name[0] == '.' || x->name[strlen(x->name)-1] == '~'))\
     || x->flags & FF_EXL)\
   ) { i--; continue; }
 
@@ -183,7 +183,6 @@ void drawBrowser(int change) {
  /* add reference to parent dir */
   memset(&ref, 0, sizeof(struct dir));
   if(bcur->parent->parent) {
-    ref.flags |= FF_PAR;
     ref.name = "..";
     ref.next = bcur;
     ref.parent = bcur->parent;
@@ -242,7 +241,7 @@ void drawBrowser(int change) {
       attron(A_REVERSE);
 
    /* reference to parent dir has a different format */
-    if(n->flags & FF_PAR) {
+    if(n == &ref) {
       mvhline(i+2, 0, ' ', wincols);
       o = bgraph == 0 ? 11 :
           bgraph == 1 ? 23 :
