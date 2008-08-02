@@ -171,7 +171,10 @@ void drawBrowser(int change) {
   attroff(A_REVERSE);
   
   mvhline(1, 0, '-', wincols);
-  mvaddstr(1, 3, cropdir(getpath(bcur, tmp), wincols-5));
+  mvaddch(1, 3, ' ');
+  getpath(bcur, tmp);
+  mvaddstr(1, 4, cropdir(tmp, wincols-8));
+  mvaddch(1, 4+(strlen(tmp) > wincols-8 ? wincols-8 : strlen(tmp)), ' ');
 
  /* make sure the items are in correct order */
   if(!(bflags & BF_SORT)) {
