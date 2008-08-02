@@ -297,6 +297,9 @@ void drawBrowser(int change) {
       attroff(A_REVERSE);
   }
 
+ /* move cursor to selected row for accessibility */
+  move(selected+2, 0);
+
  /* remove reference to parent dir */
   if(bcur == &ref)
     bcur = ref.next;

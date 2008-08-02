@@ -84,6 +84,7 @@
 /* check nccreate in util.c for more info on these defines */
 #define ncaddstr(r, c, s) mvaddstr(subwinr+(r), subwinc+(c), s)
 #define  ncaddch(r, c, s)  mvaddch(subwinr+(r), subwinc+(c), s)
+#define   ncmove(r, c)        move(subwinr+(r), subwinc+(c))
 
 
 /*

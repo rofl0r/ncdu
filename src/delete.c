@@ -48,6 +48,8 @@ void drawConfirm(struct dir *del, int sel) {
     attron(A_REVERSE);
   ncaddstr(4, 31, "don't ask me again");
   attroff(A_REVERSE);
+
+  ncmove(4, sel == 0 ? 15 : sel == 1 ? 24 : 31);
   
   refresh();
 }
