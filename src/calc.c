@@ -194,10 +194,6 @@ int updateProgress(char *path) {
   struct timeval tv;
   int ch;
 
- /* don't do anything if s_export is set (ncurses isn't initialized) */
-  if(s_export)
-    return(1);
-
  /* check for input or screen resizes */
   nodelay(stdscr, 1);
   while((ch = getch()) != ERR) {
@@ -363,10 +359,6 @@ struct dir *showCalc(char *path) {
 
  /* init parent dir */
   if(rpath(path, tmp) == NULL || lstat(tmp, &fs) != 0 || !S_ISDIR(fs.st_mode)) {
-    if(s_export) {
-      printf("Error: could not open %s\n", path);
-      exit(1);
-    }
     do {
       ncresize();
       if(dat != NULL)

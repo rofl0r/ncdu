@@ -28,7 +28,7 @@
 /* check ncdu.h what these are for */
 struct dir *dat;
 int winrows, wincols;
-char sdir[PATH_MAX], *s_export;
+char sdir[PATH_MAX];
 int sflags, bflags, sdelay, bgraph;
 int subwinc, subwinr;
 
@@ -43,7 +43,6 @@ void parseCli(int argc, char **argv) {
   sflags = 0;
   sdelay = 100;
   bflags = BF_SIZE | BF_DESC;
-  s_export = NULL;
   sdir[0] = '\0';
 
  /* read from commandline */
@@ -56,8 +55,6 @@ void parseCli(int argc, char **argv) {
           printf("Option %s requires an argument\n", argv[i]);
           exit(1);
         }
-        if(argv[i][1] == 'e')
-          s_export = argv[++i];
         else if(strcmp(argv[i], "--exclude") == 0)
           addExclude(argv[++i]);
         else if(addExcludeFile(argv[++i])) {
@@ -95,30 +92,15 @@ void parseCli(int argc, char **argv) {
         sdir[0] = 0;
     }
   }
-  if(s_export && !sdir[0]) {
-    printf("Can't export file list: no directory specified!\n");
-    exit(1);
-  }
 }
 
 
-/* if path is a file: import file list
- * if path is a dir:  calculate directory */
 struct dir *loadDir(char *path) {
   struct stat st;
   
-  if(stat(path, &st) < 0) {
-    if(s_export) {
-      printf("Error: Can't open %s!", path);
-      exit(1);
-    }
+  if(stat(path, &st) < 0)
     return(showCalc(path));
-  }
-
-  if(S_ISREG(st.st_mode))
-    return(showImport(path));
-  else
-    return(showCalc(path));
+  return(showCalc(path));
 }
 
 
@@ -127,13 +109,6 @@ int main(int argc, char **argv) {
   dat = NULL;
 
   parseCli(argc, argv);
-
- /* only export file, don't init ncurses */
-  if(s_export) {
-    dat = loadDir(sdir);
-    exportFile(s_export, dat);
-    exit(0);
-  }
 
   initscr();
   cbreak();

@@ -81,12 +81,6 @@
 # define S_ISLNK(x) (x & S_IFLNK)
 #endif
 
-/* There are many ways to test the endianness on a system, however, I couldn't
- * find a universal way to do this, so I used this small hack that should work
- * on any system. */
-static unsigned int endian_test = 1;
-#define IS_BIG_ENDIAN (!(*(char *) &endian_test))
-
 /* check nccreate in util.c for more info on these defines */
 #define ncaddstr(r, c, s) mvaddstr(subwinr+(r), subwinc+(c), s)
 #define  ncaddch(r, c, s)  mvaddch(subwinr+(r), subwinc+(c), s)
@@ -121,13 +115,6 @@ static unsigned int endian_test = 1;
 #define BF_SORT   0x20 /* no need to resort, list is already in correct order */
 #define BF_AS     0x40 /* show apparent sizes instead of disk usage */
 
-/* Export Flags */
-#define EF_DIR    0x01
-#define EF_FILE   0x02
-#define EF_ERR    0x04
-#define EF_OTHFS  0x08
-#define EF_EXL    0x10
-
 
 
 /*
@@ -152,7 +139,7 @@ extern struct dir *dat;
 /* updated when window is resized */
 extern int winrows, wincols;
 /* global settings */
-extern char sdir[PATH_MAX], *s_export;
+extern char sdir[PATH_MAX];
 extern int sflags, bflags, sdelay, bgraph;
 /* used for creating windows */
 extern int subwinr, subwinc;
@@ -185,6 +172,3 @@ extern struct dir *showDelete(struct dir *);
 extern void addExclude(char *);
 extern int addExcludeFile(char *);
 extern int matchExclude(char *);
-/* export.c */
-extern void exportFile(char *, struct dir *);
-extern struct dir *showImport(char *);
