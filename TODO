@@ -1,13 +1,6 @@
 Small list of planned features/changes, suggestions are always welcome.
 
 
-- Improve configuration interface (settings.c)
-  * All command line options should be accessible in the GUI
-  * Tabs?
-  * Still use the ncurses forms library, or implement our own?
-    (hopefully less buggy and more control)
-- Or just remove the startup screen altogether?
-
 - Add export/import feature for filelists
   * Also comparing two filelists
 

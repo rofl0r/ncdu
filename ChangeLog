@@ -1,4 +1,5 @@
 svn - ?
+	- Removed the startup window
 	- Filenames ending with a tidle (~) will now also
 	  be hidden with the 'h'-key
 	- Fixed buffer overflow when supplying a path longer

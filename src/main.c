@@ -70,7 +70,7 @@ void parseCli(int argc, char **argv) {
           case 'q': sdelay = 2000;     break;
           case '?':
           case 'h':
-            printf("ncdu [-hqvx] [--exclude PATTERN] [-X FILE] [dir]\n\n");
+            printf("ncdu [-hqvx] [--exclude PATTERN] [-X FILE] directory\n\n");
             printf("  -h                         This help message\n");
             printf("  -q                         Quiet mode, refresh interval 2 seconds\n");
             printf("  -v                         Print version\n");
@@ -82,7 +82,7 @@ void parseCli(int argc, char **argv) {
             printf("ncdu %s\n", PACKAGE_VERSION);
             exit(0);  
           default:
-            printf("Unknown option: -%c\n", argv[i][j]);
+            printf("Unknown option: -%c\nSee '%s -h' for more information.\n", argv[i][j], argv[0]);
             exit(1);
         }
     } else {
@@ -92,15 +92,10 @@ void parseCli(int argc, char **argv) {
         sdir[0] = 0;
     }
   }
-}
-
-
-struct dir *loadDir(char *path) {
-  struct stat st;
-  
-  if(stat(path, &st) < 0)
-    return(showCalc(path));
-  return(showCalc(path));
+  if(!sdir[0]) {
+    printf("Please specify a directory.\nSee '%s -h' for more information.\n", argv[0]);
+    exit(1);
+  }
 }
 
 
@@ -117,16 +112,9 @@ int main(int argc, char **argv) {
   keypad(stdscr, TRUE);
   ncresize();
   
-  if(!sdir[0] && settingsWin())
-    goto mainend;
+  if((dat = showCalc(sdir)) != NULL)
+    showBrowser();
 
-  while((dat = loadDir(sdir)) == NULL)
-    if(settingsWin())
-      goto mainend;
-
-  showBrowser();
-
-  mainend:
   erase();
   refresh();
   endwin();

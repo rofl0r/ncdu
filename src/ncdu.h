@@ -157,8 +157,6 @@ extern void nccreate(int, int, char *);
 extern void ncprint(int, int, char *, ...);
 extern struct dir * freedir(struct dir *);
 extern char *getpath(struct dir *, char *);
-/* settings.c */
-extern int settingsWin(void);
 /* calc.c */
 extern struct dir *showCalc(char *);
 /* browser.c */
