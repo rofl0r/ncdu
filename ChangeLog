@@ -1,3 +1,18 @@
+svn - ?
+	- Filenames ending with a tidle (~) will now also
+	  be hidden with the 'h'-key
+	- Fixed buffer overflow when supplying a path longer
+	  than PATH_MAX	(patch by Tobias Stoeckmann)
+	- Used S_BLKSIZE instead of a hardcoded block size of
+	  512
+	- Fixed display of disk usage and apparent sizes
+	- Updated ncdu -h
+	- Included patches for Cygwin
+	- Cursor now follows the selected item
+	- Added spaces around path (debian #472194)
+	- Fixed segfault on empty directory (debian #472294)
+	- A few code rewrites and improvements
+
 1.3 - 2007-08-05
 	- Added 'r'-key to refresh the current directory
 	- Removed option to calculate apparent size: both

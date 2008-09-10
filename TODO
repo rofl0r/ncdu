@@ -6,6 +6,7 @@ Small list of planned features/changes, suggestions are always welcome.
   * Tabs?
   * Still use the ncurses forms library, or implement our own?
     (hopefully less buggy and more control)
+- Or just remove the startup screen altogether?
 
 - Add export/import feature for filelists
   * Also comparing two filelists
@@ -13,3 +14,8 @@ Small list of planned features/changes, suggestions are always welcome.
 - Improve browser interface
   * Mutt-like status bar?
   * Browser always on background, even on startup
+
+- Add custom key bindings
+  * Using a config file (/etc/ncdurc, ~/.ncdurc)
+  * Running external commands on the selected file
+
