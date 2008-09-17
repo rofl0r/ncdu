@@ -1,4 +1,7 @@
 svn - ?
+	- Fixed incorrect apparent size on directory refresh
+
+1.4 - 2008-09-10
 	- Removed the startup window
 	- Filenames ending with a tidle (~) will now also
 	  be hidden with the 'h'-key

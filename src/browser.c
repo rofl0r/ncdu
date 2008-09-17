@@ -419,12 +419,14 @@ void showBrowser(void) {
           bcur->sub = n->sub;
           bcur->items = n->items;
           bcur->size = n->size;
+          bcur->asize = n->asize;
           for(t = bcur->sub; t != NULL; t = t->next)
             t->parent = bcur;
 
          /* update sizes of parent dirs */
           for(t = bcur; (t = t->parent) != NULL; ) {
             t->size += bcur->size;
+            t->asize += bcur->asize;
             t->items += bcur->items;
           }
 
