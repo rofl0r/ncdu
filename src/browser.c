@@ -48,7 +48,7 @@ void drawInfo(struct dir *dr) {
   ncprint(6, 18, "%s (%s B)", cropsize(dr->size),  fullsize(dr->size));
   ncprint(7, 18, "%s (%s B)", cropsize(dr->asize), fullsize(dr->asize));
 
-  ncaddstr(9, 32, "Press any key to continue");
+  ncaddstr(9, 32, "Press i to hide this window");
 }
 
 
@@ -140,7 +140,7 @@ char *graph(off_t max, off_t size) {
   ) { i--; continue; }
 
 void drawBrowser(int change) {
-  struct dir *n, ref;
+  struct dir *n, ref, *sel;
   char tmp[PATH_MAX], ct, dt, *size;
   int selected, i, o;
   off_t max = 1;
@@ -240,8 +240,10 @@ void drawBrowser(int change) {
  /* print the list to the screen */
   for(i=0; n != NULL && i < winrows-3; n = n->next, i++) {
     exlhid(n)
-    if(i == selected)
+    if(i == selected) {
       attron(A_REVERSE);
+      sel = n;
+    }
 
    /* reference to parent dir has a different format */
     if(n == &ref) {
@@ -302,6 +304,14 @@ void drawBrowser(int change) {
  /* move cursor to selected row for accessibility */
   move(selected+2, 0);
 
+ /* show file information window */
+  if(bflags & BF_INFO) {
+    if(sel == bcur && bcur == &ref)
+      bflags -= BF_INFO;
+    else
+      drawInfo(sel);
+  }
+
  /* remove reference to parent dir */
   if(bcur == &ref)
     bcur = ref.next;
@@ -320,7 +330,7 @@ struct dir * selected(void) {
 
 
 #define toggle(x,y) if(x & y) x -=y; else x |= y
-#define resort if(bflags & BF_SORT) bflags -= BF_SORT
+#define hideinfo if(bflags & BF_INFO) bflags -= BF_INFO
 
 void showBrowser(void) {
   int ch, change, oldflags;
@@ -364,33 +374,40 @@ void showBrowser(void) {
 
      /* sorting items */
       case 'n':
+        hideinfo;
         if(bflags & BF_NAME)
           toggle(bflags, BF_DESC);
         else
           bflags = (bflags & BF_HIDE) + (bflags & BF_NDIRF) + BF_NAME;
         break;
       case 's':
+        hideinfo;
         if(bflags & BF_SIZE)
           toggle(bflags, BF_DESC);
         else
           bflags = (bflags & BF_HIDE) + (bflags & BF_NDIRF) + BF_SIZE + BF_DESC;
         break;
       case 'p':
+        hideinfo;
         toggle(sflags, SF_SI);
         break;
       case 'h':
+        hideinfo;
         toggle(bflags, BF_HIDE);
         break;
       case 't':
+        hideinfo;
         toggle(bflags, BF_NDIRF);
         break;
       case 'a':
+        hideinfo;
         toggle(bflags, BF_AS);
         break;
 
      /* browsing */
       case 10:
       case KEY_RIGHT:
+        hideinfo;
         n = selected();
         if(n == bcur->parent)
           bcur = bcur->parent->parent->sub;
@@ -398,6 +415,7 @@ void showBrowser(void) {
           bcur = n->sub;
         break;
       case KEY_LEFT:
+        hideinfo;
         if(bcur->parent->parent != NULL) {
           bcur = bcur->parent->parent->sub;
         }
@@ -405,6 +423,8 @@ void showBrowser(void) {
 
      /* refresh */
       case 'r':
+        hideinfo;
+        drawBrowser(0);
         if((n = showCalc(getpath(bcur, tmp))) != NULL) {
          /* free current items */
           d = bcur;
@@ -441,22 +461,19 @@ void showBrowser(void) {
         ncresize();
         break;
       case 'g':
+        hideinfo;
         if(++bgraph > 3) bgraph = 0;
         break;
       case '?':
+        hideinfo;
         showHelp();
         break;
       case 'i':
-        n = selected();
-        if(n != bcur->parent) {
-          drawInfo(n);
-          while(getch() == KEY_RESIZE) {
-            drawBrowser(0);
-            drawInfo(n);
-          }
-        }
+        toggle(bflags, BF_INFO);
         break;
       case 'd':
+        hideinfo;
+        drawBrowser(0);
         n = selected();
         if(n != bcur->parent)
           bcur = showDelete(n);
@@ -466,7 +483,7 @@ void showBrowser(void) {
       case 'q':
         goto endloop;
     }
-    if((last != bcur || (oldflags | BF_HIDE | BF_AS) != (bflags | BF_HIDE | BF_AS)) && bflags & BF_SORT)
+    if((last != bcur || (oldflags | BF_HIDE | BF_AS | BF_INFO) != (bflags | BF_HIDE | BF_AS | BF_INFO)) && bflags & BF_SORT)
       bflags -= BF_SORT;
     
     drawBrowser(change);

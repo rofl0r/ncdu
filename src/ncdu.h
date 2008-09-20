@@ -114,6 +114,7 @@
 #define BF_HIDE   0x10 /* don't show hidden files... */
 #define BF_SORT   0x20 /* no need to resort, list is already in correct order */
 #define BF_AS     0x40 /* show apparent sizes instead of disk usage */
+#define BF_INFO   0x80 /* show file information window */
 
 
 
