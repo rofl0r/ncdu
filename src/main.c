@@ -43,7 +43,6 @@ void parseCli(int argc, char **argv) {
   sflags = 0;
   sdelay = 100;
   bflags = BF_SIZE | BF_DESC;
-  sdir[0] = '\0';
 
  /* read from commandline */
   for(i=1; i<argc; i++) {
@@ -88,13 +87,11 @@ void parseCli(int argc, char **argv) {
     } else {
       sdir[PATH_MAX - 1] = 0;
       strncpy(sdir, argv[i], PATH_MAX);
-      if(sdir[PATH_MAX - 1] != 0)
-        sdir[0] = 0;
+      if(sdir[PATH_MAX - 1] != 0) {
+        printf("Error: path length exceeds PATH_MAX\n");
+        exit(1);
+      }
     }
-  }
-  if(!sdir[0]) {
-    printf("Please specify a directory.\nSee '%s -h' for more information.\n", argv[0]);
-    exit(1);
   }
 }
 
