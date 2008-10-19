@@ -481,7 +481,10 @@ void showBrowser(void) {
           bcur = bcur->parent->sub;
         break;
       case 'q':
-        goto endloop;
+        if(bflags & BF_INFO)
+          bflags -= BF_INFO;
+        else
+          goto endloop;
     }
     if((last != bcur || (oldflags | BF_HIDE | BF_AS | BF_INFO) != (bflags | BF_HIDE | BF_AS | BF_INFO)) && bflags & BF_SORT)
       bflags -= BF_SORT;
