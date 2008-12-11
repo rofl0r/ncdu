@@ -3,6 +3,7 @@ svn - ?
 	- Browsing keys now work while file info window is displayed
 	- Current directory is assumed when no directory is specified
 	- Size graph uses the apparent size if that is displayed
+	- Items are ordered by displayed size rather than disk usage
 
 1.4 - 2008-09-10
 	- Removed the startup window

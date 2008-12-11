@@ -68,10 +68,17 @@ int cmp(struct dir *x, struct dir *y) {
 
   if(bflags & BF_NAME)
     r = strcmp(a->name, b->name);
-  if(r == 0)
-    r = a->size > b->size ? 1 : (a->size == b->size ? 0 : -1);
-  if(r == 0)
-    r = a->asize > b->asize ? 1 : (a->asize == b->asize ? 0 : -1);
+  if(bflags & BF_AS) {
+    if(r == 0)
+      r = a->asize > b->asize ? 1 : (a->asize == b->asize ? 0 : -1);
+    if(r == 0)
+      r = a->size > b->size ? 1 : (a->size == b->size ? 0 : -1);
+  } else {
+    if(r == 0)
+      r = a->size > b->size ? 1 : (a->size == b->size ? 0 : -1);
+    if(r == 0)
+      r = a->asize > b->asize ? 1 : (a->asize == b->asize ? 0 : -1);
+  }
   if(r == 0)
     r = strcmp(x->name, y->name);
   return(r);
@@ -486,7 +493,7 @@ void showBrowser(void) {
         else
           goto endloop;
     }
-    if((last != bcur || (oldflags | BF_HIDE | BF_AS | BF_INFO) != (bflags | BF_HIDE | BF_AS | BF_INFO)) && bflags & BF_SORT)
+    if((last != bcur || (oldflags | BF_HIDE | BF_INFO) != (bflags | BF_HIDE | BF_INFO)) && bflags & BF_SORT)
       bflags -= BF_SORT;
     
     drawBrowser(change);
