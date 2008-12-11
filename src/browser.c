@@ -197,8 +197,8 @@ void drawBrowser(int change) {
     exlhid(n)
     if(n->flags & FF_BSEL)
       selected = i;
-    if(n->size > max)
-      max = n->size;
+    if((bflags & BF_AS ? n->asize : n->size) > max)
+      max = bflags & BF_AS ? n->asize : n->size;
   }
 
   if(selected+change < 0)
@@ -280,7 +280,7 @@ void drawBrowser(int change) {
         break;
       case 1:
         mvprintw(i+2, 0, tmp, ct, size,
-          graph(max, n->size),
+          graph(max, bflags & BF_AS ? n->asize : n->size),
           dt, cropdir(n->name, wincols-24)
         );
         break;
@@ -292,7 +292,7 @@ void drawBrowser(int change) {
         break;
       case 3:
         mvprintw(i+2, 0, tmp, ct, size,
-          ((float) n->size / (float) n->parent->size) * 100.0f, graph(max, n->size),
+          ((float) n->size / (float) n->parent->size) * 100.0f, graph(max, bflags & BF_AS ? n->asize : n->size),
           dt, cropdir(n->name, wincols-30)
         );
     }
