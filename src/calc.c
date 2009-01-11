@@ -101,6 +101,11 @@ char *rpath(const char *from, char *to) {
       break;
   }
   to[j+1] = 0;
+ /* make sure we do have something left in case our path is / */
+  if(to[0] == 0) {
+    to[0] = '/';
+    to[1] = 0;
+  }
  /* append 'app' */
   if(app[0] != 0)
     strcat(to, app);
