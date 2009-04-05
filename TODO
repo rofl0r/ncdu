@@ -5,6 +5,7 @@ Small list of planned features/changes, suggestions are always welcome.
   * Also comparing two filelists
 
 - Improve browser interface
+  * Option to display number of files
   * Mutt-like status bar?
   * Browser always on background, even on startup
 
@@ -12,3 +13,7 @@ Small list of planned features/changes, suggestions are always welcome.
   * Using a config file (/etc/ncdurc, ~/.ncdurc)
   * Running external commands on the selected file
 
+- Improved sorting configuration
+  * Sort by number of files
+  * Use one key to open up a menu with sort options, instead of
+    having a special key for each column
