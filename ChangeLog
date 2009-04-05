@@ -1,4 +1,4 @@
-svn - ?
+git - ?
 	- Fixed incorrect apparent size on directory refresh
 	- Browsing keys now work while file info window is displayed
 	- Current directory is assumed when no directory is specified
