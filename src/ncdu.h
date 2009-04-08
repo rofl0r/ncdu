@@ -116,6 +116,12 @@
 #define BF_AS     0x40 /* show apparent sizes instead of disk usage */
 #define BF_INFO   0x80 /* show file information window */
 
+/* States */
+#define ST_CALC   0
+#define ST_BROWSE 1
+#define ST_DEL    2
+#define ST_HELP   3
+
 
 
 /*
@@ -128,6 +134,12 @@ struct dir {
   unsigned long items;
   unsigned char flags;
 }; 
+
+struct state {
+  int st;  /* SC_x */
+  /* TODO: information structs for the states */
+};
+
 
 
 /*
@@ -156,7 +168,7 @@ extern char *fullsize(const off_t);
 extern void ncresize(void);
 extern void nccreate(int, int, char *);
 extern void ncprint(int, int, char *, ...);
-extern struct dir * freedir(struct dir *);
+extern struct dir *freedir(struct dir *);
 extern char *getpath(struct dir *, char *);
 /* calc.c */
 extern struct dir *showCalc(char *);
