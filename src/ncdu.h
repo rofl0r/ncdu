@@ -162,24 +162,24 @@ extern int subwinr, subwinc;
  *    G L O B A L   F U N C T I O N S
  */
 /* util.c */
-extern char *cropdir(const char *, int);
-extern char *cropsize(const off_t);
-extern char *fullsize(const off_t);
-extern void ncresize(void);
-extern void nccreate(int, int, char *);
-extern void ncprint(int, int, char *, ...);
-extern struct dir *freedir(struct dir *);
-extern char *getpath(struct dir *, char *);
+char *cropdir(const char *, int);
+char *cropsize(const off_t);
+char *fullsize(const off_t);
+void ncresize(void);
+void nccreate(int, int, char *);
+void ncprint(int, int, char *, ...);
+struct dir *freedir(struct dir *);
+char *getpath(struct dir *, char *);
 /* calc.c */
-extern struct dir *showCalc(char *);
+struct dir *showCalc(char *);
 /* browser.c */
-extern void drawBrowser(int);
-extern void showBrowser(void);
+void drawBrowser(int);
+void showBrowser(void);
 /* help.c */
-extern void showHelp(void);
+void showHelp(void);
 /* delete.c */
-extern struct dir *showDelete(struct dir *);
+struct dir *showDelete(struct dir *);
 /* exclude.c */
-extern void addExclude(char *);
-extern int addExcludeFile(char *);
-extern int matchExclude(char *);
+void addExclude(char *);
+int addExcludeFile(char *);
+int matchExclude(char *);
