@@ -28,18 +28,18 @@
 /* check ncdu.h what these are for */
 struct dir *dat;
 int winrows, wincols;
-char sdir[PATH_MAX];
 int sflags, bflags, sdelay, bgraph;
 int subwinc, subwinr;
+struct state pstate;
 
 
 /* parse command line */
-void parseCli(int argc, char **argv) {
+void argv_parse(int argc, char **argv, char *dir) {
   int i, j;
 
  /* load defaults */
-  memset(sdir, 0, PATH_MAX);
-  getcwd(sdir, PATH_MAX);
+  memset(dir, 0, PATH_MAX);
+  getcwd(dir, PATH_MAX);
   sflags = 0;
   sdelay = 100;
   bflags = BF_SIZE | BF_DESC;
@@ -85,9 +85,9 @@ void parseCli(int argc, char **argv) {
             exit(1);
         }
     } else {
-      sdir[PATH_MAX - 1] = 0;
-      strncpy(sdir, argv[i], PATH_MAX);
-      if(sdir[PATH_MAX - 1] != 0) {
+      dir[PATH_MAX - 1] = 0;
+      strncpy(dir, argv[i], PATH_MAX);
+      if(dir[PATH_MAX - 1] != 0) {
         printf("Error: path length exceeds PATH_MAX\n");
         exit(1);
       }
@@ -100,7 +100,8 @@ void parseCli(int argc, char **argv) {
 int main(int argc, char **argv) {
   dat = NULL;
 
-  parseCli(argc, argv);
+  argv_parse(argc, argv, pstate.calc.root);
+  pstate.st = ST_CALC;
 
   initscr();
   cbreak();
@@ -108,14 +109,14 @@ int main(int argc, char **argv) {
   curs_set(0);
   keypad(stdscr, TRUE);
   ncresize();
-  
-  if((dat = showCalc(sdir)) != NULL)
+
+  if((dat = showCalc(pstate.calc.root)) != NULL)
     showBrowser();
 
   erase();
   refresh();
   endwin();
 
-  return(0);
+  return 0;
 }
 

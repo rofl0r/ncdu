@@ -137,7 +137,10 @@ struct dir {
 
 struct state {
   int st;  /* SC_x */
-  /* TODO: information structs for the states */
+  struct {
+    char root[PATH_MAX];
+  } calc;
+  /* TODO: information structs for the other states */
 };
 
 
@@ -156,6 +159,8 @@ extern char sdir[PATH_MAX];
 extern int sflags, bflags, sdelay, bgraph;
 /* used for creating windows */
 extern int subwinr, subwinc;
+/* program state */
+extern struct state pstate;
 
 
 /*
