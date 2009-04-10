@@ -28,14 +28,44 @@
 /* check ncdu.h what these are for */
 struct dir *dat;
 int winrows, wincols;
+char sdir[PATH_MAX];
 int sflags, bflags, sdelay, bgraph;
 int subwinc, subwinr;
 struct state pstate;
 
 
+void screen_draw() {
+  int n = 1;
+  switch(pstate.st) {
+    case ST_CALC: n = calc_draw();
+  }
+  if(!n)
+    refresh();
+}
+
+
+int input_handle(int wait) {
+  int ch;
+
+  nodelay(stdscr, wait);
+  screen_draw();
+  while((ch = getch()) != ERR) {
+    if(ch == KEY_RESIZE) {
+      ncresize();
+      screen_draw();
+      continue;
+    }
+    switch(pstate.st) {
+      case ST_CALC: return calc_key(ch);
+    }
+  }
+  return 0;
+}
+
+
 /* parse command line */
 void argv_parse(int argc, char **argv, char *dir) {
-  int i, j;
+  int i, j, len;
 
  /* load defaults */
   memset(dir, 0, PATH_MAX);
@@ -63,7 +93,8 @@ void argv_parse(int argc, char **argv, char *dir) {
         continue;
       }
      /* small flags */
-      for(j=1; j < strlen(argv[i]); j++)
+      len = strlen(argv[i]);
+      for(j=1; j<len; j++)
         switch(argv[i][j]) {
           case 'x': sflags |= SF_SMFS; break;
           case 'q': sdelay = 2000;     break;
@@ -85,12 +116,12 @@ void argv_parse(int argc, char **argv, char *dir) {
             exit(1);
         }
     } else {
-      dir[PATH_MAX - 1] = 0;
       strncpy(dir, argv[i], PATH_MAX);
       if(dir[PATH_MAX - 1] != 0) {
         printf("Error: path length exceeds PATH_MAX\n");
         exit(1);
       }
+      dir[PATH_MAX - 1] = 0;
     }
   }
 }
@@ -100,7 +131,8 @@ void argv_parse(int argc, char **argv, char *dir) {
 int main(int argc, char **argv) {
   dat = NULL;
 
-  argv_parse(argc, argv, pstate.calc.root);
+  memset((void *)&pstate, 0, sizeof(struct state));
+  argv_parse(argc, argv, pstate.calc.cur);
   pstate.st = ST_CALC;
 
   initscr();
@@ -110,8 +142,16 @@ int main(int argc, char **argv) {
   keypad(stdscr, TRUE);
   ncresize();
 
+  while(pstate.st != ST_QUIT) {
+    if(pstate.st == ST_CALC)
+      calc_process();
+    /*else
+       wait_for_input() */
+  }
+
+  /*
   if((dat = showCalc(pstate.calc.root)) != NULL)
-    showBrowser();
+    showBrowser();*/
 
   erase();
   refresh();

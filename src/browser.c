@@ -428,12 +428,12 @@ void showBrowser(void) {
         }
         break;
 
-     /* refresh */
+     /* refresh *
       case 'r':
         hideinfo;
         drawBrowser(0);
         if((n = showCalc(getpath(bcur, tmp))) != NULL) {
-         /* free current items */
+         * free current items *
           d = bcur;
           bcur = bcur->parent;
           while(d != NULL) {
@@ -442,7 +442,7 @@ void showBrowser(void) {
             freedir(t);
           }
 
-         /* update parent dir */
+         * update parent dir *
           bcur->sub = n->sub;
           bcur->items = n->items;
           bcur->size = n->size;
@@ -450,7 +450,7 @@ void showBrowser(void) {
           for(t = bcur->sub; t != NULL; t = t->next)
             t->parent = bcur;
 
-         /* update sizes of parent dirs */
+         * update sizes of parent dirs *
           for(t = bcur; (t = t->parent) != NULL; ) {
             t->size += bcur->size;
             t->asize += bcur->asize;
@@ -462,6 +462,7 @@ void showBrowser(void) {
           free(n);
         }
         break;
+        */
 
      /* and other stuff */
       case KEY_RESIZE:

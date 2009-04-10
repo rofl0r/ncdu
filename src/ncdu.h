@@ -121,6 +121,7 @@
 #define ST_BROWSE 1
 #define ST_DEL    2
 #define ST_HELP   3
+#define ST_QUIT   4
 
 
 
@@ -129,7 +130,7 @@
  */
 struct dir {
   struct dir *parent, *next, *sub;
-  unsigned char *name;
+  char *name;
   off_t size, asize;
   unsigned long items;
   unsigned char flags;
@@ -138,7 +139,14 @@ struct dir {
 struct state {
   int st;  /* SC_x */
   struct {
-    char root[PATH_MAX];
+    char err;
+    char cur[PATH_MAX];
+    char lasterr[PATH_MAX];
+    char errmsg[128];
+    struct dir *parent;
+    dev_t curdev;
+    suseconds_t lastupdate;
+    int anpos;
   } calc;
   /* TODO: information structs for the other states */
 };
@@ -166,6 +174,8 @@ extern struct state pstate;
 /*
  *    G L O B A L   F U N C T I O N S
  */
+/* main.c */
+int input_handle(int);
 /* util.c */
 char *cropdir(const char *, int);
 char *cropsize(const off_t);
@@ -176,7 +186,9 @@ void ncprint(int, int, char *, ...);
 struct dir *freedir(struct dir *);
 char *getpath(struct dir *, char *);
 /* calc.c */
-struct dir *showCalc(char *);
+void calc_process(void);
+int  calc_key(int);
+int  calc_draw(void);
 /* browser.c */
 void drawBrowser(int);
 void showBrowser(void);
