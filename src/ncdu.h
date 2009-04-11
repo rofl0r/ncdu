@@ -33,7 +33,6 @@
 #include <ctype.h>
 #include <limits.h>
 #include <errno.h>
-#include <fnmatch.h>
 
 #include <ncurses.h>
 #include <form.h>

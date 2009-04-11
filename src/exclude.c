@@ -23,8 +23,12 @@
 
 */
 
-#include "ncdu.h"
 #include "exclude.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fnmatch.h>
 
 
 struct exclude {
