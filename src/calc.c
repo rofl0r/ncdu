@@ -173,7 +173,7 @@ int calc_item(struct dir *par, char *path, char *name) {
   if(matchExclude(tmp))
     d->flags |= FF_EXL;
 
-  if(sflags & SF_SMFS && pstate.calc.curdev != fs.st_dev)
+  if(sflags & SF_SMFS && stcalc.curdev != fs.st_dev)
     d->flags |= FF_OTHFS;
 
   /* determine type of this item */
@@ -213,7 +213,7 @@ int calc_dir(struct dir *dest, char *path) {
 
   /* open directory */
   if((dir = opendir(path)) == NULL) {
-    strcpy(pstate.calc.lasterr, path);
+    strcpy(stcalc.lasterr, path);
     dest->flags |= FF_ERR;
     t = dest;
     while((t = t->parent) != NULL)
@@ -274,29 +274,29 @@ void calc_draw_progress() {
   nccreate(10, 60, dat == NULL ? "Calculating..." : "Recalculating...");
 
   ncprint(2, 2, "Total items: %-8d size: %s",
-    pstate.calc.parent->items, cropsize(pstate.calc.parent->size));
-  ncprint(3, 2, "Current dir: %s", cropdir(pstate.calc.cur, 43));
+    stcalc.parent->items, cropsize(stcalc.parent->size));
+  ncprint(3, 2, "Current dir: %s", cropdir(stcalc.cur, 43));
   ncaddstr(8, 43, "Press q to quit");
 
   /* show warning if we couldn't open a dir */
-  if(pstate.calc.lasterr[0] != '\0') {
+  if(stcalc.lasterr[0] != '\0') {
      attron(A_BOLD);
      ncaddstr(5, 2, "Warning:");
      attroff(A_BOLD);
-     ncprint(5, 11, "could not open %-32s", cropdir(pstate.calc.lasterr, 32));
+     ncprint(5, 11, "could not open %-32s", cropdir(stcalc.lasterr, 32));
      ncaddstr(6, 3, "some directory sizes may not be correct");
   }
 
   /* animation - but only if the screen refreshes more than or once every second */
   if(sdelay <= 1000) {
-    if(++pstate.calc.anpos == 28)
-       pstate.calc.anpos = 0;
+    if(++stcalc.anpos == 28)
+       stcalc.anpos = 0;
     strcpy(ani, "              ");
-    if(pstate.calc.anpos < 14)
-      for(i=0; i<=pstate.calc.anpos; i++)
+    if(stcalc.anpos < 14)
+      for(i=0; i<=stcalc.anpos; i++)
         ani[i] = antext[i];
     else
-      for(i=13; i>pstate.calc.anpos-14; i--)
+      for(i=13; i>stcalc.anpos-14; i--)
         ani[i] = antext[i];
   } else
     strcpy(ani, antext);
@@ -320,17 +320,17 @@ void calc_draw_error(char *cur, char *msg) {
 int calc_draw() {
   struct timeval tv;
 
-  if(pstate.calc.err) {
-    calc_draw_error(pstate.calc.cur, pstate.calc.errmsg);
+  if(stcalc.err) {
+    calc_draw_error(stcalc.cur, stcalc.errmsg);
     return 0;
   }
 
   /* should we really draw the screen again? */
   gettimeofday(&tv, (void *)NULL);
   tv.tv_usec = (1000*(tv.tv_sec % 1000) + (tv.tv_usec / 1000)) / sdelay;
-  if(pstate.calc.lastupdate != tv.tv_usec) {
+  if(stcalc.lastupdate != tv.tv_usec) {
     calc_draw_progress();
-    pstate.calc.lastupdate = tv.tv_usec;
+    stcalc.lastupdate = tv.tv_usec;
     return 0;
   }
   return 1;
@@ -338,7 +338,7 @@ int calc_draw() {
 
 
 int calc_key(int ch) {
-  if(pstate.calc.err)
+  if(stcalc.err)
     return 1;
   if(ch == 'q')
     return 1;
@@ -352,15 +352,15 @@ void calc_process() {
   struct dir *t;
 
   /* init/reset global vars */
-  pstate.calc.err = 0;
-  pstate.calc.lastupdate = 999;
-  pstate.calc.lasterr[0] = 0;
-  pstate.calc.anpos = 0;
+  stcalc.err = 0;
+  stcalc.lastupdate = 999;
+  stcalc.lasterr[0] = 0;
+  stcalc.anpos = 0;
 
   /* check root directory */
-  if(rpath(pstate.calc.cur, tmp) == NULL || lstat(tmp, &fs) != 0 || !S_ISDIR(fs.st_mode)) {
-    pstate.calc.err = 1;
-    strcpy(pstate.calc.errmsg, "Directory not found");
+  if(rpath(stcalc.cur, tmp) == NULL || lstat(tmp, &fs) != 0 || !S_ISDIR(fs.st_mode)) {
+    stcalc.err = 1;
+    strcpy(stcalc.errmsg, "Directory not found");
     goto fail;
   }
 
@@ -371,21 +371,21 @@ void calc_process() {
   t->flags |= FF_DIR;
   t->name = (char *) malloc(strlen(tmp)+1);
   strcpy(t->name, tmp);
-  pstate.calc.parent = t;
-  pstate.calc.curdev = fs.st_dev;
+  stcalc.parent = t;
+  stcalc.curdev = fs.st_dev;
 
   /* start calculating */
-  if(!calc_dir(pstate.calc.parent, tmp) && !pstate.calc.err) {
-    pstate.st = ST_BROWSE;
+  if(!calc_dir(stcalc.parent, tmp) && !stcalc.err) {
+    pstate = ST_BROWSE;
     return;
   }
 
   /* something went wrong... */
-  freedir(pstate.calc.parent);
+  freedir(stcalc.parent);
 fail:
-  while(pstate.calc.err && !input_handle(0))
+  while(stcalc.err && !input_handle(0))
     ;
-  pstate.st = dat != NULL ? ST_BROWSE : ST_QUIT;
+  pstate = stcalc.sterr;
   return;
 }
 

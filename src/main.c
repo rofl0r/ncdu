@@ -31,12 +31,13 @@ int winrows, wincols;
 char sdir[PATH_MAX];
 int sflags, bflags, sdelay, bgraph;
 int subwinc, subwinr;
-struct state pstate;
+int pstate;
+struct state_calc stcalc;
 
 
 void screen_draw() {
   int n = 1;
-  switch(pstate.st) {
+  switch(pstate) {
     case ST_CALC: n = calc_draw();
   }
   if(!n)
@@ -55,7 +56,7 @@ int input_handle(int wait) {
       screen_draw();
       continue;
     }
-    switch(pstate.st) {
+    switch(pstate) {
       case ST_CALC: return calc_key(ch);
     }
   }
@@ -131,9 +132,9 @@ void argv_parse(int argc, char **argv, char *dir) {
 int main(int argc, char **argv) {
   dat = NULL;
 
-  memset((void *)&pstate, 0, sizeof(struct state));
-  argv_parse(argc, argv, pstate.calc.cur);
-  pstate.st = ST_CALC;
+  argv_parse(argc, argv, stcalc.cur);
+  pstate = ST_CALC;
+  stcalc.sterr = ST_QUIT;
 
   initscr();
   cbreak();
@@ -142,16 +143,12 @@ int main(int argc, char **argv) {
   keypad(stdscr, TRUE);
   ncresize();
 
-  while(pstate.st != ST_QUIT) {
-    if(pstate.st == ST_CALC)
+  while(pstate != ST_QUIT) {
+    if(pstate == ST_CALC)
       calc_process();
     /*else
        wait_for_input() */
   }
-
-  /*
-  if((dat = showCalc(pstate.calc.root)) != NULL)
-    showBrowser();*/
 
   erase();
   refresh();

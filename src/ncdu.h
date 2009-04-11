@@ -136,19 +136,16 @@ struct dir {
   unsigned char flags;
 }; 
 
-struct state {
-  int st;  /* SC_x */
-  struct {
-    char err;
-    char cur[PATH_MAX];
-    char lasterr[PATH_MAX];
-    char errmsg[128];
-    struct dir *parent;
-    dev_t curdev;
-    suseconds_t lastupdate;
-    int anpos;
-  } calc;
-  /* TODO: information structs for the other states */
+struct state_calc {
+  char err;                /* 1/0, error or not */
+  char cur[PATH_MAX];      /* current dir/item */
+  char lasterr[PATH_MAX];  /* last unreadable dir/item */
+  char errmsg[128];        /* error message, when err=1 */
+  struct dir *parent;      /* parent directory for the calculation */
+  dev_t curdev;            /* current device we're calculating on */
+  suseconds_t lastupdate;  /* time of the last screen update */
+  int anpos;               /* position of the animation string */
+  int sterr;               /* state to go to on error (ST_BROWSE/ST_QUIT) */
 };
 
 
@@ -168,7 +165,8 @@ extern int sflags, bflags, sdelay, bgraph;
 /* used for creating windows */
 extern int subwinr, subwinc;
 /* program state */
-extern struct state pstate;
+extern int pstate;
+extern struct state_calc stcalc;
 
 
 /*
