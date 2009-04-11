@@ -217,13 +217,11 @@ struct dir *freedir(struct dir *dr) {
     if(cur == NULL && dr->parent->parent)
       cur = dr->parent;
   }
-  if(cur != NULL)
-    cur->flags |= FF_BSEL;
 
   free(dr->name);
   free(dr);
 
-  return(cur);
+  return cur;
 }
 
 
