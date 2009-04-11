@@ -44,6 +44,8 @@
 #include <sys/time.h>
 #include <dirent.h>
 
+#include "calc.h"
+
 /* set S_BLKSIZE if not defined already in sys/stat.h */
 #ifndef S_BLKSIZE
 # define S_BLKSIZE 512
@@ -136,18 +138,6 @@ struct dir {
   unsigned char flags;
 }; 
 
-struct state_calc {
-  char err;                /* 1/0, error or not */
-  char cur[PATH_MAX];      /* current dir/item */
-  char lasterr[PATH_MAX];  /* last unreadable dir/item */
-  char errmsg[128];        /* error message, when err=1 */
-  struct dir *parent;      /* parent directory for the calculation */
-  dev_t curdev;            /* current device we're calculating on */
-  suseconds_t lastupdate;  /* time of the last screen update */
-  int anpos;               /* position of the animation string */
-  int sterr;               /* state to go to on error (ST_BROWSE/ST_QUIT) */
-};
-
 
 
 /*
@@ -166,7 +156,6 @@ extern int sflags, bflags, sdelay, bgraph;
 extern int subwinr, subwinc;
 /* program state */
 extern int pstate;
-extern struct state_calc stcalc;
 
 
 /*
@@ -183,10 +172,6 @@ void nccreate(int, int, char *);
 void ncprint(int, int, char *, ...);
 struct dir *freedir(struct dir *);
 char *getpath(struct dir *, char *);
-/* calc.c */
-void calc_process(void);
-int  calc_key(int);
-int  calc_draw(void);
 /* browser.c */
 void drawBrowser(int);
 void showBrowser(void);

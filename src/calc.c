@@ -24,6 +24,9 @@
 */
 
 #include "ncdu.h"
+#include "calc.h"
+
+struct state_calc stcalc;
 
 
 

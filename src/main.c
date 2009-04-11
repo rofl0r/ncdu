@@ -32,7 +32,6 @@ char sdir[PATH_MAX];
 int sflags, bflags, sdelay, bgraph;
 int subwinc, subwinr;
 int pstate;
-struct state_calc stcalc;
 
 
 void screen_draw() {
