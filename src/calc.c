@@ -25,6 +25,7 @@
 
 #include "ncdu.h"
 #include "calc.h"
+#include "exclude.h"
 
 struct state_calc stcalc;
 
@@ -173,7 +174,7 @@ int calc_item(struct dir *par, char *path, char *name) {
   }
 
   /* check for excludes and same filesystem */
-  if(matchExclude(tmp))
+  if(exclude_match(tmp))
     d->flags |= FF_EXL;
 
   if(sflags & SF_SMFS && stcalc.curdev != fs.st_dev)

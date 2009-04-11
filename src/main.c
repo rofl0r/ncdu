@@ -24,6 +24,7 @@
 */
 
 #include "ncdu.h"
+#include "exclude.h"
 
 /* check ncdu.h what these are for */
 struct dir *dat;
@@ -85,8 +86,8 @@ void argv_parse(int argc, char **argv, char *dir) {
           exit(1);
         }
         else if(strcmp(argv[i], "--exclude") == 0)
-          addExclude(argv[++i]);
-        else if(addExcludeFile(argv[++i])) {
+          exclude_add(argv[++i]);
+        else if(exclude_addfile(argv[++i])) {
           printf("Can't open %s: %s\n", argv[i], strerror(errno));
           exit(1);
         }
@@ -152,6 +153,7 @@ int main(int argc, char **argv) {
   erase();
   refresh();
   endwin();
+  exclude_clear();
 
   return 0;
 }

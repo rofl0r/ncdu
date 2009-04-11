@@ -179,7 +179,3 @@ void showBrowser(void);
 void showHelp(void);
 /* delete.c */
 struct dir *showDelete(struct dir *);
-/* exclude.c */
-void addExclude(char *);
-int addExcludeFile(char *);
-int matchExclude(char *);

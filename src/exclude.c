@@ -24,43 +24,36 @@
 */
 
 #include "ncdu.h"
+#include "exclude.h"
 
 
 struct exclude {
   char *pattern;
   struct exclude *next;
-};
-
-struct exclude *excludes = NULL,
-               *last = NULL;
+} *excludes = NULL;
 
 
 
-void addExclude(char *pat) {
-  struct exclude *n;
+void exclude_add(char *pat) {
+  struct exclude **n;
 
-  n = (struct exclude *) malloc(sizeof(struct exclude));
-  n->pattern = (char *) malloc(strlen(pat)+1);
-  strcpy(n->pattern, pat);
-  n->next = NULL;
+  n = &excludes;
+  while(*n != NULL)
+    n = &((*n)->next);
 
-  if(excludes == NULL) {
-    excludes = n;
-    last = excludes;
-  } else {
-    last->next = n;
-    last = last->next;
-  }
+  *n = (struct exclude *) calloc(1, sizeof(struct exclude));
+  (*n)->pattern = (char *) malloc(strlen(pat)+1);
+  strcpy((*n)->pattern, pat);
 }
 
 
-int addExcludeFile(char *file) {
+int exclude_addfile(char *file) {
   FILE *f;
   char buf[256];
   int len;
 
   if((f = fopen(file, "r")) == NULL)
-    return(1);
+    return 1;
 
   while(fgets(buf, 256, f) != NULL) {
     len = strlen(buf)-1;
@@ -68,29 +61,36 @@ int addExcludeFile(char *file) {
       buf[len--] = '\0';
     if(len < 0)
       continue;
-    addExclude(buf);
+    exclude_add(buf);
   }
 
   fclose(f);
-  return(0);
+  return 0;
 }
 
 
-int matchExclude(char *path) {
-  struct exclude *n = excludes;
+int exclude_match(char *path) {
+  struct exclude *n;
   char *c;
-  int matched = 0;
 
-  if(excludes == NULL)
-    return(0);
-  
-  do {
-    matched = !fnmatch(n->pattern, path, 0);
-    for(c = path; *c && !matched; c++)
-      if(*c == '/' && c[1] != '/')
-        matched = !fnmatch(n->pattern, c+1, 0);
-  } while((n = n->next) != NULL && !matched);
+  for(n=excludes; n!=NULL; n=n->next) {
+    if(!fnmatch(n->pattern, path, 0))
+      return 1;
+    for(c = path; *c; c++)
+      if(*c == '/' && c[1] != '/' && !fnmatch(n->pattern, c+1, 0))
+        return 1;
+  }
+  return 0;
+}
 
-  return(matched);
+
+void exclude_clear() {
+  struct exclude *n, *l;
+
+  for(n=excludes; n!=NULL; n=l) {
+    l = n->next;
+    free(n);
+  }
+  excludes = NULL;
 }
 
