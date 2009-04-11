@@ -26,6 +26,7 @@
 #include "ncdu.h"
 #include "calc.h"
 #include "exclude.h"
+#include "util.h"
 
 struct state_calc stcalc;
 
@@ -278,8 +279,8 @@ void calc_draw_progress() {
   nccreate(10, 60, dat == NULL ? "Calculating..." : "Recalculating...");
 
   ncprint(2, 2, "Total items: %-8d size: %s",
-    stcalc.parent->items, cropsize(stcalc.parent->size));
-  ncprint(3, 2, "Current dir: %s", cropdir(stcalc.cur, 43));
+    stcalc.parent->items, formatsize(stcalc.parent->size, sflags & SF_SI));
+  ncprint(3, 2, "Current dir: %s", cropstr(stcalc.cur, 43));
   ncaddstr(8, 43, "Press q to quit");
 
   /* show warning if we couldn't open a dir */
@@ -287,7 +288,7 @@ void calc_draw_progress() {
      attron(A_BOLD);
      ncaddstr(5, 2, "Warning:");
      attroff(A_BOLD);
-     ncprint(5, 11, "could not open %-32s", cropdir(stcalc.lasterr, 32));
+     ncprint(5, 11, "could not open %-32s", cropstr(stcalc.lasterr, 32));
      ncaddstr(6, 3, "some directory sizes may not be correct");
   }
 
@@ -315,8 +316,8 @@ void calc_draw_error(char *cur, char *msg) {
   ncaddstr(2, 2, "Error:");
   attroff(A_BOLD);
 
-  ncprint(2, 9, "could not open %s", cropdir(cur, 34));
-  ncprint(3, 4, "%s", cropdir(msg, 52));
+  ncprint(2, 9, "could not open %s", cropstr(cur, 34));
+  ncprint(3, 4, "%s", cropstr(msg, 52));
   ncaddstr(5, 30, "press any key to continue...");
 }
 

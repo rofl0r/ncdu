@@ -25,13 +25,11 @@
 
 #include "ncdu.h"
 #include "exclude.h"
+#include "util.h"
 
 /* check ncdu.h what these are for */
 struct dir *dat;
-int winrows, wincols;
-char sdir[PATH_MAX];
 int sflags, bflags, sdelay, bgraph;
-int subwinc, subwinr;
 int pstate;
 
 
@@ -52,7 +50,8 @@ int input_handle(int wait) {
   screen_draw();
   while((ch = getch()) != ERR) {
     if(ch == KEY_RESIZE) {
-      ncresize();
+      if(ncresize((sflags & SF_IGNS ? 0 : 17), (sflags * SF_IGNS ? 0 : 60)))
+        sflags |= SF_IGNS;
       screen_draw();
       continue;
     }
@@ -141,7 +140,8 @@ int main(int argc, char **argv) {
   noecho();
   curs_set(0);
   keypad(stdscr, TRUE);
-  ncresize();
+  if(ncresize((sflags & SF_IGNS ? 0 : 17), (sflags * SF_IGNS ? 0 : 60)))
+    sflags |= SF_IGNS;
 
   while(pstate != ST_QUIT) {
     if(pstate == ST_CALC)

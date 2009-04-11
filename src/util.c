@@ -23,36 +23,44 @@
 
 */
 
-#include "ncdu.h"
+#include "util.h"
 
-char cropsizedat[8];
+#include <string.h>
+#include <stdlib.h>
+#include <ncurses.h>
+
+int winrows, wincols;
+int subwinr, subwinc;
+
+char cropstrdat[4096];
+char formatsizedat[8];
 char fullsizedat[20]; /* max: 999.999.999.999.999 */
-char cropdirdat[4096];
 
-char *cropdir(const char *from, int s) {
+
+char *cropstr(const char *from, int s) {
   int i, j, o = strlen(from);
   if(o < s) {
-    strcpy(cropdirdat, from);
-    return(cropdirdat);
+    strcpy(cropstrdat, from);
+    return cropstrdat;
   }
   j=s/2-3;
   for(i=0; i<j; i++)
-    cropdirdat[i] = from[i];
-  cropdirdat[i] = '.';
-  cropdirdat[++i] = '.';
-  cropdirdat[++i] = '.';
+    cropstrdat[i] = from[i];
+  cropstrdat[i] = '.';
+  cropstrdat[++i] = '.';
+  cropstrdat[++i] = '.';
   j=o-s;
   while(++i<s)
-    cropdirdat[i] = from[j+i];
-  cropdirdat[s] = '\0';
-  return(cropdirdat);
+    cropstrdat[i] = from[j+i];
+  cropstrdat[s] = '\0';
+  return cropstrdat;
 }
 
-/* return value is always xxx.xXB = 8 bytes (including \0) */
-char *cropsize(const off_t from) {
+
+char *formatsize(const off_t from, int si) {
   float r = from; 
   char c = ' ';
-  if(sflags & SF_SI) {
+  if(si) {
     if(r < 1000.0f)      { }
     else if(r < 1000e3f) { c = 'k'; r/=1000.0f; }
     else if(r < 1000e6f) { c = 'M'; r/=1000e3f; }
@@ -65,25 +73,24 @@ char *cropsize(const off_t from) {
     else if(r < 1023e9f) { c = 'G'; r/=1073741824.0f; }
     else                 { c = 'T'; r/=1099511627776.0f; }
   }
-  sprintf(cropsizedat, "%5.1f%cB", r, c);
-  return(cropsizedat);
+  sprintf(formatsizedat, "%5.1f%cB", r, c);
+  return formatsizedat;
 }
 
-/* returns integer as a string with thousand seperators
-   BUG: Uses a dot as seperator, ignores current locale */
+
 char *fullsize(const off_t from) {
   char tmp[20];
   off_t n = from;
   int i, j;
 
- /* the K&R method - more portable than sprintf with %lld */
+  /* the K&R method - more portable than sprintf with %lld */
   i = 0;
   do {
     tmp[i++] = n % 10 + '0';
   } while((n /= 10) > 0);
   tmp[i] = '\0';
 
- /* reverse and add thousand seperators */
+  /* reverse and add thousand seperators */
   j = 0;
   while(i--) {
     fullsizedat[j++] = tmp[i];
@@ -92,19 +99,19 @@ char *fullsize(const off_t from) {
   }
   fullsizedat[j] = '\0';
 
-  return(fullsizedat);
+  return fullsizedat;
 }
 
 
-void ncresize(void) {
+int ncresize(int minrows, int mincols) {
   int ch;
+
   getmaxyx(stdscr, winrows, wincols);
-  while(!(sflags & SF_IGNS) && (winrows < 17 || wincols < 60)) {
+  while((minrows && winrows < minrows) || (mincols && wincols < mincols)) {
     erase();
     mvaddstr(0, 0, "Warning: terminal too small,");
     mvaddstr(1, 1, "please either resize your terminal,");
     mvaddstr(2, 1, "press i to ignore, or press q to quit.");
-    touchwin(stdscr);
     refresh();
     nodelay(stdscr, 0);
     ch = getch();
@@ -116,36 +123,24 @@ void ncresize(void) {
       exit(0); 
     }
     if(ch == 'i')
-      sflags |= SF_IGNS;
+      return 1;
   }
   erase();
+  return 0;
 }
 
 
-/* Instead of using several ncurses windows, we only draw to stdscr.
- * the functions nccreate, ncprint and the macros ncaddstr and ncaddch
- * mimic the behaviour of ncurses windows.
- * This works better than using ncurses windows when all windows are
- * created in the correct order: it paints directly on stdscr, so
- * wrefresh, wnoutrefresh and other window-specific functions are not
- * necessary.
- * Also, this method doesn't require any window objects, as you can
- * only create one window at a time.
- *
- * This function creates a new window in the center of the screen
- * with a border and a title.
-*/
 void nccreate(int height, int width, char *title) {
   int i;
 
   subwinr = winrows/2-height/2;
   subwinc = wincols/2-width/2;
 
- /* clear window */
+  /* clear window */
   for(i=0; i<height; i++)
     mvhline(subwinr+i, subwinc, ' ', width);
 
- /* box() only works around curses windows, so create our own */
+  /* box() only works around curses windows, so create our own */
   move(subwinr, subwinc);
   addch(ACS_ULCORNER);
   for(i=0; i<width-2; i++)
@@ -161,7 +156,7 @@ void nccreate(int height, int width, char *title) {
   mvvline(subwinr+1, subwinc, ACS_VLINE, height-2);
   mvvline(subwinr+1, subwinc+width-1, ACS_VLINE, height-2);
 
- /* title */
+  /* title */
   attron(A_BOLD);
   mvaddstr(subwinr, subwinc+4, title);
   attroff(A_BOLD);
@@ -177,7 +172,6 @@ void ncprint(int r, int c, char *fmt, ...) {
 }
 
 
-
 void freedir_rec(struct dir *dr) {
   struct dir *tmp, *tmp2;
   tmp2 = dr;
@@ -189,11 +183,11 @@ void freedir_rec(struct dir *dr) {
   }
 }
 
-/* remove a file/directory from the in-memory map */
+
 struct dir *freedir(struct dir *dr) {
   struct dir *tmp, *cur;
 
- /* update sizes of parent directories */
+  /* update sizes of parent directories */
   tmp = dr;
   while((tmp = tmp->parent) != NULL) {
     tmp->size -= dr->size;
@@ -201,25 +195,25 @@ struct dir *freedir(struct dir *dr) {
     tmp->items -= dr->items+1;
   }
 
- /* free dr->sub recursive */
+  /* free dr->sub recursive */
   if(dr->sub) freedir_rec(dr->sub);
  
- /* update references */
+  /* update references */
   cur = NULL;
   if(dr->parent) {
-   /* item is at the top of the dir, refer to next item */
+    /* item is at the top of the dir, refer to next item */
     if(dr->parent->sub == dr) {
       dr->parent->sub = dr->next;
       cur = dr->next;
     }
-   /* else, get the previous item and update it's "next"-reference */
+    /* else, get the previous item and update it's "next"-reference */
     else
       for(tmp = dr->parent->sub; tmp != NULL; tmp = tmp->next)
         if(tmp->next == dr) {
           tmp->next = dr->next;
           cur = tmp;
         }
-   /* no previous item, refer to parent dir */
+    /* no previous item, refer to parent dir */
     if(cur == NULL && dr->parent->parent)
       cur = dr->parent;
   }
@@ -231,6 +225,7 @@ struct dir *freedir(struct dir *dr) {
 
   return(cur);
 }
+
 
 char *getpath(struct dir *cur, char *to) {
   struct dir *d, *list[100];
@@ -248,3 +243,4 @@ char *getpath(struct dir *cur, char *to) {
 
   return to;
 }
+

@@ -23,6 +23,8 @@
 
 */
 
+#ifndef _ncdu_h
+#define _ncdu_h
 
 #include "config.h"
 
@@ -82,10 +84,6 @@
 # define S_ISLNK(x) (x & S_IFLNK)
 #endif
 
-/* check nccreate in util.c for more info on these defines */
-#define ncaddstr(r, c, s) mvaddstr(subwinr+(r), subwinc+(c), s)
-#define  ncaddch(r, c, s)  mvaddch(subwinr+(r), subwinc+(c), s)
-#define   ncmove(r, c)        move(subwinr+(r), subwinc+(c))
 
 
 /*
@@ -146,13 +144,8 @@ struct dir {
  */
 /* main directory data */
 extern struct dir *dat;
-/* updated when window is resized */
-extern int winrows, wincols;
 /* global settings */
-extern char sdir[PATH_MAX];
 extern int sflags, bflags, sdelay, bgraph;
-/* used for creating windows */
-extern int subwinr, subwinc;
 /* program state */
 extern int pstate;
 
@@ -162,15 +155,6 @@ extern int pstate;
  */
 /* main.c */
 int input_handle(int);
-/* util.c */
-char *cropdir(const char *, int);
-char *cropsize(const off_t);
-char *fullsize(const off_t);
-void ncresize(void);
-void nccreate(int, int, char *);
-void ncprint(int, int, char *, ...);
-struct dir *freedir(struct dir *);
-char *getpath(struct dir *, char *);
 /* browser.c */
 void drawBrowser(int);
 void showBrowser(void);
@@ -178,3 +162,6 @@ void showBrowser(void);
 void showHelp(void);
 /* delete.c */
 struct dir *showDelete(struct dir *);
+
+
+#endif

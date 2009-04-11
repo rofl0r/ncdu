@@ -1,5 +1,5 @@
 bin_PROGRAMS = ncdu
 
-ncdu_SOURCES = browser.c calc.c main.c util.c exclude.c help.c delete.c
+ncdu_SOURCES = calc.c exclude.c main.c util.c
 
-noinst_HEADERS = calc.h exclude.h  ncdu.h
+noinst_HEADERS = calc.h exclude.h util.h ncdu.h
