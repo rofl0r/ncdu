@@ -26,9 +26,14 @@
 #include "ncdu.h"
 #include "exclude.h"
 #include "util.h"
+#include "calc.h"
 
-/* check ncdu.h what these are for */
-struct dir *dat;
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+
+#include <unistd.h>
+
 int sflags, bflags, sdelay, bgraph;
 int pstate;
 
@@ -129,8 +134,6 @@ void argv_parse(int argc, char **argv, char *dir) {
 
 /* main program */
 int main(int argc, char **argv) {
-  dat = NULL;
-
   argv_parse(argc, argv, stcalc.cur);
   pstate = ST_CALC;
   stcalc.sterr = ST_QUIT;

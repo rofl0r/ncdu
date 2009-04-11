@@ -26,6 +26,8 @@
 #ifndef _calc_h
 #define _calc_h
 
+#include "ncdu.h"
+
 struct state_calc {
   char err;                /* 1/0, error or not */
   char cur[PATH_MAX];      /* current dir/item */

@@ -27,25 +27,8 @@
 #define _ncdu_h
 
 #include "config.h"
-
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-#include <ctype.h>
-#include <limits.h>
-#include <errno.h>
-
-#include <ncurses.h>
-#include <form.h>
-
-#include <unistd.h>
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <dirent.h>
-
-#include "calc.h"
 
 /* set S_BLKSIZE if not defined already in sys/stat.h */
 #ifndef S_BLKSIZE
@@ -85,10 +68,6 @@
 #endif
 
 
-
-/*
- *    G L O B A L   F L A G S
- */
 /* File Flags (struct dir -> flags) */
 #define FF_DIR    0x01
 #define FF_FILE   0x02
@@ -115,7 +94,7 @@
 #define BF_AS     0x40 /* show apparent sizes instead of disk usage */
 #define BF_INFO   0x80 /* show file information window */
 
-/* States */
+/* Program states */
 #define ST_CALC   0
 #define ST_BROWSE 1
 #define ST_DEL    2
@@ -123,10 +102,7 @@
 #define ST_QUIT   4
 
 
-
-/*
- *    S T R U C T U R E S
- */
+/* structure representing a file or directory */
 struct dir {
   struct dir *parent, *next, *sub;
   char *name;
@@ -135,33 +111,14 @@ struct dir {
   unsigned char flags;
 }; 
 
-
-
-/*
- *    G L O B A L   V A R I A B L E S
- *
- * (all defined in main.c)
- */
-/* main directory data */
-extern struct dir *dat;
 /* global settings */
 extern int sflags, bflags, sdelay, bgraph;
+
 /* program state */
 extern int pstate;
 
-
-/*
- *    G L O B A L   F U N C T I O N S
- */
-/* main.c */
+/* handle input from keyboard and update display */
 int input_handle(int);
-/* browser.c */
-void drawBrowser(int);
-void showBrowser(void);
-/* help.c */
-void showHelp(void);
-/* delete.c */
-struct dir *showDelete(struct dir *);
 
 
 #endif

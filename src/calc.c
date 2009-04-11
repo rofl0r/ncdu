@@ -28,6 +28,16 @@
 #include "exclude.h"
 #include "util.h"
 
+#include <string.h>
+#include <stdlib.h>
+#include <errno.h>
+
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <dirent.h>
+
 struct state_calc stcalc;
 
 
@@ -276,7 +286,7 @@ void calc_draw_progress() {
   char ani[15];
   int i;
 
-  nccreate(10, 60, dat == NULL ? "Calculating..." : "Recalculating...");
+  nccreate(10, 60, stcalc.sterr == ST_QUIT ? "Calculating..." : "Recalculating...");
 
   ncprint(2, 2, "Total items: %-8d size: %s",
     stcalc.parent->items, formatsize(stcalc.parent->size, sflags & SF_SI));

@@ -27,6 +27,7 @@
 #define _util_h
 
 #include "ncdu.h"
+#include <ncurses.h>
 
 /* updated when window is resized */
 extern int winrows, wincols;
