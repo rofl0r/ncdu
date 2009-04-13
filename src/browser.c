@@ -295,10 +295,6 @@ int browse_draw() {
 }
 
 
-
-#define toggle(x,y) if(x & y) x -=y; else x |= y
-#define hideinfo if(stbrowse.flags & BF_INFO) stbrowse.flags -= BF_INFO
-
 void browse_key_sel(int change) {
   struct dir *n, *cur, par;
   int i, max;
@@ -327,7 +323,12 @@ void browse_key_sel(int change) {
 }
 
 
+
+#define toggle(x,y) if(x & y) x -=y; else x |= y
+#define hideinfo if(stbrowse.flags & BF_INFO) stbrowse.flags -= BF_INFO
+
 int browse_key(int ch) {
+  char tmp[PATH_MAX];
   struct dir *n;
 
   switch(ch) {
@@ -403,41 +404,14 @@ int browse_key(int ch) {
         stbrowse.cur = stbrowse.cur->parent->parent->sub;
       break;
 
-   /* refresh *
+   /* refresh */
     case 'r':
       hideinfo;
-      drawBrowser(0);
-      if((n = showCalc(getpath(bcur, tmp))) != NULL) {
-       * free current items *
-        d = bcur;
-        bcur = bcur->parent;
-        while(d != NULL) {
-          t = d;
-          d = t->next;
-          freedir(t);
-        }
-
-       * update parent dir *
-        bcur->sub = n->sub;
-        bcur->items = n->items;
-        bcur->size = n->size;
-        bcur->asize = n->asize;
-        for(t = bcur->sub; t != NULL; t = t->next)
-          t->parent = bcur;
-
-       * update sizes of parent dirs *
-        for(t = bcur; (t = t->parent) != NULL; ) {
-          t->size += bcur->size;
-          t->asize += bcur->asize;
-          t->items += bcur->items;
-        }
-
-        bcur = bcur->sub;
-        free(n->name);
-        free(n);
-      }
+      stcalc.sterr = ST_BROWSE;
+      stcalc.orig = stbrowse.cur->parent;
+      strcpy(stcalc.cur, getpath(stbrowse.cur, tmp));
+      pstate = ST_CALC;
       break;
-      */
 
     /* and other stuff */
     case 'q':

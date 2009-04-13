@@ -141,6 +141,7 @@ int main(int argc, char **argv) {
 
   pstate = ST_CALC;
   stcalc.sterr = ST_QUIT;
+  stcalc.orig = NULL;
   stbrowse.flags = BF_SIZE | BF_DESC;
   stbrowse.graph = 0;
 

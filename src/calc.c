@@ -386,15 +386,33 @@ void calc_process() {
   t->size = fs.st_blocks * S_BLKSIZE;
   t->asize = fs.st_size;
   t->flags |= FF_DIR;
+  if(stcalc.orig) {
+    t->parent = stcalc.orig->parent;
+    t->next = stcalc.orig->next;
+  }
   t->name = (char *) malloc(strlen(tmp)+1);
-  strcpy(t->name, tmp);
+  strcpy(t->name, stcalc.orig ? stcalc.orig->name : tmp);
   stcalc.parent = t;
   stcalc.curdev = fs.st_dev;
 
   /* start calculating */
   if(!calc_dir(stcalc.parent, tmp) && !stcalc.err) {
     pstate = ST_BROWSE;
-    stbrowse.cur = stcalc.parent;
+    stbrowse.cur = stcalc.parent->sub;
+
+    /* update references and free original item */
+    if(stcalc.orig) {
+      if(stcalc.orig->parent) {
+        t = stcalc.orig->parent->sub;
+        if(t == stcalc.orig)
+          stcalc.orig->parent->sub = stcalc.parent;
+        else if(t != NULL)
+          for(; t->next!=NULL; t=t->next)
+            if(t->next == stcalc.orig)
+              t->next = stcalc.parent;
+      }
+      freedir(stcalc.orig);
+    }
     return;
   }
 
