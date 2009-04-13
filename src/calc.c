@@ -180,6 +180,7 @@ int calc_item(struct dir *par, char *path, char *name) {
   /* lstat */
   strcpy(tmp, path);
   strcat(tmp, name);
+  strcpy(stcalc.cur, tmp);
   if(lstat(tmp, &fs)) {
     d->flags |= FF_ERR;
     return 0;
