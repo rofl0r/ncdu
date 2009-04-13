@@ -27,6 +27,7 @@
 #include "exclude.h"
 #include "util.h"
 #include "calc.h"
+#include "browser.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -34,14 +35,15 @@
 
 #include <unistd.h>
 
-int sflags, bflags, sdelay, bgraph;
+int sflags, sdelay;
 int pstate;
 
 
 void screen_draw() {
   int n = 1;
   switch(pstate) {
-    case ST_CALC: n = calc_draw();
+    case ST_CALC:   n = calc_draw();   break;
+    case ST_BROWSE: n = browse_draw(); break;
   }
   if(!n)
     refresh();
@@ -61,8 +63,10 @@ int input_handle(int wait) {
       continue;
     }
     switch(pstate) {
-      case ST_CALC: return calc_key(ch);
+      case ST_CALC:   return calc_key(ch);
+      case ST_BROWSE: return browse_key(ch);
     }
+    screen_draw();
   }
   return 0;
 }
@@ -77,7 +81,6 @@ void argv_parse(int argc, char **argv, char *dir) {
   getcwd(dir, PATH_MAX);
   sflags = 0;
   sdelay = 100;
-  bflags = BF_SIZE | BF_DESC;
 
  /* read from commandline */
   for(i=1; i<argc; i++) {
@@ -135,8 +138,11 @@ void argv_parse(int argc, char **argv, char *dir) {
 /* main program */
 int main(int argc, char **argv) {
   argv_parse(argc, argv, stcalc.cur);
+
   pstate = ST_CALC;
   stcalc.sterr = ST_QUIT;
+  stbrowse.flags = BF_SIZE | BF_DESC;
+  stbrowse.graph = 0;
 
   initscr();
   cbreak();
@@ -149,8 +155,8 @@ int main(int argc, char **argv) {
   while(pstate != ST_QUIT) {
     if(pstate == ST_CALC)
       calc_process();
-    /*else
-       wait_for_input() */
+    else if(input_handle(0))
+        break;
   }
 
   erase();

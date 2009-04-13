@@ -27,6 +27,7 @@
 #include "calc.h"
 #include "exclude.h"
 #include "util.h"
+#include "browser.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -392,6 +393,7 @@ void calc_process() {
   /* start calculating */
   if(!calc_dir(stcalc.parent, tmp) && !stcalc.err) {
     pstate = ST_BROWSE;
+    stbrowse.cur = stcalc.parent;
     return;
   }
 

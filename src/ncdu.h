@@ -84,16 +84,6 @@
 #define SF_NOCFM  0x08 /* don't confirm file deletion */
 #define SF_IGNE   0x10 /* ignore errors when deleting */
 
-/* Browse Flags (int bflags) */
-#define BF_NAME   0x01
-#define BF_SIZE   0x02
-#define BF_NDIRF  0x04 /* Normally, dirs before files, setting this disables it */
-#define BF_DESC   0x08
-#define BF_HIDE   0x10 /* don't show hidden files... */
-#define BF_SORT   0x20 /* no need to resort, list is already in correct order */
-#define BF_AS     0x40 /* show apparent sizes instead of disk usage */
-#define BF_INFO   0x80 /* show file information window */
-
 /* Program states */
 #define ST_CALC   0
 #define ST_BROWSE 1
@@ -112,7 +102,7 @@ struct dir {
 }; 
 
 /* global settings */
-extern int sflags, bflags, sdelay, bgraph;
+extern int sflags, sdelay;
 
 /* program state */
 extern int pstate;
