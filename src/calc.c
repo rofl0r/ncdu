@@ -211,14 +211,14 @@ int calc_item(struct dir *par, char *path, char *name) {
 
   /* update parent dirs */
   if(!(d->flags & FF_EXL))
-    for(t=d; t!=NULL; t=t->parent)
+    for(t=d->parent; t!=NULL; t=t->parent)
       t->items++;
 
   /* count the size */
   if(!(d->flags & FF_EXL || d->flags & FF_OTHFS)) {
     d->size = fs.st_blocks * S_BLKSIZE;
     d->asize = fs.st_size;
-    for(t=d; t!=NULL; t=t->parent) {
+    for(t=d->parent; t!=NULL; t=t->parent) {
       t->size += d->size;
       t->asize += d->asize;
     }
