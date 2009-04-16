@@ -399,6 +399,15 @@ void calc_process() {
   stcalc.parent = t;
   stcalc.curdev = fs.st_dev;
 
+  /* update parents, if any */
+  if(stcalc.orig) {
+    for(t=t->parent; t!=NULL; t=t->parent) {
+      t->size += stcalc.parent->size;
+      t->asize += stcalc.parent->asize;
+      t->items++;
+    }
+  }
+
   /* start calculating */
   if(!calc_dir(stcalc.parent, tmp) && !stcalc.err) {
     pstate = ST_BROWSE;
