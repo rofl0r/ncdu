@@ -407,10 +407,7 @@ int browse_key(int ch) {
    /* refresh */
     case 'r':
       hideinfo;
-      stcalc.sterr = ST_BROWSE;
-      stcalc.orig = stbrowse.cur->parent;
-      strcpy(stcalc.cur, getpath(stbrowse.cur, tmp));
-      pstate = ST_CALC;
+      calc_init(getpath(stbrowse.cur, tmp), stbrowse.cur->parent);
       break;
 
     /* and other stuff */

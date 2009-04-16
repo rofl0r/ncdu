@@ -39,8 +39,18 @@
 #include <sys/time.h>
 #include <dirent.h>
 
-struct state_calc stcalc;
 
+struct {
+  char err;                /* 1/0, error or not */
+  char cur[PATH_MAX];      /* current dir/item */
+  char lasterr[PATH_MAX];  /* last unreadable dir/item */
+  char errmsg[128];        /* error message, when err=1 */
+  struct dir *parent;      /* parent directory for the calculation */
+  struct dir *orig;        /* original directory, when recalculating */
+  dev_t curdev;            /* current device we're calculating on */
+  suseconds_t lastupdate;  /* time of the last screen update */
+  int anpos;               /* position of the animation string */
+} stcalc;
 
 
 /* My own implementation of realpath()
@@ -288,7 +298,7 @@ void calc_draw_progress() {
   char ani[15];
   int i;
 
-  nccreate(10, 60, stcalc.sterr == ST_QUIT ? "Calculating..." : "Recalculating...");
+  nccreate(10, 60, stcalc.orig ? "Calculating..." : "Recalculating...");
 
   ncprint(2, 2, "Total items: %-8d size: %s",
     stcalc.parent->items, formatsize(stcalc.parent->size, sflags & SF_SI));
@@ -368,12 +378,6 @@ void calc_process() {
   struct stat fs;
   struct dir *t;
 
-  /* init/reset global vars */
-  stcalc.err = 0;
-  stcalc.lastupdate = 999;
-  stcalc.lasterr[0] = 0;
-  stcalc.anpos = 0;
-
   /* check root directory */
   if(rpath(stcalc.cur, tmp) == NULL || lstat(tmp, &fs) != 0 || !S_ISDIR(fs.st_mode)) {
     stcalc.err = 1;
@@ -421,7 +425,18 @@ void calc_process() {
 fail:
   while(stcalc.err && !input_handle(0))
     ;
-  pstate = stcalc.sterr;
+  pstate = stcalc.orig ? ST_BROWSE : ST_QUIT;
   return;
+}
+
+
+void calc_init(char *dir, struct dir *orig) {
+  stcalc.err = 0;
+  stcalc.lastupdate = 999;
+  stcalc.lasterr[0] = 0;
+  stcalc.anpos = 0;
+  stcalc.orig = orig;
+  strcpy(stcalc.cur, dir);
+  pstate = ST_CALC;
 }
 

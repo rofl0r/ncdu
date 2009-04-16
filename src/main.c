@@ -137,11 +137,10 @@ void argv_parse(int argc, char **argv, char *dir) {
 
 /* main program */
 int main(int argc, char **argv) {
-  argv_parse(argc, argv, stcalc.cur);
+  char dir[PATH_MAX];
+  argv_parse(argc, argv, dir);
 
-  pstate = ST_CALC;
-  stcalc.sterr = ST_QUIT;
-  stcalc.orig = NULL;
+  calc_init(dir, NULL);
   stbrowse.flags = BF_SIZE | BF_DESC;
   stbrowse.graph = 0;
 

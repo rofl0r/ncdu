@@ -28,24 +28,10 @@
 
 #include "ncdu.h"
 
-struct state_calc {
-  char err;                /* 1/0, error or not */
-  char cur[PATH_MAX];      /* current dir/item */
-  char lasterr[PATH_MAX];  /* last unreadable dir/item */
-  char errmsg[128];        /* error message, when err=1 */
-  struct dir *parent;      /* parent directory for the calculation */
-  struct dir *orig;        /* original directory, when recalculating */
-  dev_t curdev;            /* current device we're calculating on */
-  suseconds_t lastupdate;  /* time of the last screen update */
-  int anpos;               /* position of the animation string */
-  int sterr;               /* state to go to on error (ST_BROWSE/ST_QUIT) */
-};
-extern struct state_calc stcalc;
-
-
 void calc_process(void);
 int  calc_key(int);
 int  calc_draw(void);
+void calc_init(char *, struct dir *);
 
 
 #endif
