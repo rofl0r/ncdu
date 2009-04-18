@@ -147,8 +147,11 @@ struct dir *browse_sort(struct dir *list) {
       p = q;
     }
     tail->next = NULL;
-    if(nmerges <= 1)
+    if(nmerges <= 1) {
+      if(list->parent)
+        list->parent->sub = list;
       return list;
+    }
     insize *= 2;
   }
 }
@@ -255,10 +258,6 @@ int browse_draw() {
   if(!cur)
     return 0;
 
-  /* TODO: don't sort when it's not necessary */
-  cur = browse_dir = browse_sort(cur);
-  cur->parent->sub = cur;
-
   /* add reference to parent dir */
   memset(&ref, 0, sizeof(struct dir));
   if(cur->parent->parent) {
@@ -337,6 +336,7 @@ void browse_key_sel(int change) {
 
 int browse_key(int ch) {
   char tmp[PATH_MAX];
+  char sort = 0;
   struct dir *n;
 
   switch(ch) {
@@ -368,6 +368,7 @@ int browse_key(int ch) {
         toggle(flags, BF_DESC);
       else
         flags = (flags & BF_HIDE) + (flags & BF_NDIRF) + BF_NAME;
+      sort++;
       break;
     case 's':
       hideinfo;
@@ -375,6 +376,7 @@ int browse_key(int ch) {
         toggle(flags, BF_DESC);
       else
         flags = (flags & BF_HIDE) + (flags & BF_NDIRF) + BF_SIZE + BF_DESC;
+      sort++;
       break;
     case 'h':
       hideinfo;
@@ -384,6 +386,7 @@ int browse_key(int ch) {
     case 't':
       hideinfo;
       toggle(flags, BF_NDIRF);
+      sort++;
       break;
     case 'a':
       hideinfo;
@@ -401,17 +404,20 @@ int browse_key(int ch) {
         browse_dir = n->sub;
       if(n == NULL && browse_dir->parent->parent)
         browse_dir = browse_dir->parent->parent->sub;
+      sort++;
       break;
     case KEY_LEFT:
       hideinfo;
       if(browse_dir->parent->parent != NULL)
         browse_dir = browse_dir->parent->parent->sub;
+      sort++;
       break;
 
    /* refresh */
     case 'r':
       hideinfo;
       calc_init(getpath(browse_dir, tmp), browse_dir->parent);
+      sort++;
       break;
 
     /* and other stuff */
@@ -440,6 +446,9 @@ int browse_key(int ch) {
       break;
         */
   }
+
+  if(sort)
+    browse_dir = browse_sort(browse_dir);
   return 0;
 }
 
@@ -450,5 +459,6 @@ void browse_init(struct dir *cur) {
     browse_dir = cur->sub;
   else
     browse_dir = cur;
+  browse_dir = browse_sort(browse_dir);
 }
 
