@@ -81,6 +81,7 @@ void argv_parse(int argc, char **argv, char *dir) {
   getcwd(dir, PATH_MAX);
   sflags = 0;
   calc_delay = 100;
+  calc_smfs = 0;
 
  /* read from commandline */
   for(i=1; i<argc; i++) {
@@ -104,7 +105,7 @@ void argv_parse(int argc, char **argv, char *dir) {
       len = strlen(argv[i]);
       for(j=1; j<len; j++)
         switch(argv[i][j]) {
-          case 'x': sflags |= SF_SMFS; break;
+          case 'x': calc_smfs = 1; break;
           case 'q': calc_delay = 2000;     break;
           case '?':
           case 'h':

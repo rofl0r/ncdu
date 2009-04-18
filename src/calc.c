@@ -61,7 +61,8 @@
 #endif
 
 
-int calc_delay;
+int  calc_delay;
+char calc_smfs;
 
 struct {
   char err;                /* 1/0, error or not */
@@ -223,7 +224,7 @@ int calc_item(struct dir *par, char *path, char *name) {
   if(exclude_match(tmp))
     d->flags |= FF_EXL;
 
-  if(sflags & SF_SMFS && stcalc.curdev != fs.st_dev)
+  if(calc_smfs && stcalc.curdev != fs.st_dev)
     d->flags |= FF_OTHFS;
 
   /* determine type of this item */
