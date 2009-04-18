@@ -7,7 +7,6 @@ Small list of planned features/changes, suggestions are always welcome.
 - Improve browser interface
   * Option to display number of files
   * Mutt-like status bar?
-  * Browser always on background, even on startup
 
 - Add custom key bindings
   * Using a config file (/etc/ncdurc, ~/.ncdurc)

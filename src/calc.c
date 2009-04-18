@@ -372,6 +372,7 @@ int calc_draw() {
   struct timeval tv;
 
   if(failed) {
+    browse_draw();
     calc_draw_error(curpath, errmsg);
     return 0;
   }
@@ -380,6 +381,7 @@ int calc_draw() {
   gettimeofday(&tv, (void *)NULL);
   tv.tv_usec = (1000*(tv.tv_sec % 1000) + (tv.tv_usec / 1000)) / calc_delay;
   if(lastupdate != tv.tv_usec) {
+    browse_draw();
     calc_draw_progress();
     lastupdate = tv.tv_usec;
     return 0;
