@@ -61,8 +61,8 @@
 #endif
 
 
-int  calc_delay;
-char calc_smfs;
+int  calc_delay = 100;
+char calc_smfs  = 0;
 
 struct {
   char err;                /* 1/0, error or not */

@@ -80,8 +80,6 @@ void argv_parse(int argc, char **argv, char *dir) {
  /* load defaults */
   memset(dir, 0, PATH_MAX);
   getcwd(dir, PATH_MAX);
-  calc_delay = 100;
-  calc_smfs = 0;
 
  /* read from commandline */
   for(i=1; i<argc; i++) {
