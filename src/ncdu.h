@@ -29,11 +29,7 @@
 #include "config.h"
 #include <stdio.h>
 #include <sys/types.h>
-
-/* set S_BLKSIZE if not defined already in sys/stat.h */
-#ifndef S_BLKSIZE
-# define S_BLKSIZE 512
-#endif
+#include <limits.h>
 
 /* PATH_MAX 260 on Cygwin is too small for /proc/registry */
 #ifdef __CYGWIN__
@@ -50,21 +46,6 @@
 # else
 #  define PATH_MAX 4096
 # endif
-#endif
-/* and LINK_MAX */
-#ifndef LINK_MAX
-# ifdef _POSIX_LINK_MAX
-#  define LINK_MAX _POSIX_LINK_MAX
-# else
-#  define LINK_MAX 32
-# endif
-#endif
-/* check for S_ISLNK */
-#ifndef S_ISLNK
-# ifndef S_IFLNK
-#  define S_IFLNK 0120000
-# endif
-# define S_ISLNK(x) (x & S_IFLNK)
 #endif
 
 

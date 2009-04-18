@@ -40,6 +40,27 @@
 #include <dirent.h>
 
 
+/* set S_BLKSIZE if not defined already in sys/stat.h */
+#ifndef S_BLKSIZE
+# define S_BLKSIZE 512
+#endif
+
+#ifndef LINK_MAX
+# ifdef _POSIX_LINK_MAX
+#  define LINK_MAX _POSIX_LINK_MAX
+# else
+#  define LINK_MAX 32
+# endif
+#endif
+
+#ifndef S_ISLNK
+# ifndef S_IFLNK
+#  define S_IFLNK 0120000
+# endif
+# define S_ISLNK(x) (x & S_IFLNK)
+#endif
+
+
 struct {
   char err;                /* 1/0, error or not */
   char cur[PATH_MAX];      /* current dir/item */

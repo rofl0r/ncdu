@@ -17,3 +17,7 @@ Small list of planned features/changes, suggestions are always welcome.
   * Sort by number of files
   * Use one key to open up a menu with sort options, instead of
     having a special key for each column
+
+- Fix bugs:
+  * Handle hard links
+  * Get rid of PATH_MAX reliance
