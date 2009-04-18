@@ -174,7 +174,7 @@ void browse_draw_item(struct dir *n, int row, off_t max, int ispar) {
         && n->sub == NULL ? 'e' :
                             ' ' ;
   dt = n->flags & FF_DIR ? '/' : ' ';
-  size = formatsize(stbrowse.flags & BF_AS ? n->asize : n->size, sflags & SF_SI);
+  size = formatsize(stbrowse.flags & BF_AS ? n->asize : n->size);
 
   /* create graph (if necessary) */
   pc = ((float)(stbrowse.flags & BF_AS ? n->asize : n->size) / (float)(stbrowse.flags & BF_AS ? n->parent->asize : n->parent->size)) * 100.0f;
@@ -236,9 +236,9 @@ int browse_draw() {
   mvhline(winrows-1, 0, ' ', wincols);
   mvprintw(0,0,"%s %s ~ Use the arrow keys to navigate, press ? for help", PACKAGE_NAME, PACKAGE_VERSION);
 
-  strcpy(tmp, formatsize(cur->parent->size, sflags & SF_SI));
+  strcpy(tmp, formatsize(cur->parent->size));
   mvprintw(winrows-1, 0, " Total disk usage: %s  Apparent size: %s  Items: %d",
-    tmp, formatsize(cur->parent->asize, sflags & SF_SI), cur->parent->items);
+    tmp, formatsize(cur->parent->asize), cur->parent->items);
   attroff(A_REVERSE);
 
   mvhline(1, 0, '-', wincols);
@@ -367,10 +367,6 @@ int browse_key(int ch) {
         toggle(stbrowse.flags, BF_DESC);
       else
         stbrowse.flags = (stbrowse.flags & BF_HIDE) + (stbrowse.flags & BF_NDIRF) + BF_SIZE + BF_DESC;
-      break;
-    case 'p':
-      hideinfo;
-      toggle(sflags, SF_SI);
       break;
     case 'h':
       hideinfo;

@@ -59,8 +59,6 @@
 #define FF_BSEL   0x40 /* selected */
 
 /* Settings Flags (int sflags) */
-#define SF_SMFS   0x01 /* same filesystem */
-#define SF_SI     0x02 /* use powers of 1000 instead of 1024 */
 #define SF_IGNS   0x04 /* ignore too small terminal sizes */
 #define SF_NOCFM  0x08 /* don't confirm file deletion */
 #define SF_IGNE   0x10 /* ignore errors when deleting */

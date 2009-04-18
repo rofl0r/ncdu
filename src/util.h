@@ -66,7 +66,7 @@ void ncprint(int, int, char *, ...);
 char *cropstr(const char *, int);
 
 /* formats size in the form of xxx.xXB */
-char *formatsize(const off_t, int);
+char *formatsize(const off_t);
 
 /* int2string with thousand separators */
 char *fullsize(const off_t);

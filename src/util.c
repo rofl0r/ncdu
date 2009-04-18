@@ -57,22 +57,14 @@ char *cropstr(const char *from, int s) {
 }
 
 
-char *formatsize(const off_t from, int si) {
+char *formatsize(const off_t from) {
   float r = from; 
   char c = ' ';
-  if(si) {
-    if(r < 1000.0f)      { }
-    else if(r < 1000e3f) { c = 'k'; r/=1000.0f; }
-    else if(r < 1000e6f) { c = 'M'; r/=1000e3f; }
-    else if(r < 1000e9f) { c = 'G'; r/=1000e6f; }
-    else                 { c = 'T'; r/=1000e9f; }
-  } else {
-    if(r < 1000.0f)      { }
-    else if(r < 1023e3f) { c = 'k'; r/=1024.0f; }
-    else if(r < 1023e6f) { c = 'M'; r/=1048576.0f; }
-    else if(r < 1023e9f) { c = 'G'; r/=1073741824.0f; }
-    else                 { c = 'T'; r/=1099511627776.0f; }
-  }
+  if(r < 1000.0f)      { }
+  else if(r < 1023e3f) { c = 'k'; r/=1024.0f; }
+  else if(r < 1023e6f) { c = 'M'; r/=1048576.0f; }
+  else if(r < 1023e9f) { c = 'G'; r/=1073741824.0f; }
+  else                 { c = 'T'; r/=1099511627776.0f; }
   sprintf(formatsizedat, "%5.1f%cB", r, c);
   return formatsizedat;
 }

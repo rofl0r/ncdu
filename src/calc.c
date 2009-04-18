@@ -325,7 +325,7 @@ void calc_draw_progress() {
   nccreate(10, 60, stcalc.orig ? "Calculating..." : "Recalculating...");
 
   ncprint(2, 2, "Total items: %-8d size: %s",
-    stcalc.parent->items, formatsize(stcalc.parent->size, sflags & SF_SI));
+    stcalc.parent->items, formatsize(stcalc.parent->size));
   ncprint(3, 2, "Current dir: %s", cropstr(stcalc.cur, 43));
   ncaddstr(8, 43, "Press q to quit");
 
