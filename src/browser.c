@@ -51,32 +51,6 @@ unsigned char flags = BF_SIZE | BF_DESC;
     || x->flags & FF_EXL))
 
 
-/*
-void drawInfo(struct dir *dr) {
-  char path[PATH_MAX];
-
-  nccreate(11, 60, "Item info");
-
-  attron(A_BOLD);
-  ncaddstr(2, 3, "Name:");
-  ncaddstr(3, 3, "Path:");
-  ncaddstr(4, 3, "Type:");
-  ncaddstr(6, 3, "   Disk usage:");
-  ncaddstr(7, 3, "Apparent size:");
-  attroff(A_BOLD);
-
-  ncaddstr(2,  9, cropdir(dr->name, 49));
-  ncaddstr(3,  9, cropdir(getpath(dr, path), 49));
-  ncaddstr(4,  9, dr->flags & FF_DIR ? "Directory"
-      : dr->flags & FF_FILE ? "File" : "Other (link, device, socket, ..)");
-  ncprint(6, 18, "%s (%s B)", cropsize(dr->size),  fullsize(dr->size));
-  ncprint(7, 18, "%s (%s B)", cropsize(dr->asize), fullsize(dr->asize));
-
-  ncaddstr(9, 32, "Press i to hide this window");
-}
-*/
-
-
 int browse_cmp(struct dir *x, struct dir *y) {
   struct dir *a, *b;
   int r = 0;
@@ -157,6 +131,30 @@ struct dir *browse_sort(struct dir *list) {
 }
 
 
+void browse_draw_info(struct dir *dr) {
+  char path[PATH_MAX];
+
+  nccreate(11, 60, "Item info");
+
+  attron(A_BOLD);
+  ncaddstr(2, 3, "Name:");
+  ncaddstr(3, 3, "Path:");
+  ncaddstr(4, 3, "Type:");
+  ncaddstr(6, 3, "   Disk usage:");
+  ncaddstr(7, 3, "Apparent size:");
+  attroff(A_BOLD);
+
+  ncaddstr(2,  9, cropstr(dr->name, 49));
+  ncaddstr(3,  9, cropstr(getpath(dr, path), 49));
+  ncaddstr(4,  9, dr->flags & FF_DIR ? "Directory"
+      : dr->flags & FF_FILE ? "File" : "Other (link, device, socket, ..)");
+  ncprint(6, 18, "%s (%s B)", formatsize(dr->size),  fullsize(dr->size));
+  ncprint(7, 18, "%s (%s B)", formatsize(dr->asize), fullsize(dr->asize));
+
+  ncaddstr(9, 32, "Press i to hide this window");
+}
+
+
 void browse_draw_item(struct dir *n, int row, off_t max, int ispar) {
   char tmp[1000], ct, dt, *size, gr[11];
   int i, o;
@@ -225,7 +223,7 @@ void browse_draw_item(struct dir *n, int row, off_t max, int ispar) {
 
 
 int browse_draw() {
-  struct dir *n, ref, *cur;
+  struct dir *n, ref, *cur, *sel = NULL;
   char tmp[PATH_MAX];
   int selected, i;
   off_t max = 1;
@@ -271,8 +269,10 @@ int browse_draw() {
   for(n=cur, selected=i=0; n!=NULL; n=n->next) {
     if(ishidden(n))
       continue;
-    if(n->flags & FF_BSEL)
+    if(n->flags & FF_BSEL) {
       selected = i;
+      sel = n;
+    }
     if((flags & BF_AS ? n->asize : n->size) > max)
       max = flags & BF_AS ? n->asize : n->size;
     i++;
@@ -295,6 +295,10 @@ int browse_draw() {
       continue;
     browse_draw_item(n, 2+i++, max, n == &ref);
   }
+
+  /* draw information window */
+  if(sel && (flags & BF_INFO) && sel != &ref)
+    browse_draw_info(sel);
 
   /* move cursor to selected row for accessibility */
   move(selected+2, 0);
@@ -332,11 +336,10 @@ void browse_key_sel(int change) {
 
 
 #define toggle(x,y) if(x & y) x -=y; else x |= y
-#define hideinfo if(flags & BF_INFO) flags -= BF_INFO
 
 int browse_key(int ch) {
   char tmp[PATH_MAX];
-  char sort = 0;
+  char sort = 0, nonfo = 0;
   struct dir *n;
 
   switch(ch) {
@@ -363,40 +366,39 @@ int browse_key(int ch) {
 
    /* sorting items */
     case 'n':
-      hideinfo;
       if(flags & BF_NAME)
         toggle(flags, BF_DESC);
       else
         flags = (flags & BF_HIDE) + (flags & BF_NDIRF) + BF_NAME;
       sort++;
+      nonfo++;
       break;
     case 's':
-      hideinfo;
       if(flags & BF_SIZE)
         toggle(flags, BF_DESC);
       else
         flags = (flags & BF_HIDE) + (flags & BF_NDIRF) + BF_SIZE + BF_DESC;
       sort++;
+      nonfo++;
       break;
     case 'h':
-      hideinfo;
       toggle(flags, BF_HIDE);
       browse_key_sel(0);
+      nonfo++;
       break;
     case 't':
-      hideinfo;
       toggle(flags, BF_NDIRF);
       sort++;
+      nonfo++;
       break;
     case 'a':
-      hideinfo;
       toggle(flags, BF_AS);
+      nonfo++;
       break;
 
    /* browsing */
     case 10:
     case KEY_RIGHT:
-      hideinfo;
       for(n=browse_dir; n!=NULL; n=n->next)
         if(n->flags & FF_BSEL)
           break;
@@ -404,19 +406,20 @@ int browse_key(int ch) {
         browse_dir = n->sub;
       if(n == NULL && browse_dir->parent->parent)
         browse_dir = browse_dir->parent->parent->sub;
+      nonfo++;
       sort++;
       break;
     case KEY_LEFT:
-      hideinfo;
       if(browse_dir->parent->parent != NULL)
         browse_dir = browse_dir->parent->parent->sub;
+      nonfo++;
       sort++;
       break;
 
    /* refresh */
     case 'r':
-      hideinfo;
       calc_init(getpath(browse_dir, tmp), browse_dir->parent);
+      nonfo++;
       sort++;
       break;
 
@@ -424,31 +427,34 @@ int browse_key(int ch) {
     case 'q':
       return 1;
     case 'g':
-      hideinfo;
-      if(++graph > 3) graph = 0;
-      break;
-      /*
-    case '?':
-      hideinfo;
-      showHelp();
+      if(++graph > 3)
+        graph = 0;
+      nonfo++;
       break;
     case 'i':
       toggle(flags, BF_INFO);
       break;
+      /*
+    case '?':
+      showHelp();
+      nonfo++;
+      break;
     case 'd':
-      hideinfo;
       drawBrowser(0);
       n = selected();
       if(n != bcur->parent)
         bcur = showDelete(n);
       if(bcur && bcur->parent)
         bcur = bcur->parent->sub;
+      nonfo++;
       break;
         */
   }
 
   if(sort)
     browse_dir = browse_sort(browse_dir);
+  if(nonfo)
+    flags &= ~BF_INFO;
   return 0;
 }
 
