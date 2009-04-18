@@ -58,11 +58,6 @@
 #define FF_SERR   0x20 /* error in subdirectory */
 #define FF_BSEL   0x40 /* selected */
 
-/* Settings Flags (int sflags) */
-#define SF_IGNS   0x04 /* ignore too small terminal sizes */
-#define SF_NOCFM  0x08 /* don't confirm file deletion */
-#define SF_IGNE   0x10 /* ignore errors when deleting */
-
 /* Program states */
 #define ST_CALC   0
 #define ST_BROWSE 1
@@ -79,9 +74,6 @@ struct dir {
   unsigned long items;
   unsigned char flags;
 }; 
-
-/* global settings */
-extern int sflags;
 
 /* program state */
 extern int pstate;

@@ -35,9 +35,10 @@
 
 #include <unistd.h>
 
-int sflags;
 int pstate;
 
+int min_rows = 17,
+    min_cols = 60;
 
 void screen_draw() {
   int n = 1;
@@ -57,8 +58,8 @@ int input_handle(int wait) {
   screen_draw();
   while((ch = getch()) != ERR) {
     if(ch == KEY_RESIZE) {
-      if(ncresize((sflags & SF_IGNS ? 0 : 17), (sflags * SF_IGNS ? 0 : 60)))
-        sflags |= SF_IGNS;
+      if(ncresize(min_rows, min_cols))
+        min_rows = min_cols = 0;
       screen_draw();
       continue;
     }
@@ -79,7 +80,6 @@ void argv_parse(int argc, char **argv, char *dir) {
  /* load defaults */
   memset(dir, 0, PATH_MAX);
   getcwd(dir, PATH_MAX);
-  sflags = 0;
   calc_delay = 100;
   calc_smfs = 0;
 
@@ -150,8 +150,8 @@ int main(int argc, char **argv) {
   noecho();
   curs_set(0);
   keypad(stdscr, TRUE);
-  if(ncresize((sflags & SF_IGNS ? 0 : 17), (sflags * SF_IGNS ? 0 : 60)))
-    sflags |= SF_IGNS;
+  if(ncresize(min_rows, min_cols))
+    min_rows = min_cols = 0;
 
   while(pstate != ST_QUIT) {
     if(pstate == ST_CALC)
