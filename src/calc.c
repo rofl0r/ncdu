@@ -421,8 +421,7 @@ void calc_process() {
 
   /* start calculating */
   if(!calc_dir(root, tmp) && !failed) {
-    pstate = ST_BROWSE;
-    stbrowse.cur = root->sub;
+    browse_init(root->sub);
 
     /* update references and free original item */
     if(orig) {

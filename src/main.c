@@ -140,8 +140,6 @@ int main(int argc, char **argv) {
   argv_parse(argc, argv, dir);
 
   calc_init(dir, NULL);
-  stbrowse.flags = BF_SIZE | BF_DESC;
-  stbrowse.graph = 0;
 
   initscr();
   cbreak();

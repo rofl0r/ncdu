@@ -28,26 +28,9 @@
 
 #include "ncdu.h"
 
-/* Browse Flags */
-#define BF_NAME   0x01
-#define BF_SIZE   0x02
-#define BF_NDIRF  0x04 /* Normally, dirs before files, setting this disables it */
-#define BF_DESC   0x08
-#define BF_HIDE   0x10 /* don't show hidden files... */
-#define BF_SORT   0x20 /* no need to resort, list is already in correct order */
-#define BF_AS     0x40 /* show apparent sizes instead of disk usage */
-#define BF_INFO   0x80 /* show file information window */
-
-struct state_browser {
-  struct dir *cur;    /* head of current directory */
-  char graph;
-  unsigned char flags;
-};
-extern struct state_browser stbrowse;
-
-
 int  browse_key(int);
 int  browse_draw(void);
+void browse_init(struct dir *);
 
 
 #endif
