@@ -236,16 +236,24 @@ int browse_draw() {
   mvhline(winrows-1, 0, ' ', wincols);
   mvprintw(0,0,"%s %s ~ Use the arrow keys to navigate, press ? for help", PACKAGE_NAME, PACKAGE_VERSION);
 
-  strcpy(tmp, formatsize(cur->parent->size));
-  mvprintw(winrows-1, 0, " Total disk usage: %s  Apparent size: %s  Items: %d",
-    tmp, formatsize(cur->parent->asize), cur->parent->items);
+  if(cur) {
+    strcpy(tmp, formatsize(cur->parent->size));
+    mvprintw(winrows-1, 0, " Total disk usage: %s  Apparent size: %s  Items: %d",
+      tmp, formatsize(cur->parent->asize), cur->parent->items);
+  } else
+    mvaddstr(winrows-1, 0, " No items to display.");
   attroff(A_REVERSE);
 
   mvhline(1, 0, '-', wincols);
-  mvaddch(1, 3, ' ');
-  getpath(cur, tmp);
-  mvaddstr(1, 4, cropstr(tmp, wincols-8));
-  mvaddch(1, 4+((int)strlen(tmp) > wincols-8 ? wincols-8 : (int)strlen(tmp)), ' ');
+  if(cur) {
+    mvaddch(1, 3, ' ');
+    getpath(cur, tmp);
+    mvaddstr(1, 4, cropstr(tmp, wincols-8));
+    mvaddch(1, 4+((int)strlen(tmp) > wincols-8 ? wincols-8 : (int)strlen(tmp)), ' ');
+  }
+
+  if(!cur)
+    return 0;
 
   /* TODO: don't sort when it's not necessary */
   cur = browse_dir = browse_sort(cur);
@@ -437,18 +445,10 @@ int browse_key(int ch) {
 
 
 void browse_init(struct dir *cur) {
-  if(cur == NULL || cur->parent == NULL) {
-    if(cur == NULL || cur->sub == NULL) {
-      erase();
-      refresh();
-      endwin();
-      printf("No items to display...\n");
-      exit(0);
-    } else
-      browse_dir = cur->sub;
-  } else
-    browse_dir = cur;
-
   pstate = ST_BROWSE;
+  if(cur != NULL && cur->parent == NULL)
+    browse_dir = cur->sub;
+  else
+    browse_dir = cur;
 }
 
