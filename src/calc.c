@@ -414,23 +414,10 @@ void calc_process() {
   t->size = fs.st_blocks * S_BLKSIZE;
   t->asize = fs.st_size;
   t->flags |= FF_DIR;
-  if(orig) {
-    t->parent = orig->parent;
-    t->next = orig->next;
-  }
   t->name = (char *) malloc(strlen(tmp)+1);
   strcpy(t->name, orig ? orig->name : tmp);
   root = t;
   curdev = fs.st_dev;
-
-  /* update parents, if any */
-  if(orig) {
-    for(t=t->parent; t!=NULL; t=t->parent) {
-      t->size += root->size;
-      t->asize += root->asize;
-      t->items++;
-    }
-  }
 
   /* start calculating */
   if(!calc_dir(root, tmp) && !failed) {
@@ -439,6 +426,14 @@ void calc_process() {
 
     /* update references and free original item */
     if(orig) {
+      root->parent = orig->parent;
+      root->next = orig->next;
+      for(t=root->parent; t!=NULL; t=t->parent) {
+        t->size += root->size;
+        t->asize += root->asize;
+        t->items += root->items+1;
+      }
+
       if(orig->parent) {
         t = orig->parent->sub;
         if(t == orig)
