@@ -28,6 +28,8 @@
 
 #include "ncdu.h"
 
+extern int calc_delay;  /* minimum screen update interval when calculating, in ms */
+
 void calc_process(void);
 int  calc_key(int);
 int  calc_draw(void);

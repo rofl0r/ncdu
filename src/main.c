@@ -35,7 +35,7 @@
 
 #include <unistd.h>
 
-int sflags, sdelay;
+int sflags;
 int pstate;
 
 
@@ -80,7 +80,7 @@ void argv_parse(int argc, char **argv, char *dir) {
   memset(dir, 0, PATH_MAX);
   getcwd(dir, PATH_MAX);
   sflags = 0;
-  sdelay = 100;
+  calc_delay = 100;
 
  /* read from commandline */
   for(i=1; i<argc; i++) {
@@ -105,7 +105,7 @@ void argv_parse(int argc, char **argv, char *dir) {
       for(j=1; j<len; j++)
         switch(argv[i][j]) {
           case 'x': sflags |= SF_SMFS; break;
-          case 'q': sdelay = 2000;     break;
+          case 'q': calc_delay = 2000;     break;
           case '?':
           case 'h':
             printf("ncdu [-hqvx] [--exclude PATTERN] [-X FILE] directory\n\n");

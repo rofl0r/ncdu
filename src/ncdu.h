@@ -83,7 +83,7 @@ struct dir {
 }; 
 
 /* global settings */
-extern int sflags, sdelay;
+extern int sflags;
 
 /* program state */
 extern int pstate;

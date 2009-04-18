@@ -61,6 +61,8 @@
 #endif
 
 
+int calc_delay;
+
 struct {
   char err;                /* 1/0, error or not */
   char cur[PATH_MAX];      /* current dir/item */
@@ -336,7 +338,7 @@ void calc_draw_progress() {
   }
 
   /* animation - but only if the screen refreshes more than or once every second */
-  if(sdelay <= 1000) {
+  if(calc_delay <= 1000) {
     if(++stcalc.anpos == 28)
        stcalc.anpos = 0;
     strcpy(ani, "              ");
@@ -375,7 +377,7 @@ int calc_draw() {
 
   /* should we really draw the screen again? */
   gettimeofday(&tv, (void *)NULL);
-  tv.tv_usec = (1000*(tv.tv_sec % 1000) + (tv.tv_usec / 1000)) / sdelay;
+  tv.tv_usec = (1000*(tv.tv_sec % 1000) + (tv.tv_usec / 1000)) / calc_delay;
   if(stcalc.lastupdate != tv.tv_usec) {
     calc_draw_progress();
     stcalc.lastupdate = tv.tv_usec;
