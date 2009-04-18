@@ -61,20 +61,20 @@
 #endif
 
 
+/* external vars */
 int  calc_delay = 100;
 char calc_smfs  = 0;
 
-struct {
-  char err;                /* 1/0, error or not */
-  char cur[PATH_MAX];      /* current dir/item */
-  char lasterr[PATH_MAX];  /* last unreadable dir/item */
-  char errmsg[128];        /* error message, when err=1 */
-  struct dir *parent;      /* parent directory for the calculation */
-  struct dir *orig;        /* original directory, when recalculating */
-  dev_t curdev;            /* current device we're calculating on */
-  suseconds_t lastupdate;  /* time of the last screen update */
-  int anpos;               /* position of the animation string */
-} stcalc;
+/* global vars for internal use */
+char failed;             /* 1 on fatal error */
+char curpath[PATH_MAX];  /* last lstat()'ed item */
+char lasterr[PATH_MAX];  /* last unreadable dir/item */
+char errmsg[128];        /* error message, when err=1 */
+struct dir *root;        /* root directory struct we're calculating */
+struct dir *orig;        /* original directory, when recalculating */
+dev_t curdev;            /* current device we're calculating on */
+suseconds_t lastupdate;  /* time of the last screen update */
+int anpos;               /* position of the animation string */
 
 
 /* My own implementation of realpath()
@@ -214,7 +214,7 @@ int calc_item(struct dir *par, char *path, char *name) {
   /* lstat */
   strcpy(tmp, path);
   strcat(tmp, name);
-  strcpy(stcalc.cur, tmp);
+  strcpy(curpath, tmp);
   if(lstat(tmp, &fs)) {
     d->flags |= FF_ERR;
     return 0;
@@ -224,7 +224,7 @@ int calc_item(struct dir *par, char *path, char *name) {
   if(exclude_match(tmp))
     d->flags |= FF_EXL;
 
-  if(calc_smfs && stcalc.curdev != fs.st_dev)
+  if(calc_smfs && curdev != fs.st_dev)
     d->flags |= FF_OTHFS;
 
   /* determine type of this item */
@@ -264,7 +264,7 @@ int calc_dir(struct dir *dest, char *path) {
 
   /* open directory */
   if((dir = opendir(path)) == NULL) {
-    strcpy(stcalc.lasterr, path);
+    strcpy(lasterr, path);
     dest->flags |= FF_ERR;
     t = dest;
     while((t = t->parent) != NULL)
@@ -322,32 +322,32 @@ void calc_draw_progress() {
   char ani[15];
   int i;
 
-  nccreate(10, 60, stcalc.orig ? "Calculating..." : "Recalculating...");
+  nccreate(10, 60, orig ? "Calculating..." : "Recalculating...");
 
   ncprint(2, 2, "Total items: %-8d size: %s",
-    stcalc.parent->items, formatsize(stcalc.parent->size));
-  ncprint(3, 2, "Current dir: %s", cropstr(stcalc.cur, 43));
+    root->items, formatsize(root->size));
+  ncprint(3, 2, "Current dir: %s", cropstr(curpath, 43));
   ncaddstr(8, 43, "Press q to quit");
 
   /* show warning if we couldn't open a dir */
-  if(stcalc.lasterr[0] != '\0') {
+  if(lasterr[0] != '\0') {
      attron(A_BOLD);
      ncaddstr(5, 2, "Warning:");
      attroff(A_BOLD);
-     ncprint(5, 11, "could not open %-32s", cropstr(stcalc.lasterr, 32));
+     ncprint(5, 11, "could not open %-32s", cropstr(lasterr, 32));
      ncaddstr(6, 3, "some directory sizes may not be correct");
   }
 
   /* animation - but only if the screen refreshes more than or once every second */
   if(calc_delay <= 1000) {
-    if(++stcalc.anpos == 28)
-       stcalc.anpos = 0;
+    if(++anpos == 28)
+       anpos = 0;
     strcpy(ani, "              ");
-    if(stcalc.anpos < 14)
-      for(i=0; i<=stcalc.anpos; i++)
+    if(anpos < 14)
+      for(i=0; i<=anpos; i++)
         ani[i] = antext[i];
     else
-      for(i=13; i>stcalc.anpos-14; i--)
+      for(i=13; i>anpos-14; i--)
         ani[i] = antext[i];
   } else
     strcpy(ani, antext);
@@ -371,17 +371,17 @@ void calc_draw_error(char *cur, char *msg) {
 int calc_draw() {
   struct timeval tv;
 
-  if(stcalc.err) {
-    calc_draw_error(stcalc.cur, stcalc.errmsg);
+  if(failed) {
+    calc_draw_error(curpath, errmsg);
     return 0;
   }
 
   /* should we really draw the screen again? */
   gettimeofday(&tv, (void *)NULL);
   tv.tv_usec = (1000*(tv.tv_sec % 1000) + (tv.tv_usec / 1000)) / calc_delay;
-  if(stcalc.lastupdate != tv.tv_usec) {
+  if(lastupdate != tv.tv_usec) {
     calc_draw_progress();
-    stcalc.lastupdate = tv.tv_usec;
+    lastupdate = tv.tv_usec;
     return 0;
   }
   return 1;
@@ -389,7 +389,7 @@ int calc_draw() {
 
 
 int calc_key(int ch) {
-  if(stcalc.err)
+  if(failed)
     return 1;
   if(ch == 'q')
     return 1;
@@ -403,9 +403,9 @@ void calc_process() {
   struct dir *t;
 
   /* check root directory */
-  if(rpath(stcalc.cur, tmp) == NULL || lstat(tmp, &fs) != 0 || !S_ISDIR(fs.st_mode)) {
-    stcalc.err = 1;
-    strcpy(stcalc.errmsg, "Directory not found");
+  if(rpath(curpath, tmp) == NULL || lstat(tmp, &fs) != 0 || !S_ISDIR(fs.st_mode)) {
+    failed = 1;
+    strcpy(errmsg, "Directory not found");
     goto fail;
   }
 
@@ -414,62 +414,60 @@ void calc_process() {
   t->size = fs.st_blocks * S_BLKSIZE;
   t->asize = fs.st_size;
   t->flags |= FF_DIR;
-  if(stcalc.orig) {
-    t->parent = stcalc.orig->parent;
-    t->next = stcalc.orig->next;
+  if(orig) {
+    t->parent = orig->parent;
+    t->next = orig->next;
   }
   t->name = (char *) malloc(strlen(tmp)+1);
-  strcpy(t->name, stcalc.orig ? stcalc.orig->name : tmp);
-  stcalc.parent = t;
-  stcalc.curdev = fs.st_dev;
+  strcpy(t->name, orig ? orig->name : tmp);
+  root = t;
+  curdev = fs.st_dev;
 
   /* update parents, if any */
-  if(stcalc.orig) {
+  if(orig) {
     for(t=t->parent; t!=NULL; t=t->parent) {
-      t->size += stcalc.parent->size;
-      t->asize += stcalc.parent->asize;
+      t->size += root->size;
+      t->asize += root->asize;
       t->items++;
     }
   }
 
   /* start calculating */
-  if(!calc_dir(stcalc.parent, tmp) && !stcalc.err) {
+  if(!calc_dir(root, tmp) && !failed) {
     pstate = ST_BROWSE;
-    stbrowse.cur = stcalc.parent->sub;
+    stbrowse.cur = root->sub;
 
     /* update references and free original item */
-    if(stcalc.orig) {
-      if(stcalc.orig->parent) {
-        t = stcalc.orig->parent->sub;
-        if(t == stcalc.orig)
-          stcalc.orig->parent->sub = stcalc.parent;
+    if(orig) {
+      if(orig->parent) {
+        t = orig->parent->sub;
+        if(t == orig)
+          orig->parent->sub = root;
         else if(t != NULL)
           for(; t->next!=NULL; t=t->next)
-            if(t->next == stcalc.orig)
-              t->next = stcalc.parent;
+            if(t->next == orig)
+              t->next = root;
       }
-      freedir(stcalc.orig);
+      freedir(orig);
     }
     return;
   }
 
   /* something went wrong... */
-  freedir(stcalc.parent);
+  freedir(root);
 fail:
-  while(stcalc.err && !input_handle(0))
+  while(failed && !input_handle(0))
     ;
-  pstate = stcalc.orig ? ST_BROWSE : ST_QUIT;
+  pstate = orig ? ST_BROWSE : ST_QUIT;
   return;
 }
 
 
-void calc_init(char *dir, struct dir *orig) {
-  stcalc.err = 0;
-  stcalc.lastupdate = 999;
-  stcalc.lasterr[0] = 0;
-  stcalc.anpos = 0;
-  stcalc.orig = orig;
-  strcpy(stcalc.cur, dir);
+void calc_init(char *dir, struct dir *org) {
+  failed = anpos = lasterr[0] = 0;
+  lastupdate = 999;
+  orig = org;
+  strcpy(curpath, dir);
   pstate = ST_CALC;
 }
 
