@@ -196,7 +196,7 @@ int delete_dir(struct dir *dr) {
 
   /* check for input or screen resizes */
   strcpy(curfile, file);
-  if(input_handle(0))
+  if(input_handle(1))
     return 1;
 
   /* do the actual deleting */
