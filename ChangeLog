@@ -5,6 +5,8 @@ git - ?
 	- Size graph uses the apparent size if that is displayed
 	- Items are ordered by displayed size rather than disk usage
 	- Fixed rpath() bug on '/.'
+	- Removed switching between powers of 1000/1024
+	- Don't rely on the availability of suseconds_t
 
 1.4 - 2008-09-10
 	- Removed the startup window
