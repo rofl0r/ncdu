@@ -27,6 +27,7 @@
 #include "browser.h"
 #include "util.h"
 #include "calc.h"
+#include "delete.h"
 #include "help.h"
 
 #include <string.h>
@@ -443,17 +444,15 @@ int browse_key(int ch) {
       help_init();
       nonfo++;
       break;
-      /*
     case 'd':
-      drawBrowser(0);
-      n = selected();
-      if(n != bcur->parent)
-        bcur = showDelete(n);
-      if(bcur && bcur->parent)
-        bcur = bcur->parent->sub;
+      for(n=browse_dir; n!=NULL; n=n->next)
+        if(n->flags & FF_BSEL)
+          break;
+      if(n == NULL)
+        break;
+      delete_init(n);
       nonfo++;
       break;
-        */
   }
 
   if(sort)
@@ -470,6 +469,8 @@ void browse_init(struct dir *cur) {
     browse_dir = cur->sub;
   else
     browse_dir = cur;
+  if(browse_dir != NULL && browse_dir->parent->sub != browse_dir)
+    browse_dir = cur->parent->sub;
   browse_dir = browse_sort(browse_dir);
 }
 

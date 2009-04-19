@@ -27,6 +27,7 @@
 #include "exclude.h"
 #include "util.h"
 #include "calc.h"
+#include "delete.h"
 #include "browser.h"
 
 #include <stdlib.h>
@@ -46,6 +47,7 @@ void screen_draw() {
     case ST_CALC:   n = calc_draw();   break;
     case ST_BROWSE: n = browse_draw(); break;
     case ST_HELP:   n = help_draw();   break;
+    case ST_DEL:    n = delete_draw(); break;
   }
   if(!n)
     refresh();
@@ -68,6 +70,7 @@ int input_handle(int wait) {
       case ST_CALC:   return calc_key(ch);
       case ST_BROWSE: return browse_key(ch);
       case ST_HELP:   return help_key(ch);
+      case ST_DEL:    return delete_key(ch);
     }
     screen_draw();
   }
@@ -106,7 +109,7 @@ void argv_parse(int argc, char **argv, char *dir) {
       for(j=1; j<len; j++)
         switch(argv[i][j]) {
           case 'x': calc_smfs = 1; break;
-          case 'q': calc_delay = 2000;     break;
+          case 'q': calc_delay = delete_delay = 2000;     break;
           case '?':
           case 'h':
             printf("ncdu [-hqvx] [--exclude PATTERN] [-X FILE] directory\n\n");
@@ -154,6 +157,8 @@ int main(int argc, char **argv) {
   while(pstate != ST_QUIT) {
     if(pstate == ST_CALC)
       calc_process();
+    if(pstate == ST_DEL)
+      delete_process();
     else if(input_handle(0))
       break;
   }
