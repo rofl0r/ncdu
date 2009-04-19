@@ -184,7 +184,7 @@ int delete_key(int ch) {
 }
 
 
-struct dir *delete_dir(struct dir *dr) {
+int delete_dir(struct dir *dr) {
   struct dir *nxt, *cur;
   int r;
   char file[PATH_MAX];
@@ -196,8 +196,8 @@ struct dir *delete_dir(struct dir *dr) {
 
   /* check for input or screen resizes */
   strcpy(curfile, file);
-  if(input_handle(1))
-    return root;
+  if(input_handle(0))
+    return 1;
 
   /* do the actual deleting */
   if(dr->flags & FF_DIR) {
@@ -206,8 +206,8 @@ struct dir *delete_dir(struct dir *dr) {
       while(nxt != NULL) {
         cur = nxt;
         nxt = cur->next;
-        if(delete_dir(cur) == root)
-          return root;
+        if(delete_dir(cur))
+          return 1;
       }
     }
     r = rmdir(file);
@@ -220,14 +220,16 @@ struct dir *delete_dir(struct dir *dr) {
     lasterrno = errno;
     while(state == DS_FAILED)
       if(input_handle(0))
-        return root;
+        return 1;
   }
 
-  return freedir(dr);
+  freedir(dr);
+  return 0;
 }
 
 
 void delete_process() {
+  struct dir *n = root->parent;
   /* confirm */
   seloption = 1;
   while(state == DS_CONFIRM && !noconfirm)
@@ -237,7 +239,10 @@ void delete_process() {
   /* delete */
   lastupdate = 999;
   seloption = 0;
-  return browse_init(delete_dir(root));
+  if(delete_dir(root))
+    browse_init(root);
+  else
+    browse_init(n);
 }
 
 
