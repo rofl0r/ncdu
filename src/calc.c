@@ -73,7 +73,7 @@ char errmsg[128];        /* error message, when err=1 */
 struct dir *root;        /* root directory struct we're calculating */
 struct dir *orig;        /* original directory, when recalculating */
 dev_t curdev;            /* current device we're calculating on */
-suseconds_t lastupdate;  /* time of the last screen update */
+long lastupdate;         /* time of the last screen update */
 int anpos;               /* position of the animation string */
 
 

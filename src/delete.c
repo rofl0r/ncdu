@@ -41,7 +41,7 @@
 
 int delete_delay = 100;
 
-suseconds_t lastupdate;
+long lastupdate;
 struct dir *root, *nextsel;
 char noconfirm = 0,
      ignoreerr = 0,
