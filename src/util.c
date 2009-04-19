@@ -176,8 +176,8 @@ void freedir_rec(struct dir *dr) {
 }
 
 
-struct dir *freedir(struct dir *dr) {
-  struct dir *tmp, *cur;
+void freedir(struct dir *dr) {
+  struct dir *tmp;
 
   /* update sizes of parent directories */
   tmp = dr;
@@ -187,33 +187,24 @@ struct dir *freedir(struct dir *dr) {
     tmp->items -= dr->items+1;
   }
 
-  /* free dr->sub recursive */
-  if(dr->sub) freedir_rec(dr->sub);
+  /* free dr->sub recursively */
+  if(dr->sub)
+    freedir_rec(dr->sub);
  
   /* update references */
-  cur = NULL;
   if(dr->parent) {
     /* item is at the top of the dir, refer to next item */
-    if(dr->parent->sub == dr) {
+    if(dr->parent->sub == dr)
       dr->parent->sub = dr->next;
-      cur = dr->next;
-    }
     /* else, get the previous item and update it's "next"-reference */
     else
       for(tmp = dr->parent->sub; tmp != NULL; tmp = tmp->next)
-        if(tmp->next == dr) {
+        if(tmp->next == dr)
           tmp->next = dr->next;
-          cur = tmp;
-        }
-    /* no previous item, refer to parent dir */
-    if(cur == NULL && dr->parent->parent)
-      cur = dr->parent;
   }
 
   free(dr->name);
   free(dr);
-
-  return cur;
 }
 
 

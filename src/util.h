@@ -72,7 +72,7 @@ char *formatsize(const off_t);
 char *fullsize(const off_t);
 
 /* recursively free()s a directory tree */
-struct dir *freedir(struct dir *);
+void freedir(struct dir *);
 
 /* generates full path from a dir item */
 char *getpath(struct dir *, char *);
