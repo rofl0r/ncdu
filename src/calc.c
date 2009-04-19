@@ -322,7 +322,7 @@ void calc_draw_progress() {
   char ani[15];
   int i;
 
-  nccreate(10, 60, orig ? "Calculating..." : "Recalculating...");
+  nccreate(10, 60, !orig ? "Calculating..." : "Recalculating...");
 
   ncprint(2, 2, "Total items: %-8d size: %s",
     root->items, formatsize(root->size));
