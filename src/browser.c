@@ -336,13 +336,12 @@ void browse_key_sel(int change) {
 }
 
 
-
 #define toggle(x,y) if(x & y) x -=y; else x |= y
 
 int browse_key(int ch) {
   char tmp[PATH_MAX];
   char sort = 0, nonfo = 0;
-  struct dir *n;
+  struct dir *n, *r;
 
   switch(ch) {
     /* selecting items */
@@ -450,8 +449,14 @@ int browse_key(int ch) {
           break;
       if(n == NULL)
         break;
-      delete_init(n);
       nonfo++;
+      /* quirky method of getting the next selected dir without actually selecting it */
+      browse_key_sel(n->next ? 1 : -1);
+      for(r=browse_dir; r!=NULL; r=r->next)
+        if(r->flags & FF_BSEL)
+          break;
+      browse_key_sel(n->next ? -1 : 1);
+      delete_init(n, r);
       break;
   }
 

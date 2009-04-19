@@ -33,7 +33,7 @@ extern int delete_delay;
 void delete_process(void);
 int  delete_key(int);
 int  delete_draw(void);
-void delete_init(struct dir *);
+void delete_init(struct dir *, struct dir *);
 
 
 #endif

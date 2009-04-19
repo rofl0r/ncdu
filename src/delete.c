@@ -42,7 +42,7 @@
 int delete_delay = 100;
 
 suseconds_t lastupdate;
-struct dir *root;
+struct dir *root, *nextsel;
 char noconfirm = 0,
      ignoreerr = 0,
      state, seloption, curfile[PATH_MAX];
@@ -229,28 +229,32 @@ int delete_dir(struct dir *dr) {
 
 
 void delete_process() {
-  struct dir *n;
+  /* determine dir to open after successful delete */
+  struct dir *n = root->parent->sub != root ? root->parent->sub : root->next ? root->next : root->parent;
+
   /* confirm */
   seloption = 1;
   while(state == DS_CONFIRM && !noconfirm)
     if(input_handle(0))
       return browse_init(root);
 
-  n = root->parent->sub != root ? root->parent->sub : root->next ? root->next : root->parent;
-
   /* delete */
   lastupdate = 999;
   seloption = 0;
   if(delete_dir(root))
     browse_init(root);
-  else
+  else {
     browse_init(n);
+    if(nextsel)
+      nextsel->flags |= FF_BSEL;
+  }
 }
 
 
-void delete_init(struct dir *dr) {
+void delete_init(struct dir *dr, struct dir *s) {
   state = DS_CONFIRM;
   root = dr;
   pstate = ST_DEL;
+  nextsel = s;
 }
 
