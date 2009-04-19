@@ -229,12 +229,14 @@ int delete_dir(struct dir *dr) {
 
 
 void delete_process() {
-  struct dir *n = root->parent;
+  struct dir *n;
   /* confirm */
   seloption = 1;
   while(state == DS_CONFIRM && !noconfirm)
     if(input_handle(0))
       return browse_init(root);
+
+  n = root->parent->sub != root ? root->parent->sub : root->next ? root->next : root->parent;
 
   /* delete */
   lastupdate = 999;
