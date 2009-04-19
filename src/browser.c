@@ -426,7 +426,11 @@ int browse_key(int ch) {
 
     /* and other stuff */
     case 'q':
-      return 1;
+      if(flags & BF_INFO)
+        nonfo++;
+      else
+        return 1;
+      break;
     case 'g':
       if(++graph > 3)
         graph = 0;
