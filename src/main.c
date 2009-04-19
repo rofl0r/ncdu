@@ -45,6 +45,7 @@ void screen_draw() {
   switch(pstate) {
     case ST_CALC:   n = calc_draw();   break;
     case ST_BROWSE: n = browse_draw(); break;
+    case ST_HELP:   n = help_draw();   break;
   }
   if(!n)
     refresh();
@@ -66,6 +67,7 @@ int input_handle(int wait) {
     switch(pstate) {
       case ST_CALC:   return calc_key(ch);
       case ST_BROWSE: return browse_key(ch);
+      case ST_HELP:   return help_key(ch);
     }
     screen_draw();
   }
@@ -153,7 +155,7 @@ int main(int argc, char **argv) {
     if(pstate == ST_CALC)
       calc_process();
     else if(input_handle(0))
-        break;
+      break;
   }
 
   erase();

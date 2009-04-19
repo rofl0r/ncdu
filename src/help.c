@@ -24,9 +24,18 @@
 */
 
 #include "ncdu.h"
+#include "help.h"
+#include "browser.h"
+#include "util.h"
+
+#include <ncurses.h>
+#include <string.h>
+
+
+int page, start;
+
 
 #define KEYS 14
-
 char *keys[KEYS*2] = {
 /*|----key----|  |----------------description----------------|*/
       "up/down", "Cycle through the items",
@@ -46,9 +55,10 @@ char *keys[KEYS*2] = {
 };
 
 
-
-void drawHelp(int page, int start) {
+int help_draw() {
   int i, line;
+
+  browse_draw();
 
   nccreate(15, 60, "ncdu help");
   ncaddstr(13, 38, "Press q to continue");
@@ -145,54 +155,50 @@ void drawHelp(int page, int start) {
       ncaddstr(10, 16, "http://dev.yorhel.nl/ncdu/");
       break;
   }
-  refresh();
+  return 0;
 }
 
 
-void showHelp(void) {
-  int p = 1, st = 0, ch;
-
-  drawHelp(p, st);
-  while((ch = getch())) {
-    switch(ch) {
-      case ERR:
-        break;
-      case '1':
-      case '2':
-      case '3':
-        p = ch-'0';
-        st = 0;
-        break;
-      case KEY_RIGHT:
-      case KEY_NPAGE:
-        if(++p > 3)
-          p = 3;
-        st = 0;
-        break;
-      case KEY_LEFT:
-      case KEY_PPAGE:
-        if(--p < 1)
-          p = 1;
-        st = 0;
-        break;
-      case KEY_DOWN:
-      case ' ':
-        if(st < KEYS-10)
-          st++;
-        break;
-      case KEY_UP:
-        if(st > 0)
-          st--;
-        break;
-      case KEY_RESIZE:
-        ncresize();
-        drawBrowser(0);
-        break;
-      default:
-        return;
-    }
-    drawHelp(p, st);
+int help_key(int ch) {
+  switch(ch) {
+    case '1':
+    case '2':
+    case '3':
+      page = ch-'0';
+      start = 0;
+      break;
+    case KEY_RIGHT:
+    case KEY_NPAGE:
+      if(++page > 3)
+        page = 3;
+      start = 0;
+      break;
+    case KEY_LEFT:
+    case KEY_PPAGE:
+      if(--page < 1)
+        page = 1;
+      start = 0;
+      break;
+    case KEY_DOWN:
+    case ' ':
+      if(start < KEYS-10)
+        start++;
+      break;
+    case KEY_UP:
+      if(start > 0)
+        start--;
+      break;
+    default:
+      pstate = ST_BROWSE;
   }
+  return 0;
+}
+
+
+void help_init() {
+  page = 1;
+  start = 0;
+  pstate = ST_HELP;
 }
 
 

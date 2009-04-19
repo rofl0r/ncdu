@@ -27,6 +27,7 @@
 #include "browser.h"
 #include "util.h"
 #include "calc.h"
+#include "help.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -434,11 +435,11 @@ int browse_key(int ch) {
     case 'i':
       toggle(flags, BF_INFO);
       break;
-      /*
     case '?':
-      showHelp();
+      help_init();
       nonfo++;
       break;
+      /*
     case 'd':
       drawBrowser(0);
       n = selected();
