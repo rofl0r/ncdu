@@ -145,7 +145,7 @@ void browse_draw_info(struct dir *dr) {
   attroff(A_BOLD);
 
   ncaddstr(2,  9, cropstr(dr->name, 49));
-  ncaddstr(3,  9, cropstr(getpath(dr), 49));
+  ncaddstr(3,  9, cropstr(getpath(dr->parent), 49));
   ncaddstr(4,  9, dr->flags & FF_DIR ? "Directory"
       : dr->flags & FF_FILE ? "File" : "Other (link, device, socket, ..)");
   ncprint(6, 18, "%s (%s B)", formatsize(dr->size),  fullsize(dr->size));
@@ -248,7 +248,7 @@ int browse_draw() {
   mvhline(1, 0, '-', wincols);
   if(cur) {
     mvaddch(1, 3, ' ');
-    tmp2 = getpath(cur);
+    tmp2 = getpath(cur->parent);
     mvaddstr(1, 4, cropstr(tmp2, wincols-8));
     mvaddch(1, 4+((int)strlen(tmp2) > wincols-8 ? wincols-8 : (int)strlen(tmp2)), ' ');
   }
@@ -416,7 +416,7 @@ int browse_key(int ch) {
 
    /* refresh */
     case 'r':
-      calc_init(getpath(browse_dir), browse_dir->parent);
+      calc_init(getpath(browse_dir->parent), browse_dir->parent);
       nonfo++;
       sort++;
       break;

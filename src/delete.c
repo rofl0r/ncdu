@@ -191,7 +191,7 @@ int delete_dir(struct dir *dr) {
   char *path;
 
   /* calling path_chdir() this often isn't exactly efficient... */
-  path = getpath(dr->sub);
+  path = getpath(dr->parent);
   path_chdir(path);
 
   /* check for input or screen resizes */
