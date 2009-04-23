@@ -74,8 +74,9 @@ char *fullsize(const off_t);
 /* recursively free()s a directory tree */
 void freedir(struct dir *);
 
-/* generates full path from a dir item */
-char *getpath(struct dir *, char *);
+/* generates full path from a dir item,
+   returned pointer will be overwritten with a subsequent call */
+char *getpath(struct dir *);
 
 #endif
 

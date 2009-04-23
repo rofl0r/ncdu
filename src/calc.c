@@ -53,27 +53,24 @@ char calc_smfs  = 0;
 
 /* global vars for internal use */
 char failed;             /* 1 on fatal error */
-char curpath[PATH_MAX];  /* last lstat()'ed item */
-char lasterr[PATH_MAX];  /* last unreadable dir/item */
-char errmsg[128];        /* error message, when err=1 */
+char *curpath;           /* last lstat()'ed item */
+char *lasterr;           /* last unreadable dir/item */
+char errmsg[128];        /* error message, when failed=1 */
 struct dir *root;        /* root directory struct we're calculating */
 struct dir *orig;        /* original directory, when recalculating */
 dev_t curdev;            /* current device we're calculating on */
 long lastupdate;         /* time of the last screen update */
 int anpos;               /* position of the animation string */
+int curpathl = 0, lasterrl = 0;
 
 
-int calc_item(struct dir *par, char *path, char *name) {
-  char tmp[PATH_MAX];
+int calc_item(struct dir *par, char *name) {
   struct dir *t, *d;
   struct stat fs;
+  char *tmp;
 
   if(name[0] == '.' && (name[1] == '\0' || (name[1] == '.' && name[2] == '\0')))
     return 0;
-
-  /* path too long - ignore file */
-  if(strlen(path)+strlen(name)+1 > PATH_MAX)
-    return 1;
 
   /* allocate dir and fix references */
   d = calloc(sizeof(struct dir), 1);
@@ -96,17 +93,22 @@ int calc_item(struct dir *par, char *path, char *name) {
   }
 #endif
 
-  /* lstat */
-  strcpy(tmp, path);
-  strcat(tmp, name);
+  /* update curpath */
+  tmp = getpath(d);
+  if((int)strlen(tmp)+1 > curpathl) {
+    curpathl = strlen(tmp)+1;
+    curpath = realloc(curpath, curpathl);
+  }
   strcpy(curpath, tmp);
-  if(lstat(tmp, &fs)) {
+
+  /* lstat */
+  if(lstat(d->name, &fs)) {
     d->flags |= FF_ERR;
     return 0;
   }
 
   /* check for excludes and same filesystem */
-  if(exclude_match(tmp))
+  if(exclude_match(curpath))
     d->flags |= FF_EXL;
 
   if(calc_smfs && curdev != fs.st_dev)
@@ -136,20 +138,26 @@ int calc_item(struct dir *par, char *path, char *name) {
 }
 
 
-/* recursively walk through the directory tree */
-int calc_dir(struct dir *dest, char *path) {
+/* recursively walk through the directory tree,
+   assumes path resides in the cwd */
+int calc_dir(struct dir *dest) {
   struct dir *t;
   DIR *dir;
+  char *tmp;
   struct dirent *dr;
-  char tmp[PATH_MAX];
-  int len;
+  int ch;
 
   if(input_handle(1))
     return 1;
 
   /* open directory */
-  if((dir = opendir(path)) == NULL) {
-    strcpy(lasterr, path);
+  if((dir = opendir(dest->name)) == NULL) {
+    tmp = getpath(dest);
+    if(lasterrl < (int)strlen(tmp)+1) {
+      lasterrl = strlen(tmp)+1;
+      lasterr = realloc(lasterr, lasterrl);
+    }
+    strcpy(lasterr, tmp);
     dest->flags |= FF_ERR;
     t = dest;
     while((t = t->parent) != NULL)
@@ -157,16 +165,15 @@ int calc_dir(struct dir *dest, char *path) {
     return 0;
   }
 
-  /* add leading slash */
-  len = strlen(path);
-  if(path[len-1] != '/') {
-    path[len] = '/';
-    path[++len] = '\0';
+  /* chdir */
+  if(chdir(dest->name) < 0) {
+      dest->flags |= FF_ERR;
+    return 0;
   }
 
   /* read directory */
   while((dr = readdir(dir)) != NULL) {
-    if(calc_item(dest, path, dr->d_name))
+    if(calc_item(dest, dr->d_name))
       dest->flags |= FF_ERR;
     if(input_handle(1))
       return 1;
@@ -190,13 +197,18 @@ int calc_dir(struct dir *dest, char *path) {
   }
 
   /* calculate subdirectories */
+  ch = 0;
   for(t=dest->sub; t!=NULL; t=t->next)
-    if(t->flags & FF_DIR && !(t->flags & FF_EXL || t->flags & FF_OTHFS)) {
-      strcpy(tmp, path);
-      strcat(tmp, t->name);
-      if(calc_dir(t, tmp))
+    if(t->flags & FF_DIR && !(t->flags & FF_EXL || t->flags & FF_OTHFS))
+      if(calc_dir(t))
         return 1;
-    }
+
+  /* chdir back */
+  if(chdir("..") < 0) {
+    failed = 1;
+    strcpy(errmsg, "Couldn't chdir to previous directory");
+    return 1;
+  }
 
   return 0;
 }
@@ -295,6 +307,11 @@ void calc_process() {
     strcpy(errmsg, "Directory not found");
     goto fail;
   }
+  if(path_chdir(tmp) < 0 || chdir("..") < 0) {
+    failed = 1;
+    strcpy(errmsg, "Couldn't chdir into directory");
+    goto fail;
+  }
 
   /* initialize parent dir */
   t = (struct dir *) calloc(1, sizeof(struct dir));
@@ -306,7 +323,7 @@ void calc_process() {
   curdev = fs.st_dev;
 
   /* start calculating */
-  if(!calc_dir(root, tmp) && !failed) {
+  if(!calc_dir(root) && !failed) {
     browse_init(root->sub);
 
     /* update references and free original item */
@@ -344,10 +361,22 @@ fail:
 
 
 void calc_init(char *dir, struct dir *org) {
-  failed = anpos = lasterr[0] = 0;
+  failed = anpos = 0;
   lastupdate = 999;
   orig = org;
+  if(curpathl == 0) {
+    curpathl = strlen(dir);
+    curpath = malloc(curpathl);
+  } else if(curpathl < (int)strlen(dir)+1) {
+    curpathl = strlen(dir)+1;
+    curpath = realloc(curpath, curpathl);
+  }
   strcpy(curpath, dir);
+  if(lasterrl == 0) {
+    lasterrl = 1;
+    lasterr = malloc(lasterrl);
+  }
+  lasterr[0] = 0;
   pstate = ST_CALC;
 }
 

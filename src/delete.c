@@ -27,6 +27,7 @@
 #include "ncdu.h"
 #include "util.h"
 #include "browser.h"
+#include "path.h"
 
 #include <string.h>
 #include <errno.h>
@@ -42,10 +43,10 @@
 int delete_delay = 100;
 
 long lastupdate;
-struct dir *root, *nextsel;
+struct dir *root, *nextsel, *curdir;
 char noconfirm = 0,
      ignoreerr = 0,
-     state, seloption, curfile[PATH_MAX];
+     state, seloption;
 int lasterrno;
 
 
@@ -77,7 +78,7 @@ void delete_draw_confirm() {
 void delete_draw_progress() {
   nccreate(6, 60, "Deleting...");
 
-  ncaddstr(1, 2, cropstr(curfile, 47));
+  ncaddstr(1, 2, cropstr(getpath(curdir), 47));
   ncaddstr(4, 41, "Press q to abort");
 }
 
@@ -85,7 +86,7 @@ void delete_draw_progress() {
 void delete_draw_error() {
   nccreate(6, 60, "Error!");
 
-  ncprint(1, 2, "Can't delete %s:", cropstr(curfile, 42));
+  ncprint(1, 2, "Can't delete %s:", cropstr(getpath(curdir), 42));
   ncaddstr(2, 4, strerror(lasterrno));
 
   if(seloption == 0)
@@ -187,15 +188,14 @@ int delete_key(int ch) {
 int delete_dir(struct dir *dr) {
   struct dir *nxt, *cur;
   int r;
-  char file[PATH_MAX];
+  char *path;
 
-  getpath(dr, file);
-  if(file[strlen(file)-1] != '/')
-    strcat(file, "/");
-  strcat(file, dr->name);
+  /* calling path_chdir() this often isn't exactly efficient... */
+  path = getpath(dr->sub);
+  path_chdir(path);
 
   /* check for input or screen resizes */
-  strcpy(curfile, file);
+  curdir = dr;
   if(input_handle(1))
     return 1;
 
@@ -210,9 +210,9 @@ int delete_dir(struct dir *dr) {
           return 1;
       }
     }
-    r = rmdir(file);
+    r = rmdir(dr->name);
   } else
-    r = unlink(file);
+    r = unlink(dr->name);
 
   /* error occured, ask user what to do */
   if(r == -1 && !ignoreerr) {

@@ -35,6 +35,8 @@ int subwinr, subwinc;
 char cropstrdat[4096];
 char formatsizedat[8];
 char fullsizedat[20]; /* max: 999.999.999.999.999 */
+char *getpathdat;
+int getpathdatl = 0;
 
 
 char *cropstr(const char *from, int s) {
@@ -208,20 +210,36 @@ void freedir(struct dir *dr) {
 }
 
 
-char *getpath(struct dir *cur, char *to) {
-  struct dir *d, *list[100];
-  int c = 0;
+char *getpath(struct dir *cur) {
+  struct dir *d, **list;
+  int c, i;
 
-  for(d = cur; (d = d->parent) != NULL; )
-    list[c++] = d;
-
-  to[0] = '\0';
-  while(c--) {
-    if(list[c]->parent && list[c]->parent->name[strlen(list[c]->parent->name)-1] != '/')
-      strcat(to, "/");
-    strcat(to, list[c]->name);
+  c = i = 1;
+  for(d=cur; d!=NULL; d=d->parent) {
+    i += strlen(d->name)+1;
+    c++;
   }
 
-  return to;
+  if(getpathdatl == 0) {
+    getpathdatl = i;
+    getpathdat = malloc(i);
+  } else if(getpathdatl < i) {
+    getpathdatl = i;
+    getpathdat = realloc(getpathdat, i);
+  }
+  list = malloc(c*sizeof(struct dir *));
+
+  c = 0;
+  for(d=cur; d!=NULL; d=d->parent)
+    list[c++] = d;
+
+  getpathdat[0] = '\0';
+  while(c--) {
+    if(list[c]->parent)
+      strcat(getpathdat, "/");
+    strcat(getpathdat, list[c]->name);
+  }
+  free(list);
+  return getpathdat;
 }
 

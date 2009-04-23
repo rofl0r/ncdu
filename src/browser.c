@@ -134,8 +134,6 @@ struct dir *browse_sort(struct dir *list) {
 
 
 void browse_draw_info(struct dir *dr) {
-  char path[PATH_MAX];
-
   nccreate(11, 60, "Item info");
 
   attron(A_BOLD);
@@ -147,7 +145,7 @@ void browse_draw_info(struct dir *dr) {
   attroff(A_BOLD);
 
   ncaddstr(2,  9, cropstr(dr->name, 49));
-  ncaddstr(3,  9, cropstr(getpath(dr, path), 49));
+  ncaddstr(3,  9, cropstr(getpath(dr), 49));
   ncaddstr(4,  9, dr->flags & FF_DIR ? "Directory"
       : dr->flags & FF_FILE ? "File" : "Other (link, device, socket, ..)");
   ncprint(6, 18, "%s (%s B)", formatsize(dr->size),  fullsize(dr->size));
@@ -226,7 +224,7 @@ void browse_draw_item(struct dir *n, int row, off_t max, int ispar) {
 
 int browse_draw() {
   struct dir *n, ref, *cur, *sel = NULL;
-  char tmp[PATH_MAX];
+  char tmp[PATH_MAX], *tmp2;
   int selected, i;
   off_t max = 1;
 
@@ -250,9 +248,9 @@ int browse_draw() {
   mvhline(1, 0, '-', wincols);
   if(cur) {
     mvaddch(1, 3, ' ');
-    getpath(cur, tmp);
-    mvaddstr(1, 4, cropstr(tmp, wincols-8));
-    mvaddch(1, 4+((int)strlen(tmp) > wincols-8 ? wincols-8 : (int)strlen(tmp)), ' ');
+    tmp2 = getpath(cur);
+    mvaddstr(1, 4, cropstr(tmp2, wincols-8));
+    mvaddch(1, 4+((int)strlen(tmp2) > wincols-8 ? wincols-8 : (int)strlen(tmp2)), ' ');
   }
 
   if(!cur)
@@ -339,7 +337,6 @@ void browse_key_sel(int change) {
 #define toggle(x,y) if(x & y) x -=y; else x |= y
 
 int browse_key(int ch) {
-  char tmp[PATH_MAX];
   char sort = 0, nonfo = 0;
   struct dir *n, *r;
 
@@ -419,7 +416,7 @@ int browse_key(int ch) {
 
    /* refresh */
     case 'r':
-      calc_init(getpath(browse_dir, tmp), browse_dir->parent);
+      calc_init(getpath(browse_dir), browse_dir->parent);
       nonfo++;
       sort++;
       break;
