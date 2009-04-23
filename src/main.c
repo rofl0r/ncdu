@@ -29,6 +29,7 @@
 #include "calc.h"
 #include "delete.h"
 #include "browser.h"
+#include "help.h"
 
 #include <stdlib.h>
 #include <string.h>
