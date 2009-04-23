@@ -30,6 +30,7 @@
 #include "delete.h"
 #include "browser.h"
 #include "help.h"
+#include "path.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -80,14 +81,11 @@ int input_handle(int wait) {
 
 
 /* parse command line */
-void argv_parse(int argc, char **argv, char *dir) {
+char *argv_parse(int argc, char **argv) {
   int i, j, len;
+  char *dir = NULL;
 
- /* load defaults */
-  memset(dir, 0, PATH_MAX);
-  getcwd(dir, PATH_MAX);
-
- /* read from commandline */
+  /* read from commandline */
   for(i=1; i<argc; i++) {
     if(argv[i][0] == '-') {
      /* flags requiring arguments */
@@ -128,24 +126,23 @@ void argv_parse(int argc, char **argv, char *dir) {
             printf("Unknown option: -%c\nSee '%s -h' for more information.\n", argv[i][j], argv[0]);
             exit(1);
         }
-    } else {
-      strncpy(dir, argv[i], PATH_MAX);
-      if(dir[PATH_MAX - 1] != 0) {
-        printf("Error: path length exceeds PATH_MAX\n");
-        exit(1);
-      }
-      dir[PATH_MAX - 1] = 0;
-    }
+    } else
+      dir = argv[i];
   }
+  return dir;
 }
 
 
 /* main program */
 int main(int argc, char **argv) {
-  char dir[PATH_MAX];
-  argv_parse(argc, argv, dir);
+  char *dir;
+
+  if((dir = argv_parse(argc, argv)) == NULL)
+    dir = path_real(".");
 
   calc_init(dir, NULL);
+  if(dir < argv[0] || dir > argv[argc])
+    free(dir);
 
   initscr();
   cbreak();
