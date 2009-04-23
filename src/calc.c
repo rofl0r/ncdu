@@ -28,6 +28,7 @@
 #include "exclude.h"
 #include "util.h"
 #include "browser.h"
+#include "path.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -45,21 +46,6 @@
 # define S_BLKSIZE 512
 #endif
 
-#ifndef LINK_MAX
-# ifdef _POSIX_LINK_MAX
-#  define LINK_MAX _POSIX_LINK_MAX
-# else
-#  define LINK_MAX 32
-# endif
-#endif
-
-#ifndef S_ISLNK
-# ifndef S_IFLNK
-#  define S_IFLNK 0120000
-# endif
-# define S_ISLNK(x) (x & S_IFLNK)
-#endif
-
 
 /* external vars */
 int  calc_delay = 100;
@@ -75,107 +61,6 @@ struct dir *orig;        /* original directory, when recalculating */
 dev_t curdev;            /* current device we're calculating on */
 long lastupdate;         /* time of the last screen update */
 int anpos;               /* position of the animation string */
-
-
-/* My own implementation of realpath()
-    - assumes that *every* possible path fits in PATH_MAX bytes
-    - does not set errno on error
-    - has not yet been fully tested
-*/
-char *rpath(const char *from, char *to) {
-  char tmp[PATH_MAX], cwd[PATH_MAX], cur[PATH_MAX], app[PATH_MAX];
-  int i, j, l, k, last, ll = 0;
-  struct stat st;
-
-  getcwd(cwd, PATH_MAX);
-  strcpy(cur, from);
-  app[0] = 0;
-
-  loop:
-  /* not an absolute path, add current directory */
-  if(cur[0] != '/') {
-    if(!(cwd[0] == '/' && cwd[1] == 0))
-      strcpy(tmp, cwd);
-    else
-      tmp[0] = 0;
-    if(strlen(cur) + 2 > PATH_MAX - strlen(tmp))
-      return(NULL);
-    strcat(tmp, "/");
-    strcat(tmp, cur);
-  } else
-    strcpy(tmp, cur);
-
-  /* now fix things like '.' and '..' */
-  i = j = last = 0;
-  l = strlen(tmp);
-  while(1) {
-    if(tmp[i] == 0)
-      break;
-    /* . */
-    if(l >= i+2 && tmp[i] == '/' && tmp[i+1] == '.' && (tmp[i+2] == 0 || tmp[i+2] == '/')) {
-      i+= 2;
-      continue;
-    }
-    /* .. */
-    if(l >= i+3 && tmp[i] == '/' && tmp[i+1] == '.' && tmp[i+2] == '.' && (tmp[i+3] == 0 || tmp[i+3] == '/')) {
-      for(k=j; --k>0;)
-        if(to[k] == '/' && k != j-1)
-          break;
-      j -= j-k;
-      if(j < 1) j = 1;
-      i += 3;
-      continue;
-    }
-    /* remove double slashes */
-    if(tmp[i] == '/' && i>0 && tmp[i-1] == '/') {
-      i++;
-      continue;
-    }
-    to[j++] = tmp[i++];
-  }
-  /* remove leading slashes */
-  while(--j > 0) {
-    if(to[j] != '/')
-      break;
-  }
-  to[j+1] = 0;
-  /* make sure we do have something left in case our path is / */
-  if(to[0] == 0) {
-    to[0] = '/';
-    to[1] = 0;
-  }
-  /* append 'app' */
-  if(app[0] != 0)
-    strcat(to, app);
-
-  j = strlen(to);
-  /* check for symlinks */
-  for(i=1; i<=j; i++) {
-    if(to[i] == '/' || to[i] == 0) {
-      strncpy(tmp, to, i);
-      tmp[i] = 0;
-      if(lstat(tmp, &st) < 0)
-        return(NULL);
-      if(S_ISLNK(st.st_mode)) {
-        if(++ll > LINK_MAX || (k = readlink(tmp, cur, PATH_MAX)) < 0)
-          return(NULL);
-        cur[k] = 0;
-        if(to[i] != 0)
-          strcpy(app, &to[i]);
-        strcpy(cwd, tmp);
-        for(k=strlen(cwd); --k>0;)
-          if(cwd[k] == '/')
-            break;
-        cwd[k] = 0;
-        goto loop;
-      }
-      if(!S_ISDIR(st.st_mode))
-        return(NULL);
-    }
-  }
-
-  return(to);
-}
 
 
 int calc_item(struct dir *par, char *path, char *name) {
@@ -400,12 +285,12 @@ int calc_key(int ch) {
 
 
 void calc_process() {
-  char tmp[PATH_MAX];
+  char *tmp;
   struct stat fs;
   struct dir *t;
 
   /* check root directory */
-  if(rpath(curpath, tmp) == NULL || lstat(tmp, &fs) != 0 || !S_ISDIR(fs.st_mode)) {
+  if((tmp = path_real(curpath)) == NULL || lstat(tmp, &fs) != 0 || !S_ISDIR(fs.st_mode)) {
     failed = 1;
     strcpy(errmsg, "Directory not found");
     goto fail;
@@ -416,8 +301,7 @@ void calc_process() {
   t->size = fs.st_blocks * S_BLKSIZE;
   t->asize = fs.st_size;
   t->flags |= FF_DIR;
-  t->name = (char *) malloc(strlen(tmp)+1);
-  strcpy(t->name, orig ? orig->name : tmp);
+  t->name = tmp;
   root = t;
   curdev = fs.st_dev;
 
