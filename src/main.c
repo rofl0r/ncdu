@@ -155,7 +155,7 @@ int main(int argc, char **argv) {
   while(pstate != ST_QUIT) {
     if(pstate == ST_CALC)
       calc_process();
-    if(pstate == ST_DEL)
+    else if(pstate == ST_DEL)
       delete_process();
     else if(input_handle(0))
       break;
