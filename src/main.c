@@ -141,8 +141,6 @@ int main(int argc, char **argv) {
     dir = path_real(".");
 
   calc_init(dir, NULL);
-  if(dir < argv[0] || dir > argv[argc])
-    free(dir);
 
   initscr();
   cbreak();
