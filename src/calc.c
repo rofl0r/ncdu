@@ -297,27 +297,32 @@ int calc_key(int ch) {
 
 
 void calc_process() {
-  char *tmp;
+  char *path, *name;
   struct stat fs;
   struct dir *t;
 
   /* check root directory */
-  if((tmp = path_real(curpath)) == NULL) {
+  if((path = path_real(curpath)) == NULL) {
     failed = 1;
     strcpy(errmsg, "Directory not found");
     goto calc_fail;
   }
+  /* split into path and last component */
+  name = strrchr(path, '/');
+  *(name++) = 0;
   /* we need to chdir so we can provide relative paths for lstat() and opendir(),
    * this to prevent creating path names longer than PATH_MAX */
-  if(path_chdir(tmp) < 0 || chdir("..") < 0) {
+  if(path_chdir(path) < 0) {
     failed = 1;
     strcpy(errmsg, "Couldn't chdir into directory");
+    free(path);
     goto calc_fail;
   }
   /* would be strange for this to fail, but oh well... */
-  if(lstat(tmp, &fs) != 0 || !S_ISDIR(fs.st_mode)) {
+  if(lstat(name, &fs) != 0 || !S_ISDIR(fs.st_mode)) {
     failed = 1;
     strcpy(errmsg, "Couldn't stat directory");
+    free(path);
     goto calc_fail;
   }
 
@@ -326,9 +331,18 @@ void calc_process() {
   t->size = fs.st_blocks * S_BLKSIZE;
   t->asize = fs.st_size;
   t->flags |= FF_DIR;
-  t->name = tmp;
+  if(orig) {
+    t->name = malloc(strlen(orig->name)+1);
+    strcpy(t->name, orig->name);
+  } else {
+    t->name = malloc(strlen(path)+strlen(name)+1);
+    strcpy(t->name, path);
+    strcat(t->name, "/");
+    strcat(t->name, name);
+  }
   root = t;
   curdev = fs.st_dev;
+  free(path);
 
   /* start calculating */
   if(!calc_dir(root) && !failed) {
