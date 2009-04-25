@@ -53,7 +53,7 @@ char calc_smfs  = 0;
 
 /* global vars for internal use */
 char failed;             /* 1 on fatal error */
-char *curpath;           /* last lstat()'ed item */
+char *curpath;           /* last lstat()'ed item, used for excludes matching and display */
 char *lasterr;           /* last unreadable dir/item */
 char errmsg[128];        /* error message, when failed=1 */
 struct dir *root;        /* root directory struct we're calculating */
@@ -64,10 +64,34 @@ int anpos;               /* position of the animation string */
 int curpathl = 0, lasterrl = 0;
 
 
+/* adds name to curpath */
+void calc_enterpath(char *name) {
+  int n;
+
+  n = strlen(curpath)+strlen(name)+2;
+  if(n > curpathl) {
+    curpathl = n;
+    curpath = realloc(curpath, curpathl);
+  }
+  if(curpath[1])
+    strcat(curpath, "/");
+  strcat(curpath, name);
+}
+
+
+/* removes last component from curpath */
+void calc_leavepath() {
+  char *tmp;
+  if((tmp = strrchr(curpath, '/')) != curpath)
+    tmp[0] = 0;
+  else
+    tmp[1] = 0;
+}
+
+
 int calc_item(struct dir *par, char *name) {
   struct dir *t, *d;
   struct stat fs;
-  char *tmp;
 
   if(name[0] == '.' && (name[1] == '\0' || (name[1] == '.' && name[2] == '\0')))
     return 0;
@@ -75,13 +99,8 @@ int calc_item(struct dir *par, char *name) {
   /* allocate dir and fix references */
   d = calloc(sizeof(struct dir), 1);
   d->parent = par;
-  if(par->sub == NULL)
-    par->sub = d;
-  else {
-    for(t=par->sub; t->next!=NULL; t=t->next)
-      ;
-    t->next = d;
-  }
+  d->next = par->sub;
+  par->sub = d;
   d->name = malloc(strlen(name)+1);
   strcpy(d->name, name);
 
@@ -93,22 +112,14 @@ int calc_item(struct dir *par, char *name) {
   }
 #endif
 
-  /* update curpath */
-  tmp = getpath(d);
-  if((int)strlen(tmp)+1 > curpathl) {
-    curpathl = strlen(tmp)+1;
-    curpath = realloc(curpath, curpathl);
-  }
-  strcpy(curpath, tmp);
-
   /* lstat */
-  if(lstat(d->name, &fs)) {
+  if(lstat(name, &fs)) {
     d->flags |= FF_ERR;
     return 0;
   }
 
   /* check for excludes and same filesystem */
-  if(exclude_match(curpath))
+  if(exclude_match(d->name))
     d->flags |= FF_EXL;
 
   if(calc_smfs && curdev != fs.st_dev)
@@ -134,6 +145,7 @@ int calc_item(struct dir *par, char *name) {
       t->asize += d->asize;
     }
   }
+
   return 0;
 }
 
@@ -143,21 +155,22 @@ int calc_item(struct dir *par, char *name) {
 int calc_dir(struct dir *dest, char *name) {
   struct dir *t;
   DIR *dir;
-  char *tmp;
   struct dirent *dr;
   int ch;
 
   if(input_handle(1))
     return 1;
 
-  /* open directory */
-  if((dir = opendir(name)) == NULL) {
-    tmp = getpath(dest);
-    if(lasterrl < (int)strlen(tmp)+1) {
-      lasterrl = strlen(tmp)+1;
+  /* curpath */
+  calc_enterpath(name);
+
+  /* open & chdir into directory */
+  if((dir = opendir(name)) == NULL || chdir(name) < 0) {
+    if(lasterrl < (int)strlen(curpath)) {
+      lasterrl = strlen(curpath)+1;
       lasterr = realloc(lasterr, lasterrl);
     }
-    strcpy(lasterr, tmp);
+    strcpy(lasterr, curpath);
     dest->flags |= FF_ERR;
     t = dest;
     while((t = t->parent) != NULL)
@@ -165,18 +178,14 @@ int calc_dir(struct dir *dest, char *name) {
     return 0;
   }
 
-  /* chdir */
-  if(chdir(name) < 0) {
-      dest->flags |= FF_ERR;
-    return 0;
-  }
-
   /* read directory */
   while((dr = readdir(dir)) != NULL) {
+    calc_enterpath(dr->d_name);
     if(calc_item(dest, dr->d_name))
       dest->flags |= FF_ERR;
     if(input_handle(1))
       return 1;
+    calc_leavepath();
     errno = 0;
   }
 
@@ -209,6 +218,7 @@ int calc_dir(struct dir *dest, char *name) {
     strcpy(errmsg, "Couldn't chdir to previous directory");
     return 1;
   }
+  calc_leavepath();
 
   return 0;
 }
@@ -342,6 +352,13 @@ void calc_process() {
   }
   root = t;
   curdev = fs.st_dev;
+
+  /* update curpath */
+  if((int)strlen(path)+1 > curpathl) {
+    curpathl = strlen(path)+1;
+    curpath = realloc(curpath, curpathl);
+  }
+  strcpy(curpath, path);
 
   /* start calculating */
   if(!calc_dir(root, name) && !failed) {
