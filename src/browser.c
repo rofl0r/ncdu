@@ -310,7 +310,8 @@ void browse_key_sel(int change) {
   struct dir *n, *cur, par;
   int i, max;
 
-  cur = browse_dir;
+  if((cur = browse_dir) == NULL)
+    return;
   par.next = cur;
   if(cur->parent->parent)
     cur = &par;
@@ -402,13 +403,13 @@ int browse_key(int ch) {
           break;
       if(n != NULL && n->sub != NULL)
         browse_dir = n->sub;
-      if(n == NULL && browse_dir->parent->parent)
+      if(n == NULL && browse_dir != NULL && browse_dir->parent->parent)
         browse_dir = browse_dir->parent->parent->sub;
       nonfo++;
       sort++;
       break;
     case KEY_LEFT:
-      if(browse_dir->parent->parent != NULL)
+      if(browse_dir != NULL && browse_dir->parent->parent != NULL)
         browse_dir = browse_dir->parent->parent->sub;
       nonfo++;
       sort++;
@@ -416,7 +417,8 @@ int browse_key(int ch) {
 
    /* refresh */
     case 'r':
-      calc_init(getpath(browse_dir->parent), browse_dir->parent);
+      if(browse_dir != NULL)
+        calc_init(getpath(browse_dir->parent), browse_dir->parent);
       nonfo++;
       sort++;
       break;
@@ -457,7 +459,7 @@ int browse_key(int ch) {
       break;
   }
 
-  if(sort)
+  if(sort && browse_dir != NULL)
     browse_dir = browse_sort(browse_dir);
   if(nonfo)
     flags &= ~BF_INFO;
