@@ -302,15 +302,23 @@ void calc_process() {
   struct dir *t;
 
   /* check root directory */
-  if((tmp = path_real(curpath)) == NULL || lstat(tmp, &fs) != 0 || !S_ISDIR(fs.st_mode)) {
+  if((tmp = path_real(curpath)) == NULL) {
     failed = 1;
     strcpy(errmsg, "Directory not found");
-    goto fail;
+    goto calc_fail;
   }
+  /* we need to chdir so we can provide relative paths for lstat() and opendir(),
+   * this to prevent creating path names longer than PATH_MAX */
   if(path_chdir(tmp) < 0 || chdir("..") < 0) {
     failed = 1;
     strcpy(errmsg, "Couldn't chdir into directory");
-    goto fail;
+    goto calc_fail;
+  }
+  /* would be strange for this to fail, but oh well... */
+  if(lstat(tmp, &fs) != 0 || !S_ISDIR(fs.st_mode)) {
+    failed = 1;
+    strcpy(errmsg, "Couldn't stat directory");
+    goto calc_fail;
   }
 
   /* initialize parent dir */
@@ -352,7 +360,7 @@ void calc_process() {
 
   /* something went wrong... */
   freedir(root);
-fail:
+calc_fail:
   while(failed && !input_handle(0))
     ;
   pstate = orig ? ST_BROWSE : ST_QUIT;
