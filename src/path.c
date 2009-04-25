@@ -130,7 +130,7 @@ char *path_real_rec(char *cur, int *links) {
   int i, j, n, tmpl, lnkl = 0;
   char **arr, *tmp, *lnk, *ret = NULL;
 
-  tmpl = strlen(cur);
+  tmpl = strlen(cur)+1;
   tmp = malloc(tmpl);
 
   /* split path */
