@@ -342,10 +342,16 @@ void calc_process() {
   }
   root = t;
   curdev = fs.st_dev;
-  free(path);
 
   /* start calculating */
   if(!calc_dir(root, name) && !failed) {
+    free(path);
+    if(root->sub == NULL) {
+      freedir(root);
+      failed = 1;
+      strcpy(errmsg, "Directory empty.");
+      goto calc_fail;
+    }
     browse_init(root->sub);
 
     /* update references and free original item */
@@ -373,6 +379,7 @@ void calc_process() {
   }
 
   /* something went wrong... */
+  free(path);
   freedir(root);
 calc_fail:
   while(failed && !input_handle(0))
