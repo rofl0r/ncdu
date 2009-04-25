@@ -473,6 +473,7 @@ void browse_init(struct dir *cur) {
     browse_dir = cur;
   if(browse_dir != NULL && browse_dir->parent->sub != browse_dir)
     browse_dir = cur->parent->sub;
-  browse_dir = browse_sort(browse_dir);
+  if(browse_dir != NULL)
+    browse_dir = browse_sort(browse_dir);
 }
 
