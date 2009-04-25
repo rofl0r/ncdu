@@ -140,7 +140,7 @@ int calc_item(struct dir *par, char *name) {
 
 /* recursively walk through the directory tree,
    assumes path resides in the cwd */
-int calc_dir(struct dir *dest) {
+int calc_dir(struct dir *dest, char *name) {
   struct dir *t;
   DIR *dir;
   char *tmp;
@@ -151,7 +151,7 @@ int calc_dir(struct dir *dest) {
     return 1;
 
   /* open directory */
-  if((dir = opendir(dest->name)) == NULL) {
+  if((dir = opendir(name)) == NULL) {
     tmp = getpath(dest);
     if(lasterrl < (int)strlen(tmp)+1) {
       lasterrl = strlen(tmp)+1;
@@ -166,7 +166,7 @@ int calc_dir(struct dir *dest) {
   }
 
   /* chdir */
-  if(chdir(dest->name) < 0) {
+  if(chdir(name) < 0) {
       dest->flags |= FF_ERR;
     return 0;
   }
@@ -200,7 +200,7 @@ int calc_dir(struct dir *dest) {
   ch = 0;
   for(t=dest->sub; t!=NULL; t=t->next)
     if(t->flags & FF_DIR && !(t->flags & FF_EXL || t->flags & FF_OTHFS))
-      if(calc_dir(t))
+      if(calc_dir(t, t->name))
         return 1;
 
   /* chdir back */
@@ -345,7 +345,7 @@ void calc_process() {
   free(path);
 
   /* start calculating */
-  if(!calc_dir(root) && !failed) {
+  if(!calc_dir(root, name) && !failed) {
     browse_init(root->sub);
 
     /* update references and free original item */
