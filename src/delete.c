@@ -167,11 +167,6 @@ int delete_key(int ch) {
 int delete_dir(struct dir *dr) {
   struct dir *nxt, *cur;
   int r;
-  char *path;
-
-  /* calling path_chdir() this often isn't exactly efficient... */
-  path = getpath(dr->parent);
-  path_chdir(path);
 
   /* check for input or screen resizes */
   curdir = dr;
@@ -180,6 +175,8 @@ int delete_dir(struct dir *dr) {
 
   /* do the actual deleting */
   if(dr->flags & FF_DIR) {
+    if((r = chdir(dr->name)) < 0)
+      goto delete_nxt;
     if(dr->sub != NULL) {
       nxt = dr->sub;
       while(nxt != NULL) {
@@ -189,10 +186,13 @@ int delete_dir(struct dir *dr) {
           return 1;
       }
     }
+    if((r = chdir("..")) < 0)
+      goto delete_nxt;
     r = rmdir(dr->name);
   } else
     r = unlink(dr->name);
 
+delete_nxt:
   /* error occured, ask user what to do */
   if(r == -1 && !ignoreerr) {
     state = DS_FAILED;
@@ -217,8 +217,18 @@ void delete_process() {
     if(input_handle(0))
       return browse_init(root);
 
+  /* chdir */
+  if(path_chdir(getpath(root->parent)) < 0) {
+    state = DS_FAILED;
+    lasterrno = errno;
+    while(state == DS_FAILED)
+      if(input_handle(0))
+        return;
+  }
+
   /* delete */
   seloption = 0;
+  state = DS_PROGRESS;
   if(delete_dir(root))
     browse_init(root);
   else {
@@ -231,7 +241,7 @@ void delete_process() {
 
 void delete_init(struct dir *dr, struct dir *s) {
   state = DS_CONFIRM;
-  root = dr;
+  root = curdir = dr;
   pstate = ST_DEL;
   nextsel = s;
 }
