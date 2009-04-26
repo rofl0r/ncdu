@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
   char *dir;
 
   if((dir = argv_parse(argc, argv)) == NULL)
-    dir = path_real(".");
+    dir = ".";
 
   calc_init(dir, NULL);
 
