@@ -403,9 +403,9 @@ void calc_process() {
   }
 
   /* something went wrong... */
-  free(path);
   if(!path[1] && strcmp(name, "."))
     free(name);
+  free(path);
   freedir(root);
 calc_fail:
   while(failed && !input_handle(0))
