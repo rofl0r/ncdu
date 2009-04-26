@@ -194,12 +194,14 @@ delete_nxt:
   if(r == -1 && !ignoreerr) {
     state = DS_FAILED;
     lasterrno = errno;
+    curdir = dr;
     while(state == DS_FAILED)
       if(input_handle(0))
         return 1;
-  }
-
-  freedir(dr);
+  } else
+    freedir(dr);
+  if(r == -1 && root == dr)
+    return 1;
   return 0;
 }
 
