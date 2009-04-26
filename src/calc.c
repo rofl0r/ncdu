@@ -169,6 +169,7 @@ int calc_dir(struct dir *dest, char *name) {
     t = dest;
     while((t = t->parent) != NULL)
       t->flags |= FF_SERR;
+    calc_leavepath();
     return 0;
   }
 
@@ -177,8 +178,10 @@ int calc_dir(struct dir *dest, char *name) {
     calc_enterpath(dr->d_name);
     if(calc_item(dest, dr->d_name))
       dest->flags |= FF_ERR;
-    if(input_handle(1))
+    if(input_handle(1)) {
+      calc_leavepath();
       return 1;
+    }
     calc_leavepath();
     errno = 0;
   }
@@ -203,13 +206,16 @@ int calc_dir(struct dir *dest, char *name) {
   ch = 0;
   for(t=dest->sub; t!=NULL; t=t->next)
     if(t->flags & FF_DIR && !(t->flags & FF_EXL || t->flags & FF_OTHFS))
-      if(calc_dir(t, t->name))
+      if(calc_dir(t, t->name)) {
+        calc_leavepath();
         return 1;
+      }
 
   /* chdir back */
   if(chdir("..") < 0) {
     failed = 1;
     strcpy(errmsg, "Couldn't chdir to previous directory");
+    calc_leavepath();
     return 1;
   }
   calc_leavepath();
