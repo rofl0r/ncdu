@@ -19,4 +19,3 @@ Small list of planned features/changes, suggestions are always welcome.
 
 - Fix bugs:
   * Handle hard links
-  * Get rid of PATH_MAX reliance

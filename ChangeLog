@@ -4,9 +4,11 @@ git - ?
 	- Current directory is assumed when no directory is specified
 	- Size graph uses the apparent size if that is displayed
 	- Items are ordered by displayed size rather than disk usage
-	- Fixed rpath() bug on '/.'
 	- Removed switching between powers of 1000/1024
 	- Don't rely on the availability of suseconds_t
+	- Correctly handle paths longer than PATH_MAX
+	- Fixed various bugs related to rpath()
+	- Major code rewrite
 
 1.4 - 2008-09-10
 	- Removed the startup window
