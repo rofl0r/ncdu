@@ -287,6 +287,7 @@ void browse_draw() {
       break;
     i++;
   }
+  selected -= i;
 
   /* print the list to the screen */
   for(i=0; n!=NULL && i<winrows-3; n=n->next) {
