@@ -26,7 +26,7 @@
 #ifndef _calc_h
 #define _calc_h
 
-#include "ncdu.h"
+#include "global.h"
 
 extern char calc_smfs;  /* stay on the same filesystem */
 

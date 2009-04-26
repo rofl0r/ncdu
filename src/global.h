@@ -23,8 +23,8 @@
 
 */
 
-#ifndef _ncdu_h
-#define _ncdu_h
+#ifndef _global_h
+#define _global_h
 
 #include "config.h"
 #include <stdio.h>
@@ -83,5 +83,14 @@ extern long update_delay;
 /* handle input from keyboard and update display */
 int input_handle(int);
 
+
+/* import all other global functions and variables */
+#include "exclude.h"
+#include "util.h"
+#include "calc.h"
+#include "delete.h"
+#include "browser.h"
+#include "help.h"
+#include "path.h"
 
 #endif

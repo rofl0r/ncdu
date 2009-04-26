@@ -23,12 +23,7 @@
 
 */
 
-#include "ncdu.h"
-#include "browser.h"
-#include "util.h"
-#include "calc.h"
-#include "delete.h"
-#include "help.h"
+#include "global.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -418,14 +413,12 @@ int browse_key(int ch) {
       nonfo++;
       break;
 
-    /* refresh */
+    /* and other stuff */
     case 'r':
       if(browse_dir != NULL)
         calc_init(getpath(browse_dir->parent), browse_dir->parent);
       nonfo++;
       break;
-
-    /* and other stuff */
     case 'q':
       if(flags & BF_INFO)
         nonfo++;

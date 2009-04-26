@@ -26,7 +26,7 @@
 #ifndef _browser_h
 #define _browser_h
 
-#include "ncdu.h"
+#include "global.h"
 
 int  browse_key(int);
 void browse_draw(void);

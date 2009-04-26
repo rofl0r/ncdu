@@ -24,10 +24,7 @@
 */
 
 
-#include "ncdu.h"
-#include "util.h"
-#include "browser.h"
-#include "path.h"
+#include "global.h"
 
 #include <string.h>
 #include <errno.h>

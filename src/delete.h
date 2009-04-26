@@ -26,7 +26,7 @@
 #ifndef _delete_h
 #define _delete_h
 
-#include "ncdu.h"
+#include "global.h"
 
 void delete_process(void);
 int  delete_key(int);

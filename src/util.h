@@ -26,7 +26,7 @@
 #ifndef _util_h
 #define _util_h
 
-#include "ncdu.h"
+#include "global.h"
 #include <ncurses.h>
 
 /* updated when window is resized */

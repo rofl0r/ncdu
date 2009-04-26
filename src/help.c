@@ -23,10 +23,7 @@
 
 */
 
-#include "ncdu.h"
-#include "help.h"
-#include "browser.h"
-#include "util.h"
+#include "global.h"
 
 #include <ncurses.h>
 #include <string.h>

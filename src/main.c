@@ -23,14 +23,7 @@
 
 */
 
-#include "ncdu.h"
-#include "exclude.h"
-#include "util.h"
-#include "calc.h"
-#include "delete.h"
-#include "browser.h"
-#include "help.h"
-#include "path.h"
+#include "global.h"
 
 #include <stdlib.h>
 #include <string.h>

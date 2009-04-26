@@ -26,7 +26,7 @@
 #ifndef _help_h
 #define _help_h
 
-#include "ncdu.h"
+#include "global.h"
 
 int  help_key(int);
 void help_draw(void);
