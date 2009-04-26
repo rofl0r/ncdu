@@ -362,7 +362,7 @@ int browse_key(int ch) {
       browse_key_sel(winrows-3);
       break;
 
-   /* sorting items */
+    /* sorting items */
     case 'n':
       if(flags & BF_NAME)
         toggle(flags, BF_DESC);
@@ -394,32 +394,35 @@ int browse_key(int ch) {
       nonfo++;
       break;
 
-   /* browsing */
+    /* browsing */
     case 10:
     case KEY_RIGHT:
       for(n=browse_dir; n!=NULL; n=n->next)
         if(n->flags & FF_BSEL)
           break;
-      if(n != NULL && n->sub != NULL)
+      if(n != NULL && n->sub != NULL) {
         browse_dir = n->sub;
-      if(n == NULL && browse_dir != NULL && browse_dir->parent->parent)
+        sort++;
+      }
+      if(n == NULL && browse_dir != NULL && browse_dir->parent->parent) {
         browse_dir = browse_dir->parent->parent->sub;
+        sort++;
+      }
       nonfo++;
-      sort++;
       break;
     case KEY_LEFT:
-      if(browse_dir != NULL && browse_dir->parent->parent != NULL)
+      if(browse_dir != NULL && browse_dir->parent->parent != NULL) {
         browse_dir = browse_dir->parent->parent->sub;
+        sort++;
+      }
       nonfo++;
-      sort++;
       break;
 
-   /* refresh */
+    /* refresh */
     case 'r':
       if(browse_dir != NULL)
         calc_init(getpath(browse_dir->parent), browse_dir->parent);
       nonfo++;
-      sort++;
       break;
 
     /* and other stuff */
