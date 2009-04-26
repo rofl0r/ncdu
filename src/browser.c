@@ -151,7 +151,7 @@ void browse_draw_info(struct dir *dr) {
 
 
 void browse_draw_item(struct dir *n, int row, off_t max, int ispar) {
-  char tmp[1000], ct, dt, *size, gr[11];
+  char *line, ct, dt, *size, gr[11];
   int i, o;
   float pc;
 
@@ -194,23 +194,25 @@ void browse_draw_item(struct dir *n, int row, off_t max, int ispar) {
   }
 
   /* format and add item to the list */
+  line = malloc(winrows+1);
   switch(graph) {
     case 0:
-      sprintf(tmp, "%%c %%7s  %%c%%-%ds", wincols-12);
-      mvprintw(row, 0, tmp, ct, size, dt, cropstr(n->name, wincols-12));
+      sprintf(line, "%%c %%7s  %%c%%-%ds", wincols-12);
+      mvprintw(row, 0, line, ct, size, dt, cropstr(n->name, wincols-12));
       break;
     case 1:
-      sprintf(tmp, "%%c %%7s [%%10s] %%c%%-%ds", wincols-24);
-      mvprintw(row, 0, tmp, ct, size, gr, dt, cropstr(n->name, wincols-24));
+      sprintf(line, "%%c %%7s [%%10s] %%c%%-%ds", wincols-24);
+      mvprintw(row, 0, line, ct, size, gr, dt, cropstr(n->name, wincols-24));
       break;
     case 2:
-      sprintf(tmp, "%%c %%7s [%%4.1f%%%%] %%c%%-%ds", wincols-19);
-      mvprintw(row, 0, tmp, ct, size, pc, dt, cropstr(n->name, wincols-19));
+      sprintf(line, "%%c %%7s [%%4.1f%%%%] %%c%%-%ds", wincols-19);
+      mvprintw(row, 0, line, ct, size, pc, dt, cropstr(n->name, wincols-19));
       break;
     case 3:
-      sprintf(tmp, "%%c %%7s [%%4.1f%%%% %%10s] %%c%%-%ds", wincols-30);
-      mvprintw(row, 0, tmp, ct, size, pc, gr, dt, cropstr(n->name, wincols-30));
+      sprintf(line, "%%c %%7s [%%4.1f%%%% %%10s] %%c%%-%ds", wincols-30);
+      mvprintw(row, 0, line, ct, size, pc, gr, dt, cropstr(n->name, wincols-30));
   }
+  free(line);
 
   if(n->flags & FF_BSEL)
     attroff(A_REVERSE);
@@ -219,7 +221,7 @@ void browse_draw_item(struct dir *n, int row, off_t max, int ispar) {
 
 void browse_draw() {
   struct dir *n, ref, *cur, *sel = NULL;
-  char tmp[PATH_MAX], *tmp2;
+  char *line, *tmp;
   int selected, i;
   off_t max = 1;
 
@@ -233,9 +235,11 @@ void browse_draw() {
   mvprintw(0,0,"%s %s ~ Use the arrow keys to navigate, press ? for help", PACKAGE_NAME, PACKAGE_VERSION);
 
   if(cur) {
-    strcpy(tmp, formatsize(cur->parent->size));
+    line = malloc(winrows+1);
+    strcpy(line, formatsize(cur->parent->size));
     mvprintw(winrows-1, 0, " Total disk usage: %s  Apparent size: %s  Items: %d",
-      tmp, formatsize(cur->parent->asize), cur->parent->items);
+      line, formatsize(cur->parent->asize), cur->parent->items);
+    free(line);
   } else
     mvaddstr(winrows-1, 0, " No items to display.");
   attroff(A_REVERSE);
@@ -243,9 +247,9 @@ void browse_draw() {
   mvhline(1, 0, '-', wincols);
   if(cur) {
     mvaddch(1, 3, ' ');
-    tmp2 = getpath(cur->parent);
-    mvaddstr(1, 4, cropstr(tmp2, wincols-8));
-    mvaddch(1, 4+((int)strlen(tmp2) > wincols-8 ? wincols-8 : (int)strlen(tmp2)), ' ');
+    tmp = getpath(cur->parent);
+    mvaddstr(1, 4, cropstr(tmp, wincols-8));
+    mvaddch(1, 4+((int)strlen(tmp) > wincols-8 ? wincols-8 : (int)strlen(tmp)), ' ');
   }
 
   if(!cur)

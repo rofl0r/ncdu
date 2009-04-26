@@ -29,25 +29,6 @@
 #include "config.h"
 #include <stdio.h>
 #include <sys/types.h>
-#include <limits.h>
-
-/* PATH_MAX 260 on Cygwin is too small for /proc/registry */
-#ifdef __CYGWIN__
-# if PATH_MAX < 1024
-#  undef PATH_MAX
-#  define PATH_MAX 1024
-# endif
-#endif
-
-/* get PATH_MAX */
-#ifndef PATH_MAX
-# ifdef _POSIX_PATH_MAX
-#  define PATH_MAX _POSIX_PATH_MAX
-# else
-#  define PATH_MAX 4096
-# endif
-#endif
-
 
 /* File Flags (struct dir -> flags) */
 #define FF_DIR    0x01
