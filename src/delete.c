@@ -32,7 +32,6 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-#include <sys/time.h>
 
 
 #define DS_CONFIRM  0
@@ -40,9 +39,6 @@
 #define DS_FAILED   2
 
 
-int delete_delay = 100;
-
-long lastupdate;
 struct dir *root, *nextsel, *curdir;
 char noconfirm = 0,
      ignoreerr = 0,
@@ -104,30 +100,13 @@ void delete_draw_error() {
 }
 
 
-int delete_draw() {
-  struct timeval tv;
-
+void delete_draw() {
+  browse_draw();
   switch(state) {
-    case DS_CONFIRM:
-      browse_draw();
-      delete_draw_confirm();
-      return 0;
-    case DS_PROGRESS:
-      gettimeofday(&tv, (void *)NULL);
-      tv.tv_usec = (1000*(tv.tv_sec % 1000) + (tv.tv_usec / 1000)) / delete_delay;
-      if(lastupdate != tv.tv_usec) {
-        browse_draw();
-        delete_draw_progress();
-        lastupdate = tv.tv_usec;
-        return 0;
-      }
-      return 1;
-    case DS_FAILED:
-      browse_draw();
-      delete_draw_error();
-      return 0;
+    case DS_CONFIRM:  delete_draw_confirm();  break;
+    case DS_PROGRESS: delete_draw_progress(); break;
+    case DS_FAILED:   delete_draw_error();    break;
   }
-  return 1;
 }
 
 
@@ -239,7 +218,6 @@ void delete_process() {
       return browse_init(root);
 
   /* delete */
-  lastupdate = 999;
   seloption = 0;
   if(delete_dir(root))
     browse_init(root);

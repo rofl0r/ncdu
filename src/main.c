@@ -37,30 +37,46 @@
 #include <errno.h>
 
 #include <unistd.h>
+#include <sys/time.h>
 
 int pstate;
 
 int min_rows = 17,
     min_cols = 60;
+long update_delay = 100,
+     lastupdate = 999;
+
 
 void screen_draw() {
-  int n = 1;
   switch(pstate) {
-    case ST_CALC:   n = calc_draw();   break;
-    case ST_BROWSE: n = browse_draw(); break;
-    case ST_HELP:   n = help_draw();   break;
-    case ST_DEL:    n = delete_draw(); break;
+    case ST_CALC:   calc_draw();   break;
+    case ST_BROWSE: browse_draw(); break;
+    case ST_HELP:   help_draw();   break;
+    case ST_DEL:    delete_draw(); break;
   }
-  if(!n)
-    refresh();
 }
 
 
+/* wait:
+ *  -1: non-blocking, always draw screen
+ *   0: blocking wait for input and always draw screen
+ *   1: non-blocking, draw screen only if a configured delay has passed or after keypress
+ */
 int input_handle(int wait) {
   int ch;
+  struct timeval tv;
 
-  nodelay(stdscr, wait);
-  screen_draw();
+  nodelay(stdscr, wait?1:0);
+  if(wait != 1)
+    screen_draw();
+  else {
+    gettimeofday(&tv, (void *)NULL);
+    tv.tv_usec = (1000*(tv.tv_sec % 1000) + (tv.tv_usec / 1000)) / update_delay;
+    if(lastupdate != tv.tv_usec) {
+      screen_draw();
+      lastupdate = tv.tv_usec;
+    }
+  }
   while((ch = getch()) != ERR) {
     if(ch == KEY_RESIZE) {
       if(ncresize(min_rows, min_cols))
@@ -108,7 +124,7 @@ char *argv_parse(int argc, char **argv) {
       for(j=1; j<len; j++)
         switch(argv[i][j]) {
           case 'x': calc_smfs = 1; break;
-          case 'q': calc_delay = delete_delay = 2000;     break;
+          case 'q': update_delay = 2000;     break;
           case '?':
           case 'h':
             printf("ncdu [-hqvx] [--exclude PATTERN] [-X FILE] directory\n\n");

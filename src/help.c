@@ -55,7 +55,7 @@ char *keys[KEYS*2] = {
 };
 
 
-int help_draw() {
+void help_draw() {
   int i, line;
 
   browse_draw();
@@ -155,7 +155,6 @@ int help_draw() {
       ncaddstr(10, 16, "http://dev.yorhel.nl/ncdu/");
       break;
   }
-  return 0;
 }
 
 

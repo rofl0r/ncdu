@@ -77,6 +77,8 @@ struct dir {
 
 /* program state */
 extern int pstate;
+/* minimum screen update interval when calculating, in ms */
+extern long update_delay;
 
 /* handle input from keyboard and update display */
 int input_handle(int);

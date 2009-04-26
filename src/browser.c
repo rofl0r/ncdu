@@ -222,7 +222,7 @@ void browse_draw_item(struct dir *n, int row, off_t max, int ispar) {
 }
 
 
-int browse_draw() {
+void browse_draw() {
   struct dir *n, ref, *cur, *sel = NULL;
   char tmp[PATH_MAX], *tmp2;
   int selected, i;
@@ -254,7 +254,7 @@ int browse_draw() {
   }
 
   if(!cur)
-    return 0;
+    return;
 
   /* add reference to parent dir */
   memset(&ref, 0, sizeof(struct dir));
@@ -302,7 +302,6 @@ int browse_draw() {
 
   /* move cursor to selected row for accessibility */
   move(selected+2, 0);
-  return 0;
 }
 
 

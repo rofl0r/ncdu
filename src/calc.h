@@ -28,12 +28,11 @@
 
 #include "ncdu.h"
 
-extern int  calc_delay; /* minimum screen update interval when calculating, in ms */
 extern char calc_smfs;  /* stay on the same filesystem */
 
 void calc_process(void);
 int  calc_key(int);
-int  calc_draw(void);
+void calc_draw(void);
 void calc_init(char *, struct dir *);
 
 

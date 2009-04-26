@@ -29,7 +29,7 @@
 #include "ncdu.h"
 
 int  browse_key(int);
-int  browse_draw(void);
+void browse_draw(void);
 void browse_init(struct dir *);
 
 

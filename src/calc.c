@@ -37,7 +37,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/time.h>
 #include <dirent.h>
 
 
@@ -48,7 +47,6 @@
 
 
 /* external vars */
-int  calc_delay = 100;
 char calc_smfs  = 0;
 
 /* global vars for internal use */
@@ -59,7 +57,6 @@ char errmsg[128];        /* error message, when failed=1 */
 struct dir *root;        /* root directory struct we're calculating */
 struct dir *orig;        /* original directory, when recalculating */
 dev_t curdev;            /* current device we're calculating on */
-long lastupdate;         /* time of the last screen update */
 int anpos;               /* position of the animation string */
 int curpathl = 0, lasterrl = 0;
 
@@ -246,7 +243,7 @@ void calc_draw_progress() {
   }
 
   /* animation - but only if the screen refreshes more than or once every second */
-  if(calc_delay <= 1000) {
+  if(update_delay <= 1000) {
     if(++anpos == 28)
        anpos = 0;
     strcpy(ani, "              ");
@@ -275,25 +272,12 @@ void calc_draw_error(char *cur, char *msg) {
 }
 
 
-int calc_draw() {
-  struct timeval tv;
-
-  if(failed) {
-    browse_draw();
+void calc_draw() {
+  browse_draw();
+  if(failed)
     calc_draw_error(curpath, errmsg);
-    return 0;
-  }
-
-  /* should we really draw the screen again? */
-  gettimeofday(&tv, (void *)NULL);
-  tv.tv_usec = (1000*(tv.tv_sec % 1000) + (tv.tv_usec / 1000)) / calc_delay;
-  if(lastupdate != tv.tv_usec) {
-    browse_draw();
+  else
     calc_draw_progress();
-    lastupdate = tv.tv_usec;
-    return 0;
-  }
-  return 1;
 }
 
 
@@ -408,7 +392,6 @@ calc_fail:
 
 void calc_init(char *dir, struct dir *org) {
   failed = anpos = 0;
-  lastupdate = 999;
   orig = org;
   if(curpathl == 0) {
     curpathl = strlen(dir);

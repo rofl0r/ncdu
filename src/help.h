@@ -29,7 +29,7 @@
 #include "ncdu.h"
 
 int  help_key(int);
-int  help_draw(void);
+void help_draw(void);
 void help_init();
 
 
