@@ -214,6 +214,9 @@ char *getpath(struct dir *cur) {
   struct dir *d, **list;
   int c, i;
 
+  if(!cur->name[0])
+    return "/";
+
   c = i = 1;
   for(d=cur; d!=NULL; d=d->parent) {
     i += strlen(d->name)+1;

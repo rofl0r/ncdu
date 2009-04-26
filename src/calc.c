@@ -344,9 +344,13 @@ void calc_process() {
     strcpy(t->name, orig->name);
   } else {
     t->name = malloc(strlen(path)+strlen(name)+1);
-    strcpy(t->name, path);
-    strcat(t->name, "/");
-    strcat(t->name, name);
+    if(strcmp(path, "/"))
+      strcpy(t->name, path);
+    if(strcmp(name, ".")) {
+      strcat(t->name, "/");
+      strcat(t->name, name);
+    } else
+      t->name[0] = 0;
   }
   root = t;
   curdev = fs.st_dev;
