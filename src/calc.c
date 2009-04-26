@@ -74,7 +74,9 @@ void calc_enterpath(char *name) {
 /* removes last component from curpath */
 void calc_leavepath() {
   char *tmp;
-  if((tmp = strrchr(curpath, '/')) != curpath)
+  if((tmp = strrchr(curpath, '/')) == NULL)
+    strcpy(curpath, "/");
+  else if(tmp != curpath)
     tmp[0] = 0;
   else
     tmp[1] = 0;
@@ -296,9 +298,20 @@ void calc_process() {
     strcpy(errmsg, "Directory not found");
     goto calc_fail;
   }
+
   /* split into path and last component */
   name = strrchr(path, '/');
-  *(name++) = 0;
+  if(name == path) {
+    if(!path[1])
+      name = ".";
+    else {
+      name = malloc(strlen(path));
+      strcpy(name, path+1);
+      path[1] = 0;
+    }
+  } else
+    *(name++) = 0;
+
   /* we need to chdir so we can provide relative paths for lstat() and opendir(),
    * this to prevent creating path names longer than PATH_MAX */
   if(path_chdir(path) < 0) {
@@ -333,15 +346,20 @@ void calc_process() {
   curdev = fs.st_dev;
 
   /* update curpath */
-  if((int)strlen(path)+1 > curpathl) {
-    curpathl = strlen(path)+1;
-    curpath = realloc(curpath, curpathl);
-  }
-  strcpy(curpath, path);
+  if(strcmp(name, ".")) {
+    if((int)strlen(path)+1 > curpathl) {
+      curpathl = strlen(path)+1;
+      curpath = realloc(curpath, curpathl);
+    }
+    strcpy(curpath, path);
+  } else
+    curpath[0] = 0;
 
   /* start calculating */
   if(!calc_dir(root, name) && !failed) {
     free(path);
+    if(!path[1] && strcmp(name, "."))
+      free(name);
     if(root->sub == NULL) {
       freedir(root);
       failed = 1;
@@ -375,6 +393,8 @@ void calc_process() {
   }
 
   /* something went wrong... */
+  if(!path[1] && strcmp(name, "."))
+    free(name);
   free(path);
   freedir(root);
 calc_fail:
@@ -389,7 +409,7 @@ void calc_init(char *dir, struct dir *org) {
   failed = anpos = 0;
   orig = org;
   if(curpathl == 0) {
-    curpathl = strlen(dir);
+    curpathl = strlen(dir)+1;
     curpath = malloc(curpathl);
   } else if(curpathl < (int)strlen(dir)+1) {
     curpathl = strlen(dir)+1;
