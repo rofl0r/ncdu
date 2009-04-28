@@ -185,7 +185,7 @@ int delete_dir(struct dir *dr) {
     }
     if((r = chdir("..")) < 0)
       goto delete_nxt;
-    r = rmdir(dr->name);
+    r = dr->sub == NULL ? rmdir(dr->name) : 0;
   } else
     r = unlink(dr->name);
 
@@ -198,11 +198,11 @@ delete_nxt:
     while(state == DS_FAILED)
       if(input_handle(0))
         return 1;
-  } else
+  } else if(!(dr->flags & FF_DIR && dr->sub != NULL)) {
     freedir(dr);
-  if(r == -1 && root == dr)
-    return 1;
-  return 0;
+    return 0;
+  }
+  return root == dr ? 1 : 0;
 }
 
 
