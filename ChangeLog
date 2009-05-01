@@ -9,6 +9,7 @@ git - ?
 	- Correctly handle paths longer than PATH_MAX
 	- Fixed various bugs related to rpath()
 	- Major code rewrite
+	- Fixed line width when displaying 100%
 
 1.4 - 2008-09-10
 	- Removed the startup window
@@ -16,8 +17,7 @@ git - ?
 	  be hidden with the 'h'-key
 	- Fixed buffer overflow when supplying a path longer
 	  than PATH_MAX	(patch by Tobias Stoeckmann)
-	- Used S_BLKSIZE instead of a hardcoded block size of
-	  512
+	- Used S_BLKSIZE instead of a hardcoded block size of 512
 	- Fixed display of disk usage and apparent sizes
 	- Updated ncdu -h
 	- Included patches for Cygwin
@@ -72,7 +72,7 @@ git - ?
 	  required anymore (but highly recommended)
 	- Added a warning for terminals smaller than 60x16
 	- Mountpoints (or any other directory pointing to
-	  another	filesystem) are now considered to be
+	  another filesystem) are now considered to be
 	  directories rather than files.
 
 0.1 - 2007-02-21

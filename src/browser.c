@@ -205,11 +205,11 @@ void browse_draw_item(struct dir *n, int row, off_t max, int ispar) {
       mvprintw(row, 0, line, ct, size, gr, dt, cropstr(n->name, wincols-24));
       break;
     case 2:
-      sprintf(line, "%%c %%7s [%%4.1f%%%%] %%c%%-%ds", wincols-19);
+      sprintf(line, "%%c %%7s [%%5.1f%%%%] %%c%%-%ds", wincols-20);
       mvprintw(row, 0, line, ct, size, pc, dt, cropstr(n->name, wincols-19));
       break;
     case 3:
-      sprintf(line, "%%c %%7s [%%4.1f%%%% %%10s] %%c%%-%ds", wincols-30);
+      sprintf(line, "%%c %%7s [%%5.1f%%%% %%10s] %%c%%-%ds", wincols-31);
       mvprintw(row, 0, line, ct, size, pc, gr, dt, cropstr(n->name, wincols-30));
   }
   free(line);
