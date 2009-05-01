@@ -185,7 +185,9 @@ void browse_draw_item(struct dir *n, int row, off_t max, int ispar) {
   size = formatsize(flags & BF_AS ? n->asize : n->size);
 
   /* create graph (if necessary) */
-  pc = ((float)(flags & BF_AS ? n->asize : n->size) / (float)(flags & BF_AS ? n->parent->asize : n->parent->size)) * 100.0f;
+  if((pc = (float)(flags & BF_AS ? n->parent->asize : n->parent->size)) < 1)
+    pc = 1.0f;
+  pc = ((float)(flags & BF_AS ? n->asize : n->size) / pc) * 100.0f;
   if(graph == 1 || graph == 3) {
     o = (int)(10.0f*(float)(flags & BF_AS ? n->asize : n->size) / (float)max);
     for(i=0; i<10; i++)
