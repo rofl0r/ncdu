@@ -267,7 +267,7 @@ void browse_draw() {
   }
 
   /* get maximum size and selected item */
-  for(n=cur, selected=i=0; n!=NULL; n=n->next) {
+  for(n=cur, selected=-1, i=0; n!=NULL; n=n->next) {
     if(ishidden(n))
       continue;
     if(n->flags & FF_BSEL) {
@@ -278,7 +278,7 @@ void browse_draw() {
       max = flags & BF_AS ? n->asize : n->size;
     i++;
   }
-  if(!selected)
+  if(selected < 0)
     cur->flags |= FF_BSEL;
 
   /* determine start position */
@@ -314,6 +314,7 @@ void browse_key_sel(int change) {
   if((cur = browse_dir) == NULL)
     return;
   par.next = cur;
+  par.flags = 0;
   if(cur->parent->parent)
     cur = &par;
 
@@ -410,6 +411,7 @@ int browse_key(int ch) {
         browse_dir = browse_dir->parent->parent->sub;
         sort++;
       }
+      browse_key_sel(0);
       nonfo++;
       break;
     case KEY_LEFT:
@@ -417,6 +419,7 @@ int browse_key(int ch) {
         browse_dir = browse_dir->parent->parent->sub;
         sort++;
       }
+      browse_key_sel(0);
       nonfo++;
       break;
 
@@ -479,5 +482,6 @@ void browse_init(struct dir *cur) {
     browse_dir = cur->parent->sub;
   if(browse_dir != NULL)
     browse_dir = browse_sort(browse_dir);
+  browse_key_sel(0);
 }
 
