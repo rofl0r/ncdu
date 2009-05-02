@@ -343,7 +343,7 @@ void calc_process() {
     t->name = malloc(strlen(orig->name)+1);
     strcpy(t->name, orig->name);
   } else {
-    t->name = malloc(strlen(path)+strlen(name)+1);
+    t->name = malloc(strlen(path)+strlen(name)+2);
     t->name[0] = 0;
     if(strcmp(path, "/"))
       strcpy(t->name, path);
