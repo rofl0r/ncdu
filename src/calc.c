@@ -113,7 +113,7 @@ int calc_item(struct dir *par, char *name) {
   }
 
   /* check for excludes and same filesystem */
-  if(exclude_match(d->name))
+  if(exclude_match(curpath))
     d->flags |= FF_EXL;
 
   if(calc_smfs && curdev != fs.st_dev)
