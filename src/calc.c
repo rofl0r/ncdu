@@ -152,9 +152,9 @@ int calc_item(struct dir *par, char *name) {
         linksl *= 2;
         if(!linksl) {
           linksl = 64;
-          links = malloc(linksl);
+          links = malloc(linksl*sizeof(struct link_inode));
         } else
-          links = realloc(links, linksl);
+          links = realloc(links, linksl*sizeof(struct link_inode));
       }
       links[i].dev = fs.st_dev;
       links[i].ino = fs.st_ino;
