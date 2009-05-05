@@ -143,9 +143,9 @@ int calc_item(struct dir *par, char *name) {
     for(i=0; i<linkst; i++)
       if(links[i].dev == fs.st_dev && links[i].ino == fs.st_ino)
         break;
-    /* found in the list, set size = 0 */
+    /* found in the list, set link flag (so the size won't get counted) */
     if(i != linkst)
-      fs.st_blocks = fs.st_size = 0;
+      d->flags |= FF_HLNK;
     /* not found, add to the list */
     else {
       if(++linkst > linksl) {
@@ -162,7 +162,7 @@ int calc_item(struct dir *par, char *name) {
   }
 
   /* count the size */
-  if(!(d->flags & FF_EXL || d->flags & FF_OTHFS)) {
+  if(!(d->flags & FF_EXL || d->flags & FF_OTHFS || d->flags & FF_HLNK)) {
     d->size = fs.st_blocks * S_BLKSIZE;
     d->asize = fs.st_size;
     for(t=d->parent; t!=NULL; t=t->parent) {

@@ -176,6 +176,7 @@ void browse_draw_item(struct dir *n, int row, off_t max, int ispar) {
         n->flags & FF_ERR ? '!' :
        n->flags & FF_SERR ? '.' :
       n->flags & FF_OTHFS ? '>' :
+       n->flags & FF_HLNK ? 'H' :
      !(n->flags & FF_FILE
     || n->flags & FF_DIR) ? '@' :
         n->flags & FF_DIR

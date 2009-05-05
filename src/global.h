@@ -37,7 +37,8 @@
 #define FF_OTHFS  0x08 /* excluded because it was an other filesystem */
 #define FF_EXL    0x10 /* excluded using exlude patterns */
 #define FF_SERR   0x20 /* error in subdirectory */
-#define FF_BSEL   0x40 /* selected */
+#define FF_HLNK   0x40 /* hard link (same file already encountered before) */
+#define FF_BSEL   0x80 /* selected */
 
 /* Program states */
 #define ST_CALC   0
