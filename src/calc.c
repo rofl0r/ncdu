@@ -53,7 +53,12 @@ struct dir *root;        /* root directory struct we're calculating */
 struct dir *orig;        /* original directory, when recalculating */
 dev_t curdev;            /* current device we're calculating on */
 int anpos;               /* position of the animation string */
-int curpathl = 0, lasterrl = 0;
+struct link_inode {      /* list of all non-dirs with nlink > 1 */
+  dev_t dev;
+  ino_t ino;
+} *links = NULL;
+int curpathl = 0, lasterrl = 0, linksl = 0, linkst = 0;
+
 
 
 /* adds name to curpath */
@@ -86,6 +91,7 @@ void calc_leavepath() {
 int calc_item(struct dir *par, char *name) {
   struct dir *t, *d;
   struct stat fs;
+  int i;
 
   if(name[0] == '.' && (name[1] == '\0' || (name[1] == '.' && name[2] == '\0')))
     return 0;
@@ -129,6 +135,31 @@ int calc_item(struct dir *par, char *name) {
   if(!(d->flags & FF_EXL))
     for(t=d->parent; t!=NULL; t=t->parent)
       t->items++;
+
+  /* check for hard links.
+     An item is only considered a hard link if it's not a directory,
+     has st_nlink > 1, and is already present in the links array */
+  if(!S_ISDIR(fs.st_mode) && fs.st_nlink > 1) {
+    for(i=0; i<linkst; i++)
+      if(links[i].dev == fs.st_dev && links[i].ino == fs.st_ino)
+        break;
+    /* found in the list, set size = 0 */
+    if(i != linkst)
+      fs.st_blocks = fs.st_size = 0;
+    /* not found, add to the list */
+    else {
+      if(++linkst > linksl) {
+        linksl *= 2;
+        if(!linksl) {
+          linksl = 64;
+          links = malloc(linksl);
+        } else
+          links = realloc(links, linksl);
+      }
+      links[i].dev = fs.st_dev;
+      links[i].ino = fs.st_ino;
+    }
+  }
 
   /* count the size */
   if(!(d->flags & FF_EXL || d->flags & FF_OTHFS)) {
@@ -297,6 +328,7 @@ void calc_process() {
   char *path, *name;
   struct stat fs;
   struct dir *t;
+  int n;
 
   /* check root directory */
   if((path = path_real(curpath)) == NULL) {
@@ -365,11 +397,20 @@ void calc_process() {
   } else
     curpath[0] = 0;
 
-  /* start calculating */
-  if(!calc_dir(root, name) && !failed) {
-    if(!path[1] && strcmp(name, "."))
-      free(name);
-    free(path);
+  /* calculate */
+  n = calc_dir(root, name);
+
+  /* free some resources */
+  if(!path[1] && strcmp(name, "."))
+    free(name);
+  free(path);
+  if(linksl) {
+    linksl = linkst = 0;
+    free(links);
+  }
+
+  /* success */
+  if(!n && !failed) {
     if(root->sub == NULL) {
       freedir(root);
       failed = 1;
@@ -403,9 +444,6 @@ void calc_process() {
   }
 
   /* something went wrong... */
-  if(!path[1] && strcmp(name, "."))
-    free(name);
-  free(path);
   freedir(root);
 calc_fail:
   while(failed && !input_handle(0))
