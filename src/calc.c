@@ -53,11 +53,7 @@ struct dir *root;        /* root directory struct we're calculating */
 struct dir *orig;        /* original directory, when recalculating */
 dev_t curdev;            /* current device we're calculating on */
 int anpos;               /* position of the animation string */
-struct link_inode {      /* list of all non-dirs with nlink > 1 */
-  dev_t dev;
-  ino_t ino;
-} *links = NULL;
-int curpathl = 0, lasterrl = 0, linksl = 0, linkst = 0;
+int curpathl = 0, lasterrl = 0;
 
 
 
@@ -136,33 +132,14 @@ int calc_item(struct dir *par, char *name) {
     for(t=d->parent; t!=NULL; t=t->parent)
       t->items++;
 
-  /* check for hard links.
-     An item is only considered a hard link if it's not a directory,
-     has st_nlink > 1, and is already present in the links array */
-  if(!S_ISDIR(fs.st_mode) && fs.st_nlink > 1) {
-    for(i=0; i<linkst; i++)
-      if(links[i].dev == fs.st_dev && links[i].ino == fs.st_ino)
-        break;
-    /* found in the list, set link flag (so the size won't get counted) */
-    if(i != linkst)
-      d->flags |= FF_HLNK;
-    /* not found, add to the list */
-    else {
-      if(++linkst > linksl) {
-        linksl *= 2;
-        if(!linksl) {
-          linksl = 64;
-          links = malloc(linksl*sizeof(struct link_inode));
-        } else
-          links = realloc(links, linksl*sizeof(struct link_inode));
-      }
-      links[i].dev = fs.st_dev;
-      links[i].ino = fs.st_ino;
-    }
-  }
+  /* Provide the necessary information for hard link checking */
+  d->ino = fs.st_ino;
+  d->dev = fs.st_dev;
+  if(!S_ISDIR(fs.st_mode) && fs.st_nlink > 1)
+    d->flags |= FF_HLNKC;
 
   /* count the size */
-  if(!(d->flags & FF_EXL || d->flags & FF_OTHFS || d->flags & FF_HLNK)) {
+  if(!(d->flags & FF_EXL || d->flags & FF_OTHFS)) {
     d->size = fs.st_blocks * S_BLKSIZE;
     d->asize = fs.st_size;
     for(t=d->parent; t!=NULL; t=t->parent) {
@@ -404,10 +381,6 @@ void calc_process() {
   if(!path[1] && strcmp(name, "."))
     free(name);
   free(path);
-  if(linksl) {
-    linksl = linkst = 0;
-    free(links);
-  }
 
   /* success */
   if(!n && !failed) {
@@ -417,7 +390,6 @@ void calc_process() {
       strcpy(errmsg, "Directory empty.");
       goto calc_fail;
     }
-    browse_init(root->sub);
 
     /* update references and free original item */
     if(orig) {
@@ -440,6 +412,9 @@ void calc_process() {
       }
       freedir(orig);
     }
+
+    link_del(root);
+    browse_init(root->sub);
     return;
   }
 
@@ -455,7 +430,8 @@ calc_fail:
 
 void calc_init(char *dir, struct dir *org) {
   failed = anpos = 0;
-  orig = org;
+  if((orig = org) != NULL)
+    link_add(orig);
   if(curpathl == 0) {
     curpathl = strlen(dir)+1;
     curpath = malloc(curpathl);

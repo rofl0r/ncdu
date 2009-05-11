@@ -29,6 +29,7 @@
 #include "config.h"
 #include <stdio.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 
 /* File Flags (struct dir -> flags) */
 #define FF_DIR    0x01
@@ -38,7 +39,8 @@
 #define FF_EXL    0x10 /* excluded using exlude patterns */
 #define FF_SERR   0x20 /* error in subdirectory */
 #define FF_HLNK   0x40 /* hard link (same file already encountered before) */
-#define FF_BSEL   0x80 /* selected */
+#define FF_HLNKC  0x80 /* hard link candidate (file with st_nlink > 1) */
+#define FF_BSEL  0x100 /* selected */
 
 /* Program states */
 #define ST_CALC   0
@@ -54,7 +56,9 @@ struct dir {
   char *name;
   off_t size, asize;
   unsigned long items;
-  unsigned char flags;
+  unsigned short flags;
+  dev_t dev;
+  ino_t ino;
 }; 
 
 /* program state */

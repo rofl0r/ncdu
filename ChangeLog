@@ -1,3 +1,6 @@
+git - ?
+  - Implemented hard link detection
+
 1.5 - 2009-05-02
 	- Fixed incorrect apparent size on directory refresh
 	- Browsing keys now work while file info window is displayed

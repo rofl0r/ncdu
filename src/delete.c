@@ -216,13 +216,19 @@ void delete_process() {
     if(input_handle(0))
       return browse_init(root);
 
+  /* temporarily re-add hard links, so we won't lose sizes in case we delete
+     a file of which another file outside this directory was marked as duplicate */
+  link_add(root);
+
   /* chdir */
   if(path_chdir(getpath(root->parent)) < 0) {
     state = DS_FAILED;
     lasterrno = errno;
     while(state == DS_FAILED)
-      if(input_handle(0))
+      if(input_handle(0)) {
+        link_del(root);
         return;
+      }
   }
 
   /* delete */
@@ -235,6 +241,7 @@ void delete_process() {
     if(nextsel)
       nextsel->flags |= FF_BSEL;
   }
+  link_del(root);
 }
 
 

@@ -38,6 +38,9 @@ char fullsizedat[20]; /* max: 999.999.999.999.999 */
 char *getpathdat;
 int getpathdatl = 0;
 
+struct dir **links;
+int linksl = 0, linkst = 0;
+
 
 char *cropstr(const char *from, int s) {
   int i, j, o = strlen(from);
@@ -245,4 +248,82 @@ char *getpath(struct dir *cur) {
   free(list);
   return getpathdat;
 }
+
+
+/* act =  0  -> just fill the links array
+   act =  1  -> fill array and remove duplicates
+   act = -1  -> use array to re-add duplicates */
+void link_list_rec(struct dir *d, int act) {
+  struct dir *t;
+  int i;
+
+  /* recursion, check sub directories */
+  for(t=d->sub; t!=NULL; t=t->next)
+    link_list_rec(t, act);
+
+  /* not a link candidate? ignore */
+  if(!(d->flags & FF_HLNKC))
+    return;
+
+  /* check against what we've found so far */
+  for(i=0; i<linkst; i++)
+    if(links[i]->dev == d->dev && links[i]->ino == d->ino)
+      break;
+
+  /* found in the list, set link flag and set size to zero */
+  if(act == 1 && i != linkst) {
+    d->flags |= FF_HLNK;
+    for(t=d->parent; t!=NULL; t=t->parent) {
+      t->size -= d->size;
+      t->asize -= d->asize;
+    }
+    d->size = d->asize = 0;
+    return;
+  }
+
+  /* found in the list, reset flag and re-add size */
+  if(act == -1 && i != linkst && d->flags & FF_HLNK) {
+    d->flags -= FF_HLNK;
+    d->size = links[i]->size;
+    d->asize = links[i]->asize;
+    for(t=d->parent; t!=NULL; t=t->parent) {
+      t->size += d->size;
+      t->asize += d->asize;
+    }
+  }
+
+  /* not found, add to the list */
+  if(act == 1 || (act == 0 && !(d->flags & FF_HLNK))) {
+    if(++linkst > linksl) {
+      linksl *= 2;
+      if(!linksl) {
+        linksl = 64;
+        links = malloc(linksl*sizeof(struct dir *));
+      } else
+        links = realloc(links, linksl*sizeof(struct dir *));
+    }
+    links[i] = d;
+  }
+}
+
+
+void link_del(struct dir *par) {
+  while(par->parent != NULL)
+    par = par->parent;
+  link_list_rec(par, 1);
+  linkst = 0;
+}
+
+
+void link_add(struct dir *par) {
+  while(par->parent != NULL)
+    par = par->parent;
+  /* In order to correctly re-add the duplicates, we'll have to pass the entire
+     tree twice, one time to get a list of all links, second time to re-add them */
+  link_list_rec(par, 0);
+  link_list_rec(par, -1);
+  linkst = 0;
+}
+
+
 
