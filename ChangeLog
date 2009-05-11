@@ -1,5 +1,6 @@
 git - ?
   - Implemented hard link detection
+  - Properly select the next item after deletion
 
 1.5 - 2009-05-02
 	- Fixed incorrect apparent size on directory refresh

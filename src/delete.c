@@ -237,9 +237,9 @@ void delete_process() {
   if(delete_dir(root))
     browse_init(root);
   else {
-    browse_init(n);
     if(nextsel)
       nextsel->flags |= FF_BSEL;
+    browse_init(n);
   }
   link_del(root);
 }
