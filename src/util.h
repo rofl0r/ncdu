@@ -79,7 +79,7 @@ void freedir(struct dir *);
 char *getpath(struct dir *);
 
 /* removes all hard links from a tree */
-void links_del(struct dir *);
+void link_del(struct dir *);
 
 /* re-adds all hard links in a tree */
 void link_add(struct dir *);
