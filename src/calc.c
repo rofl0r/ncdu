@@ -87,7 +87,6 @@ void calc_leavepath() {
 int calc_item(struct dir *par, char *name) {
   struct dir *t, *d;
   struct stat fs;
-  int i;
 
   if(name[0] == '.' && (name[1] == '\0' || (name[1] == '.' && name[2] == '\0')))
     return 0;
