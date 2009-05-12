@@ -300,7 +300,7 @@ int calc_key(int ch) {
 }
 
 
-void calc_process() {
+int calc_process() {
   char *path, *name;
   struct stat fs;
   struct dir *t;
@@ -414,7 +414,7 @@ void calc_process() {
 
     link_del(root);
     browse_init(root->sub);
-    return;
+    return 0;
   }
 
   /* something went wrong... */
@@ -422,8 +422,12 @@ void calc_process() {
 calc_fail:
   while(failed && !input_handle(0))
     ;
-  pstate = orig ? ST_BROWSE : ST_QUIT;
-  return;
+  if(orig == NULL)
+    return 1;
+  else {
+    browse_init(NULL);
+    return 0;
+  }
 }
 
 

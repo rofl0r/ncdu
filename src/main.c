@@ -159,9 +159,9 @@ int main(int argc, char **argv) {
   if(ncresize(min_rows, min_cols))
     min_rows = min_cols = 0;
 
-  while(pstate != ST_QUIT) {
-    if(pstate == ST_CALC)
-      calc_process();
+  while(1) {
+    if(pstate == ST_CALC && calc_process())
+      break;
     else if(pstate == ST_DEL)
       delete_process();
     else if(input_handle(0))
