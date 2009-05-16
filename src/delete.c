@@ -213,8 +213,10 @@ void delete_process() {
   /* confirm */
   seloption = 1;
   while(state == DS_CONFIRM && !noconfirm)
-    if(input_handle(0))
-      return browse_init(root);
+    if(input_handle(0)) {
+      browse_init(root);
+      return;
+    }
 
   /* temporarily re-add hard links, so we won't lose sizes in case we delete
      a file of which another file outside this directory was marked as duplicate */
