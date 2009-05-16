@@ -32,6 +32,7 @@
   - Potentionally slow
   - Doesn't check return value of malloc() and realloc()
   - path_real doesn't check for the existance of the last component
+  - cwd is unreliable after path_real
 */
 
 #ifndef _path_h

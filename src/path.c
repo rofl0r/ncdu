@@ -198,18 +198,13 @@ path_real_done:
 char *path_real(const char *orig) {
   int links = 0;
   char *tmp, *ret;
-  DIR *d;
 
   if(orig == NULL)
-    return NULL;
-  if((d = opendir(".")) == NULL)
     return NULL;
 
   tmp = path_absolute(orig);
   ret = path_real_rec(tmp, &links);
   free(tmp);
-  fchdir(dirfd(d));
-  closedir(d);
   return ret;
 }
 
