@@ -177,6 +177,8 @@ int calc_dir(struct dir *dest, char *name) {
     while((t = t->parent) != NULL)
       t->flags |= FF_SERR;
     calc_leavepath();
+    if(dir != NULL)
+      closedir(dir);
     return 0;
   }
 
@@ -187,6 +189,7 @@ int calc_dir(struct dir *dest, char *name) {
       dest->flags |= FF_ERR;
     if(input_handle(1)) {
       calc_leavepath();
+      closedir(dir);
       return 1;
     }
     calc_leavepath();
