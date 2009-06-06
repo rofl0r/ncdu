@@ -243,7 +243,8 @@ void delete_process() {
       nextsel->flags |= FF_BSEL;
     browse_init(n);
   }
-  link_del(root);
+  if(n != NULL)
+    link_del(n);
 }
 
 
