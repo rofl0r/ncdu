@@ -428,7 +428,7 @@ calc_fail:
   if(orig == NULL)
     return 1;
   else {
-    browse_init(NULL);
+    browse_init(orig);
     return 0;
   }
 }

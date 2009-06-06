@@ -4,6 +4,7 @@ git - ?
 	- Removed reliance of dirfd()
 	- Fixed non-void return in void delete_process()
 	- Fixed several tiny memory leaks
+	- Return to previously opened directory on failed recalculation
 
 1.5 - 2009-05-02
 	- Fixed incorrect apparent size on directory refresh
