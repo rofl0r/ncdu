@@ -212,10 +212,6 @@ char *path_real(const char *orig) {
 int path_chdir(const char *path) {
   char **arr, *cur;
   int i, r = -1;
-  DIR *d;
-
-  if((d = opendir(".")) == NULL)
-    return -1;
 
   if((cur = path_absolute(path)) == NULL)
     return -1;
@@ -229,8 +225,6 @@ int path_chdir(const char *path) {
   r = 0;
 
 path_chdir_done:
-  if(r < 0)
-    fchdir(dirfd(d));
   free(cur);
   free(arr);
   return r;
