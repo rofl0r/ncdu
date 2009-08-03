@@ -33,7 +33,7 @@ int winrows, wincols;
 int subwinr, subwinc;
 
 char cropstrdat[4096];
-char formatsizedat[8];
+char formatsizedat[9]; /* "xxx.xMiB" */
 char fullsizedat[20]; /* max: 999.999.999.999.999 */
 char *getpathdat;
 int getpathdatl = 0;
@@ -70,7 +70,7 @@ char *formatsize(const off_t from) {
   else if(r < 1023e6f) { c = 'M'; r/=1048576.0f; }
   else if(r < 1023e9f) { c = 'G'; r/=1073741824.0f; }
   else                 { c = 'T'; r/=1099511627776.0f; }
-  sprintf(formatsizedat, "%5.1f%cB", r, c);
+  sprintf(formatsizedat, "%5.1f%c%cB", r, c, c == ' ' ? ' ' : 'i');
   return formatsizedat;
 }
 

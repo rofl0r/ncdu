@@ -5,6 +5,7 @@ git - ?
 	- Fixed non-void return in void delete_process()
 	- Fixed several tiny memory leaks
 	- Return to previously opened directory on failed recalculation
+	- Properly display MiB units instead of MB (IEEE 1541 - bug #2831412)
 
 1.5 - 2009-05-02
 	- Fixed incorrect apparent size on directory refresh

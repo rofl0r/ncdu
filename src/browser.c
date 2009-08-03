@@ -161,10 +161,10 @@ void browse_draw_item(struct dir *n, int row, off_t max, int ispar) {
   /* reference to parent dir has a different format */
   if(ispar) {
     mvhline(row, 0, ' ', wincols);
-    o = graph == 0 ? 11 :
-        graph == 1 ? 23 :
-        graph == 2 ? 18 :
-                      29 ;
+    o = graph == 0 ? 12 :
+        graph == 1 ? 24 :
+        graph == 2 ? 20 :
+                     31 ;
     mvaddstr(row, o, "/..");
     if(n->flags & FF_BSEL)
       attroff(A_REVERSE);
@@ -200,20 +200,20 @@ void browse_draw_item(struct dir *n, int row, off_t max, int ispar) {
   line = malloc(winrows+1);
   switch(graph) {
     case 0:
-      sprintf(line, "%%c %%7s  %%c%%-%ds", wincols-12);
-      mvprintw(row, 0, line, ct, size, dt, cropstr(n->name, wincols-12));
+      sprintf(line, "%%c %%8s  %%c%%-%ds", wincols-13);
+      mvprintw(row, 0, line, ct, size, dt, cropstr(n->name, wincols-13));
       break;
     case 1:
-      sprintf(line, "%%c %%7s [%%10s] %%c%%-%ds", wincols-24);
-      mvprintw(row, 0, line, ct, size, gr, dt, cropstr(n->name, wincols-24));
+      sprintf(line, "%%c %%8s [%%10s] %%c%%-%ds", wincols-25);
+      mvprintw(row, 0, line, ct, size, gr, dt, cropstr(n->name, wincols-25));
       break;
     case 2:
-      sprintf(line, "%%c %%7s [%%5.1f%%%%] %%c%%-%ds", wincols-20);
-      mvprintw(row, 0, line, ct, size, pc, dt, cropstr(n->name, wincols-19));
+      sprintf(line, "%%c %%8s [%%5.1f%%%%] %%c%%-%ds", wincols-21);
+      mvprintw(row, 0, line, ct, size, pc, dt, cropstr(n->name, wincols-21));
       break;
     case 3:
-      sprintf(line, "%%c %%7s [%%5.1f%%%% %%10s] %%c%%-%ds", wincols-31);
-      mvprintw(row, 0, line, ct, size, pc, gr, dt, cropstr(n->name, wincols-30));
+      sprintf(line, "%%c %%8s [%%5.1f%%%% %%10s] %%c%%-%ds", wincols-32);
+      mvprintw(row, 0, line, ct, size, pc, gr, dt, cropstr(n->name, wincols-32));
   }
   free(line);
 
