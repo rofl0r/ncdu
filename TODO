@@ -17,5 +17,10 @@ Small list of planned features/changes, suggestions are always welcome.
   * Use one key to open up a menu with sort options, instead of
     having a special key for each column
 
-- Fix bugs:
-  * Handle hard links
+- Better handling of hard links?
+  * Link the files together in the browser interface
+  * Have a separate size variable for "shared" data
+    (displayed in the browser as e.g. "291+3MiB")
+    This should be both more intuitive and more correct than simply
+    counting a semi-random occurence and ignoring others, as we do now.
+
