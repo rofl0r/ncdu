@@ -32,19 +32,20 @@
 int page, start;
 
 
-#define KEYS 13
+#define KEYS 14
 char *keys[KEYS*2] = {
 /*|----key----|  |----------------description----------------|*/
-      "up/down", "Cycle through the items",
-  "right/enter", "Open directory",
-         "left", "Previous directory",
+        "up, k", "Move cursor up",
+      "down, j", "Move cursor down",
+  "right/enter", "Open selected directory",
+   "left, <, h", "Open parent directory",
             "n", "Sort by name (ascending/descending)",
             "s", "Sort by size (ascending/descending)",
             "d", "Delete selected file or directory",
             "t", "Toggle dirs before files when sorting",
             "g", "Show percentage and/or graph",
             "a", "Toggle between apparent size and disk usage",
-            "h", "Show/hide hidden or excluded files",
+            "e", "Show/hide hidden or excluded files",
             "i", "Show information about selected item",
             "r", "Recalculate the current directory",
             "q", "Quit ncdu"
@@ -166,22 +167,26 @@ int help_key(int ch) {
       break;
     case KEY_RIGHT:
     case KEY_NPAGE:
+    case 'l':
       if(++page > 3)
         page = 3;
       start = 0;
       break;
     case KEY_LEFT:
     case KEY_PPAGE:
+    case 'h':
       if(--page < 1)
         page = 1;
       start = 0;
       break;
     case KEY_DOWN:
     case ' ':
+    case 'j':
       if(start < KEYS-10)
         start++;
       break;
     case KEY_UP:
+    case 'k':
       if(start > 0)
         start--;
       break;

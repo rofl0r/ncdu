@@ -112,10 +112,12 @@ int delete_key(int ch) {
   if(state == DS_CONFIRM)
     switch(ch) {
       case KEY_LEFT:
+      case 'h':
         if(--seloption < 0)
           seloption = 0;
         break;
       case KEY_RIGHT:
+      case 'l':
         if(++seloption > 2)
           seloption = 2;
         break;
@@ -139,10 +141,12 @@ int delete_key(int ch) {
   else if(state == DS_FAILED)
     switch(ch) {
       case KEY_LEFT:
+      case 'h':
         if(--seloption < 0)
           seloption = 0;
         break;
       case KEY_RIGHT:
+      case 'l':
         if(++seloption > 2)
           seloption = 2;
         break;

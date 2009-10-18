@@ -347,9 +347,11 @@ int browse_key(int ch) {
   switch(ch) {
     /* selecting items */
     case KEY_UP:
+    case 'k':
       browse_key_sel(-1);
       break;
     case KEY_DOWN:
+    case 'j':
       browse_key_sel(1);
       break;
     case KEY_HOME:
@@ -383,7 +385,7 @@ int browse_key(int ch) {
       sort++;
       nonfo++;
       break;
-    case 'h':
+    case 'e':
       toggle(flags, BF_HIDE);
       browse_key_sel(0);
       nonfo++;
@@ -401,6 +403,7 @@ int browse_key(int ch) {
     /* browsing */
     case 10:
     case KEY_RIGHT:
+    case 'l':
       for(n=browse_dir; n!=NULL; n=n->next)
         if(n->flags & FF_BSEL)
           break;
@@ -416,6 +419,8 @@ int browse_key(int ch) {
       nonfo++;
       break;
     case KEY_LEFT:
+    case 'h':
+    case '<':
       if(browse_dir != NULL && browse_dir->parent->parent != NULL) {
         browse_dir = browse_dir->parent->parent->sub;
         sort++;
