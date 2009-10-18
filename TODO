@@ -24,3 +24,6 @@ Small list of planned features/changes, suggestions are always welcome.
     This should be both more intuitive and more correct than simply
     counting a semi-random occurence and ignoring others, as we do now.
 
+- Better handling of multibyte or multicolumn characters
+  * strlen() <> number_of_columns() <> number_of_characters()
+

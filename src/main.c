@@ -31,6 +31,7 @@
 
 #include <unistd.h>
 #include <sys/time.h>
+#include <locale.h>
 
 int pstate;
 
@@ -145,6 +146,8 @@ char *argv_parse(int argc, char **argv) {
 /* main program */
 int main(int argc, char **argv) {
   char *dir;
+
+  setlocale(LC_ALL, "");
 
   if((dir = argv_parse(argc, argv)) == NULL)
     dir = ".";

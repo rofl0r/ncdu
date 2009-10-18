@@ -7,6 +7,7 @@ git - ?
 	- Return to previously opened directory on failed recalculation
 	- Properly display MiB units instead of MB (IEEE 1541 - bug #2831412)
 	- Link to ncursesw when available
+	- Improved support for non-ASCII characters
 
 1.5 - 2009-05-02
 	- Fixed incorrect apparent size on directory refresh

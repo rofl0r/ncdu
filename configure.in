@@ -11,7 +11,7 @@ AC_PROG_RANLIB
 
 # Check for header files.
 AC_CHECK_HEADERS(
-  [limits.h stdlib.h string.h sys/time.h sys/types.h sys/stat.h dirent.h unistd.h fnmatch.h ncurses.h],[],
+  [limits.h stdlib.h string.h sys/time.h sys/types.h sys/stat.h dirent.h unistd.h fnmatch.h ncurses.h locale.h],[],
   AC_MSG_ERROR([required header file not found]))
 
 # Check for typedefs, structures, and compiler characteristics.
@@ -21,7 +21,7 @@ AC_STRUCT_ST_BLOCKS
 
 # Check for library functions.
 AC_CHECK_FUNCS(
-  [getcwd gettimeofday memset fnmatch chdir rmdir unlink lstat getcwd],[],
+  [getcwd gettimeofday memset fnmatch chdir rmdir unlink lstat getcwd setlocale],[],
   AC_MSG_ERROR([required function missing]))
 
 
