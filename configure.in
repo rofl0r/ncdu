@@ -4,28 +4,48 @@ AC_CONFIG_SRCDIR([src/global.h])
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
 
-# Checks for programs.
+# Check for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
-# Checks for libraries.
-AC_CHECK_LIB(ncurses, initscr)
-
-# Checks for header files.
+# Check for header files.
 AC_CHECK_HEADERS(
   [limits.h stdlib.h string.h sys/time.h sys/types.h sys/stat.h dirent.h unistd.h fnmatch.h ncurses.h],[],
   AC_MSG_ERROR([required header file not found]))
 
-# Checks for typedefs, structures, and compiler characteristics.
+# Check for typedefs, structures, and compiler characteristics.
 AC_TYPE_OFF_T
 AC_SYS_LARGEFILE
 AC_STRUCT_ST_BLOCKS
 
-# Checks for library functions.
+# Check for library functions.
 AC_CHECK_FUNCS(
   [getcwd gettimeofday memset fnmatch chdir rmdir unlink lstat getcwd],[],
   AC_MSG_ERROR([required function missing]))
+
+
+
+# Look for ncurses library to link to
+ncurses=auto
+AC_ARG_WITH([ncurses],
+            AC_HELP_STRING([--with-ncurses], [compile/link with ncurses library] ),
+            [ncurses=ncurses])
+AC_ARG_WITH([ncursesw],
+            AC_HELP_STRING([--with-ncursesw], [compile/link with wide-char ncurses library @<:@default@:>@]),
+            [ncurses=ncursesw])
+if test "$ncurses" = "auto"; then
+  AC_CHECK_LIB([ncursesw],
+               [initscr],
+               [ncurses=ncursesw],
+               [ncurses=ncurses])
+fi
+AC_CHECK_LIB([$ncurses],
+             [initscr],
+             [LIBS="$LIBS -l$ncurses"],
+             [AC_MSG_ERROR($ncurses library is required)])
+
+
 
 AC_OUTPUT([Makefile src/Makefile doc/Makefile])
 
