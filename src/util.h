@@ -78,11 +78,5 @@ void freedir(struct dir *);
    returned pointer will be overwritten with a subsequent call */
 char *getpath(struct dir *);
 
-/* removes all hard links from a tree */
-void link_del(struct dir *);
-
-/* re-adds all hard links in a tree */
-void link_add(struct dir *);
-
 #endif
 

@@ -55,6 +55,9 @@ dev_t curdev;            /* current device we're calculating on */
 int anpos;               /* position of the animation string */
 int curpathl = 0, lasterrl = 0;
 
+struct dir **links = NULL;
+int linksl, linkst;
+
 
 
 /* adds name to curpath */
@@ -81,6 +84,63 @@ void calc_leavepath() {
     tmp[0] = 0;
   else
     tmp[1] = 0;
+}
+
+
+/* looks in the links list and adds the file when not found */
+int calc_hlink_add(struct dir *d) {
+  int i;
+  /* check the list */
+  for(i=0; i<linkst; i++)
+    if(links[i]->dev == d->dev && links[i]->ino == d->ino)
+      break;
+  /* found, do nothing and return the index */
+  if(i != linkst)
+    return i;
+  /* otherwise, add to list and return -1 */
+  if(++linkst > linksl) {
+    linksl *= 2;
+    if(!linksl) {
+      linksl = 64;
+      links = malloc(linksl*sizeof(struct dir *));
+    } else
+      links = realloc(links, linksl*sizeof(struct dir *));
+  }
+  links[linkst-1] = d;
+  return -1;
+}
+
+
+/* recursively checks a dir structure for hard links and fills the lookup array */
+void calc_hlink_init(struct dir *d) {
+  struct dir *t;
+
+  for(t=d->sub; t!=NULL; t=t->next)
+    calc_hlink_init(t);
+
+  if(!(d->flags & FF_HLNKC))
+    return;
+  calc_hlink_add(d);
+}
+
+
+/* checks an individual file and updates the flags and cicrular linked list */
+void calc_hlink_check(struct dir *d) {
+  struct dir *t;
+  int i;
+
+  d->flags |= FF_HLNKC;
+  i = calc_hlink_add(d);
+
+  /* found in the list? update hlnk */
+  if(i >= 0) {
+    t = d->hlnk = links[i];
+    if(t->hlnk != NULL)
+      for(t=t->hlnk; t->hlnk!=d->hlnk; t=t->hlnk)
+        ;
+    t->hlnk = d;
+    return;
+  }
 }
 
 
@@ -131,11 +191,11 @@ int calc_item(struct dir *par, char *name) {
     for(t=d->parent; t!=NULL; t=t->parent)
       t->items++;
 
-  /* Provide the necessary information for hard link checking */
+  /* Hard link checking */
   d->ino = fs.st_ino;
   d->dev = fs.st_dev;
   if(!S_ISDIR(fs.st_mode) && fs.st_nlink > 1)
-    d->flags |= FF_HLNKC;
+    calc_hlink_check(d);
 
   /* count the size */
   if(!(d->flags & FF_EXL || d->flags & FF_OTHFS)) {
@@ -309,6 +369,14 @@ int calc_process() {
   struct dir *t;
   int n;
 
+  /* create initial links array */
+  linksl = linkst = 0;
+  if(orig) {
+    for(t=orig; t->parent!=NULL; t=t->parent)
+      ;
+    calc_hlink_init(t);
+  }
+
   /* check root directory */
   if((path = path_real(curpath)) == NULL) {
     failed = 1;
@@ -384,6 +452,9 @@ int calc_process() {
     free(name);
   free(path);
 
+  if(links != NULL)
+    free(links);
+
   /* success */
   if(!n && !failed) {
     if(root->sub == NULL) {
@@ -414,8 +485,6 @@ int calc_process() {
       }
       freedir(orig);
     }
-
-    link_del(root);
     browse_init(root->sub);
     return 0;
   }
@@ -436,8 +505,7 @@ calc_fail:
 
 void calc_init(char *dir, struct dir *org) {
   failed = anpos = 0;
-  if((orig = org) != NULL)
-    link_add(orig);
+  orig = org;
   if(curpathl == 0) {
     curpathl = strlen(dir)+1;
     curpath = malloc(curpathl);

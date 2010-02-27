@@ -38,9 +38,8 @@
 #define FF_OTHFS  0x08 /* excluded because it was an other filesystem */
 #define FF_EXL    0x10 /* excluded using exlude patterns */
 #define FF_SERR   0x20 /* error in subdirectory */
-#define FF_HLNK   0x40 /* hard link (same file already encountered before) */
-#define FF_HLNKC  0x80 /* hard link candidate (file with st_nlink > 1) */
-#define FF_BSEL  0x100 /* selected */
+#define FF_HLNKC  0x40 /* hard link candidate (file with st_nlink > 1) */
+#define FF_BSEL   0x80 /* selected */
 
 /* Program states */
 #define ST_CALC   0
@@ -51,11 +50,11 @@
 
 /* structure representing a file or directory */
 struct dir {
-  struct dir *parent, *next, *sub;
+  struct dir *parent, *next, *sub, *hlnk;
   char *name;
   off_t size, asize;
   unsigned long items;
-  unsigned short flags;
+  unsigned char flags;
   dev_t dev;
   ino_t ino;
 }; 
