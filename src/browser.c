@@ -39,8 +39,9 @@
 #define BF_INFO   0x80 /* show file information window */
 
 struct dir *browse_dir = NULL;
-unsigned char graph = 0;
-unsigned char flags = BF_SIZE | BF_DESC;
+unsigned char graph = 0,
+              flags = BF_SIZE | BF_DESC,
+              info_page = 0, info_start = 0;
 
 
 #define ishidden(x) (flags & BF_HIDE && (\
@@ -129,22 +130,52 @@ struct dir *browse_sort(struct dir *list) {
 
 
 void browse_draw_info(struct dir *dr) {
+  struct dir *t;
+  int i,j;
+
   nccreate(11, 60, "Item info");
 
-  attron(A_BOLD);
-  ncaddstr(2, 3, "Name:");
-  ncaddstr(3, 3, "Path:");
-  ncaddstr(4, 3, "Type:");
-  ncaddstr(6, 3, "   Disk usage:");
-  ncaddstr(7, 3, "Apparent size:");
-  attroff(A_BOLD);
+  if(dr->hlnk) {
+    if(info_page == 0)
+      attron(A_REVERSE);
+    ncaddstr(0, 41, "1:Info");
+    attroff(A_REVERSE);
+    if(info_page == 1)
+      attron(A_REVERSE);
+    ncaddstr(0, 50, "2:Links");
+    attroff(A_REVERSE);
+  }
 
-  ncaddstr(2,  9, cropstr(dr->name, 49));
-  ncaddstr(3,  9, cropstr(getpath(dr->parent), 49));
-  ncaddstr(4,  9, dr->flags & FF_DIR ? "Directory"
-      : dr->flags & FF_FILE ? "File" : "Other (link, device, socket, ..)");
-  ncprint(6, 18, "%s (%s B)", formatsize(dr->size),  fullsize(dr->size));
-  ncprint(7, 18, "%s (%s B)", formatsize(dr->asize), fullsize(dr->asize));
+  switch(info_page) {
+  case 0:
+    attron(A_BOLD);
+    ncaddstr(2, 3, "Name:");
+    ncaddstr(3, 3, "Path:");
+    ncaddstr(4, 3, "Type:");
+    ncaddstr(6, 3, "   Disk usage:");
+    ncaddstr(7, 3, "Apparent size:");
+    attroff(A_BOLD);
+
+    ncaddstr(2,  9, cropstr(dr->name, 49));
+    ncaddstr(3,  9, cropstr(getpath(dr->parent), 49));
+    ncaddstr(4,  9, dr->flags & FF_DIR ? "Directory"
+        : dr->flags & FF_FILE ? "File" : "Other (link, device, socket, ..)");
+    ncprint(6, 18, "%s (%s B)", formatsize(dr->size),  fullsize(dr->size));
+    ncprint(7, 18, "%s (%s B)", formatsize(dr->asize), fullsize(dr->asize));
+    break;
+
+  case 1:
+    for(i=0,t=dr->hlnk; t!=dr; t=t->hlnk,i++) {
+      if(info_start > i)
+        continue;
+      if(i-info_start > 5)
+        break;
+      ncaddstr(2+i-info_start, 3, cropstr(getpath(t), 54));
+    }
+    if(t!=dr)
+      ncaddstr(8, 25, "-- more --");
+    break;
+  }
 
   ncaddstr(9, 32, "Press i to hide this window");
 }
@@ -341,31 +372,88 @@ void browse_key_sel(int change) {
 #define toggle(x,y) if(x & y) x -=y; else x |= y
 
 int browse_key(int ch) {
-  char sort = 0, nonfo = 0;
-  struct dir *n, *r;
+  char sort = 0, nonfo = 0, catch = 0;
+  struct dir *r, *sel;
+  int i;
 
-  switch(ch) {
+  for(sel=browse_dir; sel!=NULL; sel=sel->next)
+    if(sel->flags & FF_BSEL)
+      break;
+
+  /* info window overwrites a few keys */
+  if(flags & BF_INFO && sel)
+    switch(ch) {
+    case '1':
+      info_page = 0;
+      break;
+    case '2':
+      if(sel->hlnk)
+        info_page = 1;
+      break;
+    case KEY_RIGHT:
+    case 'l':
+      if(sel->hlnk) {
+        info_page = 1;
+        catch++;
+      }
+      break;
+    case KEY_LEFT:
+    case 'h':
+      if(sel->hlnk) {
+        info_page = 0;
+        catch++;
+      }
+      break;
+    case KEY_UP:
+    case 'k':
+      if(sel->hlnk && info_page == 1) {
+        if(info_start > 0)
+          info_start--;
+        catch++;
+      }
+      break;
+    case KEY_DOWN:
+    case 'j':
+    case ' ':
+      if(sel->hlnk && info_page == 1) {
+        for(i=0,r=sel->hlnk; r!=sel; r=r->hlnk)
+          i++;
+        if(i > info_start+6)
+          info_start++;
+        catch++;
+      }
+      break;
+    }
+
+  if(!catch)
+    switch(ch) {
     /* selecting items */
     case KEY_UP:
     case 'k':
       browse_key_sel(-1);
+      info_start = 0;
       break;
     case KEY_DOWN:
     case 'j':
       browse_key_sel(1);
+      info_start = 0;
       break;
     case KEY_HOME:
       browse_key_sel(-1*(1<<30));
+      info_start = 0;
       break;
     case KEY_LL:
     case KEY_END:
       browse_key_sel(1<<30);
+      info_start = 0;
       break;
     case KEY_PPAGE:
       browse_key_sel(-1*(winrows-3));
+      info_start = 0;
       break;
     case KEY_NPAGE:
       browse_key_sel(winrows-3);
+      info_start = 0;
       break;
 
     /* sorting items */
@@ -404,14 +492,11 @@ int browse_key(int ch) {
     case 10:
     case KEY_RIGHT:
     case 'l':
-      for(n=browse_dir; n!=NULL; n=n->next)
-        if(n->flags & FF_BSEL)
-          break;
-      if(n != NULL && n->sub != NULL) {
-        browse_dir = n->sub;
+      if(sel != NULL && sel->sub != NULL) {
+        browse_dir = sel->sub;
         sort++;
       }
-      if(n == NULL && browse_dir != NULL && browse_dir->parent->parent) {
+      if(sel == NULL && browse_dir != NULL && browse_dir->parent->parent) {
         browse_dir = browse_dir->parent->parent->sub;
         sort++;
       }
@@ -454,26 +539,32 @@ int browse_key(int ch) {
       nonfo++;
       break;
     case 'd':
-      for(n=browse_dir; n!=NULL; n=n->next)
-        if(n->flags & FF_BSEL)
-          break;
-      if(n == NULL)
+      if(sel == NULL)
         break;
       nonfo++;
       /* quirky method of getting the next selected dir without actually selecting it */
-      browse_key_sel(n->next ? 1 : -1);
+      browse_key_sel(sel->next ? 1 : -1);
       for(r=browse_dir; r!=NULL; r=r->next)
         if(r->flags & FF_BSEL)
           break;
-      browse_key_sel(n->next ? -1 : 1);
-      delete_init(n, r);
+      browse_key_sel(sel->next ? -1 : 1);
+      delete_init(sel, r);
       break;
-  }
+    }
 
   if(sort && browse_dir != NULL)
     browse_dir = browse_sort(browse_dir);
-  if(nonfo)
+  if(nonfo) {
     flags &= ~BF_INFO;
+    info_start = 0;
+  }
+  if(flags & BF_INFO) {
+    for(sel=browse_dir; sel!=NULL; sel=sel->next)
+      if(sel->flags & FF_BSEL)
+        break;
+    if(sel && !sel->hlnk)
+      info_page = 0;
+  }
   return 0;
 }
 
