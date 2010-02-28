@@ -131,7 +131,7 @@ struct dir *browse_sort(struct dir *list) {
 
 void browse_draw_info(struct dir *dr) {
   struct dir *t;
-  int i,j;
+  int i;
 
   nccreate(11, 60, "Item info");
 

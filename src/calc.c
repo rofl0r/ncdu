@@ -452,8 +452,10 @@ int calc_process() {
     free(name);
   free(path);
 
-  if(links != NULL)
+  if(links != NULL) {
     free(links);
+    links = NULL;
+  }
 
   /* success */
   if(!n && !failed) {

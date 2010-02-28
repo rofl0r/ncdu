@@ -31,7 +31,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <limits.h>
-#include <dirent.h>
 
 #ifndef LINK_MAX
 # ifdef _POSIX_LINK_MAX
