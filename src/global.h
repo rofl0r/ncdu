@@ -48,7 +48,9 @@
 #define ST_HELP   3
 
 
-/* structure representing a file or directory */
+/* structure representing a file or directory
+ * XXX: probably a good idea to get rid of the custom _t types and use
+ *      fixed-size integers instead, which are much more predictable */
 struct dir {
   struct dir *parent, *next, *sub, *hlnk;
   char *name;

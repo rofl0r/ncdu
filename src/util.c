@@ -197,7 +197,8 @@ void freedir_rec(struct dir *dr) {
 void freedir(struct dir *dr) {
   struct dir *tmp;
 
-  /* update sizes of parent directories */
+  /* update sizes of parent directories
+   * XXX: This breaks when the dir contains hard linked files */
   tmp = dr;
   while((tmp = tmp->parent) != NULL) {
     tmp->size -= dr->size;

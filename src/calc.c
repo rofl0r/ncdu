@@ -124,9 +124,10 @@ void calc_hlink_init(struct dir *d) {
 }
 
 
-/* checks an individual file and updates the flags and cicrular linked list */
+/* checks an individual file and updates the flags and cicrular linked list,
+ * also updates the sizes of the parent dirs */
 void calc_hlink_check(struct dir *d) {
-  struct dir *t;
+  struct dir *t, *pt, *par;
   int i;
 
   d->flags |= FF_HLNKC;
@@ -139,7 +140,22 @@ void calc_hlink_check(struct dir *d) {
       for(t=t->hlnk; t->hlnk!=d->hlnk; t=t->hlnk)
         ;
     t->hlnk = d;
-    return;
+  }
+
+  /* now update the sizes of the parent directories,
+   * This works by only counting this file in the parent directories where this
+   * file hasn't been counted yet, which can be determined from the hlnk list.
+   * XXX: This may not be the most efficient algorithm to do this */
+  for(i=1,par=d->parent; i&&par; par=par->parent) {
+    if(d->hlnk)
+      for(t=d->hlnk; i&&t!=d; t=t->hlnk)
+        for(pt=t->parent; i&&pt; pt=pt->parent)
+          if(pt==par)
+            i=0;
+    if(i) {
+      par->size += d->size;
+      par->asize += d->asize;
+    }
   }
 }
 
@@ -186,26 +202,28 @@ int calc_item(struct dir *par, char *name) {
   else if(S_ISDIR(fs.st_mode))
     d->flags |= FF_DIR;
 
-  /* update parent dirs */
+  /* update the items count of the parent dirs */
   if(!(d->flags & FF_EXL))
     for(t=d->parent; t!=NULL; t=t->parent)
       t->items++;
-
-  /* Hard link checking */
-  d->ino = fs.st_ino;
-  d->dev = fs.st_dev;
-  if(!S_ISDIR(fs.st_mode) && fs.st_nlink > 1)
-    calc_hlink_check(d);
 
   /* count the size */
   if(!(d->flags & FF_EXL || d->flags & FF_OTHFS)) {
     d->size = fs.st_blocks * S_BLKSIZE;
     d->asize = fs.st_size;
-    for(t=d->parent; t!=NULL; t=t->parent) {
-      t->size += d->size;
-      t->asize += d->asize;
-    }
+    /* only update the sizes of the parents if it's not a hard link */
+    if(S_ISDIR(fs.st_mode) || fs.st_nlink <= 1)
+      for(t=d->parent; t!=NULL; t=t->parent) {
+        t->size += d->size;
+        t->asize += d->asize;
+      }
   }
+
+  /* Hard link checking (also takes care of updating the sizes of the parents) */
+  d->ino = fs.st_ino;
+  d->dev = fs.st_dev;
+  if(!S_ISDIR(fs.st_mode) && fs.st_nlink > 1)
+    calc_hlink_check(d);
 
   return 0;
 }
@@ -421,6 +439,7 @@ int calc_process() {
   if(orig) {
     t->name = malloc(strlen(orig->name)+1);
     strcpy(t->name, orig->name);
+    t->parent = orig->parent;
   } else {
     t->name = malloc(strlen(path)+strlen(name)+2);
     t->name[0] = 0;
@@ -433,6 +452,14 @@ int calc_process() {
   }
   root = t;
   curdev = fs.st_dev;
+
+  /* make sure to count this directory entry in its parents at this point */
+  if(orig)
+    for(t=root->parent; t!=NULL; t=t->parent) {
+      t->size += root->size;
+      t->asize += root->asize;
+      t->items += 1;
+    }
 
   /* update curpath */
   if(strcmp(name, ".")) {
@@ -468,14 +495,7 @@ int calc_process() {
 
     /* update references and free original item */
     if(orig) {
-      root->parent = orig->parent;
       root->next = orig->next;
-      for(t=root->parent; t!=NULL; t=t->parent) {
-        t->size += root->size;
-        t->asize += root->asize;
-        t->items += root->items+1;
-      }
-
       if(orig->parent) {
         t = orig->parent->sub;
         if(t == orig)
