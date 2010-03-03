@@ -169,14 +169,38 @@ void ncprint(int r, int c, char *fmt, ...) {
 }
 
 
-/* removes item from the hlnk circular linked list */
+/* removes item from the hlnk circular linked list and size counts of the parents */
 void freedir_hlnk(struct dir *d) {
-  struct dir *t;
-  if(!d->hlnk)
+  struct dir *t, *par, *pt;
+  int i;
+
+  if(!(d->flags & FF_HLNKC))
     return;
-  for(t=d->hlnk; t->hlnk!=d; t=t->hlnk)
-    ;
-  t->hlnk = d->hlnk;
+
+  /* remove size from parents.
+   * This works the same as with adding: only the parents in which THIS is the
+   * only occurence of the hard link will be modified, if the same file still
+   * exists within the parent it shouldn't get removed from the count.
+   * XXX: Same note as for calc.c / calc_hlnk_check():
+   *      this is probably not the most efficient algorithm */
+  for(i=1,par=d->parent; i&&par; par=par->parent) {
+    if(d->hlnk)
+      for(t=d->hlnk; i&&t!=d; t=t->hlnk)
+        for(pt=t->parent; i&&pt; pt=pt->parent)
+          if(pt==par)
+            i=0;
+    if(i) {
+      par->size -= d->size;
+      par->asize -= d->asize;
+    }
+  }
+
+  /* remove from hlnk */
+  if(d->hlnk) {
+    for(t=d->hlnk; t->hlnk!=d; t=t->hlnk)
+      ;
+    t->hlnk = d->hlnk;
+  }
 }
 
 
@@ -197,15 +221,6 @@ void freedir_rec(struct dir *dr) {
 void freedir(struct dir *dr) {
   struct dir *tmp;
 
-  /* update sizes of parent directories
-   * XXX: This breaks when the dir contains hard linked files */
-  tmp = dr;
-  while((tmp = tmp->parent) != NULL) {
-    tmp->size -= dr->size;
-    tmp->asize -= dr->asize;
-    tmp->items -= dr->items+1;
-  }
-
   /* free dr->sub recursively */
   if(dr->sub)
     freedir_rec(dr->sub);
@@ -223,6 +238,17 @@ void freedir(struct dir *dr) {
   }
 
   freedir_hlnk(dr);
+
+  /* update sizes of parent directories if this isn't a hard link.
+   * If this is a hard link, freedir_hlnk() would have done so already */
+  for(tmp=dr->parent; tmp; tmp=tmp->parent) {
+    if(!(dr->flags & FF_HLNKC)) {
+      tmp->size -= dr->size;
+      tmp->asize -= dr->asize;
+    }
+    tmp->items -= dr->items+1;
+  }
+
   free(dr->name);
   free(dr);
 }
