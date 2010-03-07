@@ -78,5 +78,6 @@ int input_handle(int);
 #include "browser.h"
 #include "help.h"
 #include "path.h"
+#include "dirlist.h"
 
 #endif

@@ -30,103 +30,12 @@
 #include <ncurses.h>
 
 
-#define BF_NAME   0x01
-#define BF_SIZE   0x02
-#define BF_NDIRF  0x04 /* Normally, dirs before files, setting this disables it */
-#define BF_DESC   0x08
-#define BF_HIDE   0x10 /* don't show hidden files... */
-#define BF_AS     0x40 /* show apparent sizes instead of disk usage */
-#define BF_INFO   0x80 /* show file information window */
+int graph = 0,
+    show_as = 0,
+    info_show = 0,
+    info_page = 0,
+    info_start = 0;
 
-struct dir *browse_dir = NULL;
-unsigned char graph = 0,
-              flags = BF_SIZE | BF_DESC,
-              info_page = 0, info_start = 0;
-
-
-#define ishidden(x) (flags & BF_HIDE && (\
-    (x->next != browse_dir && (x->name[0] == '.' || x->name[strlen(x->name)-1] == '~'))\
-    || x->flags & FF_EXL))
-
-
-int browse_cmp(struct dir *x, struct dir *y) {
-  struct dir *a, *b;
-  int r = 0;
-
-  if(flags & BF_DESC) {
-    a = y; b = x;
-  } else {
-    b = y; a = x;
-  }
-  if(!(flags & BF_NDIRF) && y->flags & FF_DIR && !(x->flags & FF_DIR))
-    return(1);
-  if(!(flags & BF_NDIRF) && !(y->flags & FF_DIR) && x->flags & FF_DIR)
-    return(-1);
-
-  if(flags & BF_NAME)
-    r = strcmp(a->name, b->name);
-  if(flags & BF_AS) {
-    if(r == 0)
-      r = a->asize > b->asize ? 1 : (a->asize == b->asize ? 0 : -1);
-    if(r == 0)
-      r = a->size > b->size ? 1 : (a->size == b->size ? 0 : -1);
-  } else {
-    if(r == 0)
-      r = a->size > b->size ? 1 : (a->size == b->size ? 0 : -1);
-    if(r == 0)
-      r = a->asize > b->asize ? 1 : (a->asize == b->asize ? 0 : -1);
-  }
-  if(r == 0)
-    r = strcmp(x->name, y->name);
-  return(r);
-}
-
-
-struct dir *browse_sort(struct dir *list) {
-  struct dir *p, *q, *e, *tail;
-  int insize, nmerges, psize, qsize, i;
-
-  insize = 1;
-  while(1) {
-    p = list;
-    list = NULL;
-    tail = NULL;
-    nmerges = 0;
-    while(p) {
-      nmerges++;
-      q = p;
-      psize = 0;
-      for(i=0; i<insize; i++) {
-        psize++;
-        q = q->next;
-        if(!q) break;
-      }
-      qsize = insize;
-      while(psize > 0 || (qsize > 0 && q)) {
-        if(psize == 0) {
-          e = q; q = q->next; qsize--;
-        } else if(qsize == 0 || !q) {
-          e = p; p = p->next; psize--;
-        } else if(browse_cmp(p,q) <= 0) {
-          e = p; p = p->next; psize--;
-        } else {
-          e = q; q = q->next; qsize--;
-        }
-        if(tail) tail->next = e;
-        else     list = e;
-        tail = e;
-      }
-      p = q;
-    }
-    tail->next = NULL;
-    if(nmerges <= 1) {
-      if(list->parent)
-        list->parent->sub = list;
-      return list;
-    }
-    insize *= 2;
-  }
-}
 
 
 void browse_draw_info(struct dir *dr) {
@@ -181,7 +90,7 @@ void browse_draw_info(struct dir *dr) {
 }
 
 
-void browse_draw_item(struct dir *n, int row, off_t max, int ispar) {
+void browse_draw_item(struct dir *n, int row) {
   char *line, ct, dt, *size, gr[11];
   int i, o;
   float pc;
@@ -190,7 +99,7 @@ void browse_draw_item(struct dir *n, int row, off_t max, int ispar) {
     attron(A_REVERSE);
 
   /* reference to parent dir has a different format */
-  if(ispar) {
+  if(n == dirlist_parent) {
     mvhline(row, 0, ' ', wincols);
     o = graph == 0 ? 12 :
         graph == 1 ? 24 :
@@ -214,17 +123,21 @@ void browse_draw_item(struct dir *n, int row, off_t max, int ispar) {
         && n->sub == NULL ? 'e' :
                             ' ' ;
   dt = n->flags & FF_DIR ? '/' : ' ';
-  size = formatsize(flags & BF_AS ? n->asize : n->size);
+  size = formatsize(show_as ? n->asize : n->size);
 
   /* create graph (if necessary) */
-  if((pc = (float)(flags & BF_AS ? n->parent->asize : n->parent->size)) < 1)
-    pc = 1.0f;
-  pc = ((float)(flags & BF_AS ? n->asize : n->size) / pc) * 100.0f;
-  if(graph == 1 || graph == 3) {
-    o = (int)(10.0f*(float)(flags & BF_AS ? n->asize : n->size) / (float)max);
-    for(i=0; i<10; i++)
-      gr[i] = i < o ? '#' : ' ';
-    gr[10] = '\0';
+  if(graph) {
+    /* percentage */
+    if((pc = (float)(show_as ? n->parent->asize : n->parent->size)) < 1)
+      pc = 1.0f;
+    pc = ((float)(show_as ? n->asize : n->size) / pc) * 100.0f;
+    /* graph */
+    if(graph == 1 || graph == 3) {
+      o = (int)(10.0f*(float)(show_as ? n->asize : n->size) / (float)(show_as ? dirlist_maxa : dirlist_maxs));
+      for(i=0; i<10; i++)
+        gr[i] = i < o ? '#' : ' ';
+      gr[10] = '\0';
+    }
   }
 
   /* format and add item to the list */
@@ -254,134 +167,74 @@ void browse_draw_item(struct dir *n, int row, off_t max, int ispar) {
 
 
 void browse_draw() {
-  struct dir *n, ref, *cur, *sel = NULL;
-  char *line, *tmp;
+  struct dir *t;
+  char fmtsize[9], *tmp;
   int selected, i;
-  off_t max = 1;
 
   erase();
-  cur = browse_dir;
+  t = dirlist_get(0);
 
-  /* create header and status bar */
+  /* top line - basic info */
   attron(A_REVERSE);
   mvhline(0, 0, ' ', wincols);
   mvhline(winrows-1, 0, ' ', wincols);
   mvprintw(0,0,"%s %s ~ Use the arrow keys to navigate, press ? for help", PACKAGE_NAME, PACKAGE_VERSION);
-
-  if(cur) {
-    line = malloc(winrows+1);
-    strcpy(line, formatsize(cur->parent->size));
-    mvprintw(winrows-1, 0, " Total disk usage: %s  Apparent size: %s  Items: %d",
-      line, formatsize(cur->parent->asize), cur->parent->items);
-    free(line);
-  } else
-    mvaddstr(winrows-1, 0, " No items to display.");
   attroff(A_REVERSE);
 
+  /* second line - the path */
   mvhline(1, 0, '-', wincols);
-  if(cur) {
+  if(t) {
     mvaddch(1, 3, ' ');
-    tmp = getpath(cur->parent);
+    tmp = getpath(t->parent);
     mvaddstr(1, 4, cropstr(tmp, wincols-8));
     mvaddch(1, 4+((int)strlen(tmp) > wincols-8 ? wincols-8 : (int)strlen(tmp)), ' ');
   }
 
-  if(!cur)
+  /* bottom line - stats */
+  attron(A_REVERSE);
+  if(t) {
+    strcpy(fmtsize, formatsize(t->parent->size));
+    mvprintw(winrows-1, 0, " Total disk usage: %s  Apparent size: %s  Items: %d",
+      fmtsize, formatsize(t->parent->asize), t->parent->items);
+  } else
+    mvaddstr(winrows-1, 0, " No items to display.");
+  attroff(A_REVERSE);
+
+  /* nothing to display? stop here. */
+  if(!t)
     return;
 
-  /* add reference to parent dir */
-  memset(&ref, 0, sizeof(struct dir));
-  if(cur->parent->parent) {
-    ref.name = "..";
-    ref.next = cur;
-    ref.parent = cur->parent;
-    cur = &ref;
-  }
-
-  /* get maximum size and selected item */
-  for(n=cur, selected=-1, i=0; n!=NULL; n=n->next) {
-    if(ishidden(n))
-      continue;
-    if(n->flags & FF_BSEL) {
-      selected = i;
-      sel = n;
-    }
-    if((flags & BF_AS ? n->asize : n->size) > max)
-      max = flags & BF_AS ? n->asize : n->size;
-    i++;
-  }
-  if(selected < 0)
-    cur->flags |= FF_BSEL;
-
-  /* determine start position */
-  for(n=cur,i=0; n!=NULL; n=n->next) {
-    if(ishidden(n))
-      continue;
-    if(i == (selected / (winrows-3)) * (winrows-3))
-      break;
-    i++;
-  }
-  selected -= i;
+  /* get start position */
+  t = dirlist_get(-1*((winrows)/2));
+  if(t == dirlist_next(NULL))
+    t = NULL;
 
   /* print the list to the screen */
-  for(i=0; n!=NULL && i<winrows-3; n=n->next) {
-    if(ishidden(n))
-      continue;
-    browse_draw_item(n, 2+i++, max, n == &ref);
+  for(i=0; (t=dirlist_next(t)) && i<winrows-3; i++) {
+    browse_draw_item(t, 2+i);
+    /* save the selected row number for later */
+    if(t->flags & FF_BSEL)
+      selected = i;
   }
 
   /* draw information window */
-  if(sel && (flags & BF_INFO) && sel != &ref)
-    browse_draw_info(sel);
+  t = dirlist_get(0);
+  if(info_show && t != dirlist_parent)
+    browse_draw_info(t);
 
   /* move cursor to selected row for accessibility */
   move(selected+2, 0);
 }
 
 
-void browse_key_sel(int change) {
-  struct dir *n, *cur, par;
-  int i, max;
-
-  if((cur = browse_dir) == NULL)
-    return;
-  par.next = cur;
-  par.flags = 0;
-  if(cur->parent->parent)
-    cur = &par;
-
-  i = 0;
-  max = -1;
-  for(n=cur; n!=NULL; n=n->next) {
-    if(!ishidden(n)) {
-      max++;
-      if(n->flags & FF_BSEL)
-        i = max;
-    }
-    n->flags &= ~FF_BSEL;
-  }
-  i += change;
-  i = i<0 ? 0 : i>max ? max : i;
-
-  for(n=cur; n!=NULL; n=n->next)
-    if(!ishidden(n) && !i--)
-      n->flags |= FF_BSEL;
-}
-
-
-#define toggle(x,y) if(x & y) x -=y; else x |= y
-
 int browse_key(int ch) {
-  char sort = 0, nonfo = 0, catch = 0;
-  struct dir *r, *sel;
-  int i;
+  struct dir *t, *sel;
+  int i, catch = 0;
 
-  for(sel=browse_dir; sel!=NULL; sel=sel->next)
-    if(sel->flags & FF_BSEL)
-      break;
+  sel = dirlist_get(0);
 
   /* info window overwrites a few keys */
-  if(flags & BF_INFO && sel)
+  if(info_show && sel)
     switch(ch) {
     case '1':
       info_page = 0;
@@ -416,7 +269,7 @@ int browse_key(int ch) {
     case 'j':
     case ' ':
       if(sel->hlnk && info_page == 1) {
-        for(i=0,r=sel->hlnk; r!=sel; r=r->hlnk)
+        for(i=0,t=sel->hlnk; t!=sel; t=t->hlnk)
           i++;
         if(i > info_start+6)
           info_start++;
@@ -430,155 +283,120 @@ int browse_key(int ch) {
     /* selecting items */
     case KEY_UP:
     case 'k':
-      browse_key_sel(-1);
+      dirlist_select(dirlist_get(-1));
       info_start = 0;
       break;
     case KEY_DOWN:
     case 'j':
-      browse_key_sel(1);
+      dirlist_select(dirlist_get(1));
       info_start = 0;
       break;
     case KEY_HOME:
-      browse_key_sel(-1*(1<<30));
+      dirlist_select(dirlist_next(NULL));
       info_start = 0;
       break;
     case KEY_LL:
     case KEY_END:
-      browse_key_sel(1<<30);
+      dirlist_select(dirlist_get(1<<30));
       info_start = 0;
       break;
     case KEY_PPAGE:
-      browse_key_sel(-1*(winrows-3));
+      dirlist_select(dirlist_get(-1*(winrows-3)));
       info_start = 0;
       break;
     case KEY_NPAGE:
-      browse_key_sel(winrows-3);
+      dirlist_select(dirlist_get(winrows-3));
       info_start = 0;
       break;
 
     /* sorting items */
     case 'n':
-      if(flags & BF_NAME)
-        toggle(flags, BF_DESC);
-      else
-        flags = (flags & BF_HIDE) + (flags & BF_NDIRF) + BF_NAME;
-      sort++;
-      nonfo++;
+      dirlist_set_sort(DL_COL_NAME, dirlist_sort_col == DL_COL_NAME ? !dirlist_sort_desc : DL_NOCHANGE, DL_NOCHANGE);
+      info_show = 0;
       break;
     case 's':
-      if(flags & BF_SIZE)
-        toggle(flags, BF_DESC);
-      else
-        flags = (flags & BF_HIDE) + (flags & BF_NDIRF) + BF_SIZE + BF_DESC;
-      sort++;
-      nonfo++;
+      i = show_as ? DL_COL_ASIZE : DL_COL_SIZE;
+      dirlist_set_sort(i, dirlist_sort_col == i ? !dirlist_sort_desc : DL_NOCHANGE, DL_NOCHANGE);
+      info_show = 0;
       break;
     case 'e':
-      toggle(flags, BF_HIDE);
-      browse_key_sel(0);
-      nonfo++;
+      dirlist_set_hidden(!dirlist_hidden);
+      info_show = 0;
       break;
     case 't':
-      toggle(flags, BF_NDIRF);
-      sort++;
-      nonfo++;
+      dirlist_set_sort(DL_NOCHANGE, DL_NOCHANGE, dirlist_sort_df);
+      info_show = 0;
       break;
     case 'a':
-      toggle(flags, BF_AS);
-      nonfo++;
+      show_as = !show_as;
+      if(dirlist_sort_col == DL_COL_ASIZE || dirlist_sort_col == DL_COL_SIZE)
+        dirlist_set_sort(show_as ? DL_COL_ASIZE : DL_COL_SIZE, DL_NOCHANGE, DL_NOCHANGE);
+      info_show = 0;
       break;
 
     /* browsing */
     case 10:
     case KEY_RIGHT:
     case 'l':
-      if(sel != NULL && sel->sub != NULL) {
-        browse_dir = sel->sub;
-        sort++;
-      }
-      if(sel == NULL && browse_dir != NULL && browse_dir->parent->parent) {
-        browse_dir = browse_dir->parent->parent->sub;
-        sort++;
-      }
-      browse_key_sel(0);
-      nonfo++;
+      if(sel != NULL && sel->sub != NULL)
+        dirlist_open(sel->sub);
+      info_show = 0;
       break;
     case KEY_LEFT:
     case 'h':
     case '<':
-      if(browse_dir != NULL && browse_dir->parent->parent != NULL) {
-        browse_dir = browse_dir->parent->parent->sub;
-        sort++;
-      }
-      browse_key_sel(0);
-      nonfo++;
+      if(sel != NULL && sel->parent->parent != NULL)
+        dirlist_open(sel->parent);
+      info_show = 0;
       break;
 
     /* and other stuff */
     case 'r':
-      if(browse_dir != NULL)
-        calc_init(getpath(browse_dir->parent), browse_dir->parent);
-      nonfo++;
+      if(sel != NULL)
+        calc_init(getpath(sel->parent), sel->parent);
+      info_show = 0;
       break;
     case 'q':
-      if(flags & BF_INFO)
-        nonfo++;
+      if(info_show)
+        info_show = 0;
       else
         return 1;
       break;
     case 'g':
       if(++graph > 3)
         graph = 0;
-      nonfo++;
+      info_show = 0;
       break;
     case 'i':
-      toggle(flags, BF_INFO);
+      info_show = !info_show;
       break;
     case '?':
       help_init();
-      nonfo++;
+      info_show = 0;
       break;
     case 'd':
-      if(sel == NULL)
+      if(sel == NULL || sel == dirlist_parent)
         break;
-      nonfo++;
-      /* quirky method of getting the next selected dir without actually selecting it */
-      browse_key_sel(sel->next ? 1 : -1);
-      for(r=browse_dir; r!=NULL; r=r->next)
-        if(r->flags & FF_BSEL)
-          break;
-      browse_key_sel(sel->next ? -1 : 1);
-      delete_init(sel, r);
+      info_show = 0;
+      if((t = dirlist_get(1)) == sel)
+        t = dirlist_get(-1);
+      delete_init(sel, t);
       break;
     }
 
-  if(sort && browse_dir != NULL)
-    browse_dir = browse_sort(browse_dir);
-  if(nonfo) {
-    flags &= ~BF_INFO;
-    info_start = 0;
-  }
-  if(flags & BF_INFO) {
-    for(sel=browse_dir; sel!=NULL; sel=sel->next)
-      if(sel->flags & FF_BSEL)
-        break;
-    if(sel && !sel->hlnk)
-      info_page = 0;
-  }
+  /* make sure the info_* options are correct */
+  sel = dirlist_get(0);
+  if(!info_show || sel == dirlist_parent)
+    info_show = info_page = info_start = 0;
+  else if(sel && !sel->hlnk)
+    info_page = info_start = 0;
+
   return 0;
 }
 
 
 void browse_init(struct dir *cur) {
   pstate = ST_BROWSE;
-  if(cur != NULL && cur->parent == NULL)
-    browse_dir = cur->sub;
-  else
-    browse_dir = cur;
-  if(browse_dir != NULL && browse_dir->parent->sub != browse_dir)
-    browse_dir = cur->parent->sub;
-  if(browse_dir != NULL)
-    browse_dir = browse_sort(browse_dir);
-  browse_key_sel(0);
+  dirlist_open(cur);
 }
 
