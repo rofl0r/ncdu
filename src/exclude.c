@@ -93,6 +93,7 @@ void exclude_clear() {
 
   for(n=excludes; n!=NULL; n=l) {
     l = n->next;
+    free(n->pattern);
     free(n);
   }
   excludes = NULL;
