@@ -193,6 +193,7 @@ void dirlist_open(struct dir *d) {
   head_real = head = dirlist_sort(head);
 
   /* set the reference to the parent dir */
+  dirlist_parent_alloc.flags &= ~FF_BSEL;
   if(head->parent->parent) {
     dirlist_parent = &dirlist_parent_alloc;
     dirlist_parent->name = "..";
