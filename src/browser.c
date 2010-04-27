@@ -141,7 +141,7 @@ void browse_draw_item(struct dir *n, int row) {
   }
 
   /* format and add item to the list */
-  line = malloc(winrows > 35 ? winrows+1 : 36);
+  line = malloc(wincols > 35 ? wincols+1 : 36);
   switch(graph) {
     case 0:
       sprintf(line, "%%c %%8s  %%c%%-%ds", wincols-13);
