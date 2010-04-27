@@ -1,3 +1,10 @@
+git - ?
+	- List the detected hard links in file info window
+	- Count the size a hard linked file once for each directory it appears in
+	- Fixed crash on browsing dirs with a small window size (#2991787)
+	- Improved browsing performance
+	- Various minor fixes
+
 1.6 - 2009-10-23
 	- Implemented hard link detection
 	- Properly select the next item after deletion
