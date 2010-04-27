@@ -379,7 +379,8 @@ int browse_key(int ch) {
         break;
       info_show = 0;
       if((t = dirlist_get(1)) == sel)
-        t = dirlist_get(-1);
+        if((t = dirlist_get(-1)) == sel || t == dirlist_parent)
+          t = sel->parent;
       delete_init(sel, t);
       break;
     }

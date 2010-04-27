@@ -211,9 +211,6 @@ delete_nxt:
 
 
 void delete_process() {
-  /* determine dir to open after successful delete */
-  struct dir *n = root->parent->sub != root ? root->parent->sub : root->next ? root->next : root->parent;
-
   /* confirm */
   seloption = 1;
   while(state == DS_CONFIRM && !noconfirm)
@@ -237,9 +234,8 @@ void delete_process() {
   if(delete_dir(root))
     browse_init(root);
   else {
-    if(nextsel)
-      nextsel->flags |= FF_BSEL;
-    browse_init(n);
+    nextsel->flags |= FF_BSEL;
+    browse_init(nextsel);
   }
 }
 
