@@ -172,6 +172,8 @@ int calc_item(struct dir *par, char *name) {
   d->parent = par;
   d->next = par->sub;
   par->sub = d;
+  if(d->next)
+    d->next->prev = d;
   d->name = malloc(strlen(name)+1);
   strcpy(d->name, name);
 
@@ -496,15 +498,14 @@ int calc_process() {
     /* update references and free original item */
     if(orig) {
       root->next = orig->next;
-      if(orig->parent) {
-        t = orig->parent->sub;
-        if(t == orig)
-          orig->parent->sub = root;
-        else if(t != NULL)
-          for(; t->next!=NULL; t=t->next)
-            if(t->next == orig)
-              t->next = root;
-      }
+      root->prev = orig->prev;
+      if(root->parent && root->parent->sub == orig)
+        root->parent->sub = root;
+      if(root->prev)
+        root->prev->next = root;
+      if(root->next)
+        root->next->prev = root;
+      orig->next = orig->prev = NULL;
       freedir(orig);
     }
     browse_init(root->sub);

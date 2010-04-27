@@ -226,16 +226,12 @@ void freedir(struct dir *dr) {
     freedir_rec(dr->sub);
  
   /* update references */
-  if(dr->parent) {
-    /* item is at the top of the dir, refer to next item */
-    if(dr->parent->sub == dr)
-      dr->parent->sub = dr->next;
-    /* else, get the previous item and update it's "next"-reference */
-    else
-      for(tmp = dr->parent->sub; tmp != NULL; tmp = tmp->next)
-        if(tmp->next == dr)
-          tmp->next = dr->next;
-  }
+  if(dr->parent && dr->parent->sub == dr)
+    dr->parent->sub = dr->next;
+  if(dr->prev)
+    dr->prev->next = dr->next;
+  if(dr->next)
+    dr->next->prev = dr->prev;
 
   freedir_hlnk(dr);
 

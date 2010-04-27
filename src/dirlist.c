@@ -122,6 +122,7 @@ struct dir *dirlist_sort(struct dir *list) {
         }
         if(tail) tail->next = e;
         else     list = e;
+        e->prev = tail;
         tail = e;
       }
       p = q;
@@ -225,10 +226,22 @@ struct dir *dirlist_next(struct dir *d) {
 }
 
 
+struct dir *dirlist_prev(struct dir *d) {
+  if(!head || !d)
+    return NULL;
+  while((d = d->prev)) {
+    if(!ISHIDDEN(d))
+      return d;
+  }
+  if(dirlist_parent)
+    return dirlist_parent;
+  return NULL;
+}
+
+
 /* this function assumes that 'selected' is valid and points to a visible item */
 struct dir *dirlist_get(int i) {
   struct dir *t = selected, *d;
-  int j;
 
   if(!head)
     return NULL;
@@ -247,15 +260,15 @@ struct dir *dirlist_get(int i) {
       return t;
   }
 
-  /* negative number? start from beginning to get the index of the selected
-   * item, and then start all over to get the requested item before that.
-   * XXX: This can obviously be optimized by using a doubly linked list. */
-  for(j=0,t=NULL; (t=dirlist_next(t)); j++)
-    if(t == selected)
-      break;
-  for(t=NULL,j+=i; (t=dirlist_next(t))&&j>0; j--)
-    ;
-  return t;
+  /* otherwise, backward */
+  while(1) {
+    d = dirlist_prev(t);
+    if(!d)
+      return t;
+    t = d;
+    if(!++i)
+      return t;
+  }
 }
 
 

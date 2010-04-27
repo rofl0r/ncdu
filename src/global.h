@@ -52,7 +52,7 @@
  * XXX: probably a good idea to get rid of the custom _t types and use
  *      fixed-size integers instead, which are much more predictable */
 struct dir {
-  struct dir *parent, *next, *sub, *hlnk;
+  struct dir *parent, *next, *prev, *sub, *hlnk;
   char *name;
   off_t size, asize;
   unsigned long items;
