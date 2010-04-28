@@ -90,8 +90,8 @@ void browse_draw_info(struct dir *dr) {
 }
 
 
-void browse_draw_item(struct dir *n, int row) {
-  char *line, ct, dt, *size, gr[11];
+void browse_draw_item(struct dir *n, int row, char *line) {
+  char ct, dt, *size, gr[11];
   int i, o;
   float pc;
 
@@ -141,25 +141,12 @@ void browse_draw_item(struct dir *n, int row) {
   }
 
   /* format and add item to the list */
-  line = malloc(wincols > 35 ? wincols+1 : 36);
   switch(graph) {
-    case 0:
-      sprintf(line, "%%c %%8s  %%c%%-%ds", wincols-13);
-      mvprintw(row, 0, line, ct, size, dt, cropstr(n->name, wincols-13));
-      break;
-    case 1:
-      sprintf(line, "%%c %%8s [%%10s] %%c%%-%ds", wincols-25);
-      mvprintw(row, 0, line, ct, size, gr, dt, cropstr(n->name, wincols-25));
-      break;
-    case 2:
-      sprintf(line, "%%c %%8s [%%5.1f%%%%] %%c%%-%ds", wincols-21);
-      mvprintw(row, 0, line, ct, size, pc, dt, cropstr(n->name, wincols-21));
-      break;
-    case 3:
-      sprintf(line, "%%c %%8s [%%5.1f%%%% %%10s] %%c%%-%ds", wincols-32);
-      mvprintw(row, 0, line, ct, size, pc, gr, dt, cropstr(n->name, wincols-32));
+    case 0: mvprintw(row, 0, line, ct, size, dt, cropstr(n->name, wincols-13)); break;
+    case 1: mvprintw(row, 0, line, ct, size, gr, dt, cropstr(n->name, wincols-25)); break;
+    case 2: mvprintw(row, 0, line, ct, size, pc, dt, cropstr(n->name, wincols-21)); break;
+    case 3: mvprintw(row, 0, line, ct, size, pc, gr, dt, cropstr(n->name, wincols-32));
   }
-  free(line);
 
   if(n->flags & FF_BSEL)
     attroff(A_REVERSE);
@@ -168,7 +155,7 @@ void browse_draw_item(struct dir *n, int row) {
 
 void browse_draw() {
   struct dir *t;
-  char fmtsize[9], *tmp;
+  char fmtsize[9], *tmp, line[35];
   int selected, i;
 
   erase();
@@ -207,9 +194,17 @@ void browse_draw() {
   /* get start position */
   t = dirlist_top(0);
 
+  /* create line format */
+  switch(graph) {
+    case 0: sprintf(line, "%%c %%8s  %%c%%-%ds", wincols-13); break;
+    case 1: sprintf(line, "%%c %%8s [%%10s] %%c%%-%ds", wincols-25); break;
+    case 2: sprintf(line, "%%c %%8s [%%5.1f%%%%] %%c%%-%ds", wincols-21); break;
+    case 3: sprintf(line, "%%c %%8s [%%5.1f%%%% %%10s] %%c%%-%ds", wincols-32);
+  }
+
   /* print the list to the screen */
   for(i=0; t && i<winrows-3; t=dirlist_next(t),i++) {
-    browse_draw_item(t, 2+i);
+    browse_draw_item(t, 2+i, line);
     /* save the selected row number for later */
     if(t->flags & FF_BSEL)
       selected = i;
