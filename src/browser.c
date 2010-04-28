@@ -315,12 +315,12 @@ int browse_key(int ch) {
 
     /* sorting items */
     case 'n':
-      dirlist_set_sort(DL_COL_NAME, dirlist_sort_col == DL_COL_NAME ? !dirlist_sort_desc : DL_NOCHANGE, DL_NOCHANGE);
+      dirlist_set_sort(DL_COL_NAME, dirlist_sort_col == DL_COL_NAME ? !dirlist_sort_desc : 0, DL_NOCHANGE);
       info_show = 0;
       break;
     case 's':
       i = show_as ? DL_COL_ASIZE : DL_COL_SIZE;
-      dirlist_set_sort(i, dirlist_sort_col == i ? !dirlist_sort_desc : DL_NOCHANGE, DL_NOCHANGE);
+      dirlist_set_sort(i, dirlist_sort_col == i ? !dirlist_sort_desc : 1, DL_NOCHANGE);
       info_show = 0;
       break;
     case 'e':
