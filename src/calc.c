@@ -247,7 +247,7 @@ int calc_dir(struct dir *dest, char *name) {
 
   /* open & chdir into directory */
   if((dir = opendir(name)) == NULL || chdir(name) < 0) {
-    if(lasterrl < (int)strlen(curpath)) {
+    if(lasterrl <= (int)strlen(curpath)) {
       lasterrl = strlen(curpath)+1;
       lasterr = realloc(lasterr, lasterrl);
     }
@@ -465,7 +465,7 @@ int calc_process() {
 
   /* update curpath */
   if(strcmp(name, ".")) {
-    if((int)strlen(path)+1 > curpathl) {
+    if(curpathl <= (int)strlen(path)) {
       curpathl = strlen(path)+1;
       curpath = realloc(curpath, curpathl);
     }
@@ -532,7 +532,7 @@ void calc_init(char *dir, struct dir *org) {
   if(curpathl == 0) {
     curpathl = strlen(dir)+1;
     curpath = malloc(curpathl);
-  } else if(curpathl < (int)strlen(dir)+1) {
+  } else if(curpathl <= (int)strlen(dir)) {
     curpathl = strlen(dir)+1;
     curpath = realloc(curpath, curpathl);
   }
