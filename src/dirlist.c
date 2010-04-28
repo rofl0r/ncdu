@@ -197,7 +197,7 @@ void dirlist_open(struct dir *d) {
   dirlist_parent_alloc.flags &= ~FF_BSEL;
   if(head->parent->parent) {
     dirlist_parent = &dirlist_parent_alloc;
-    dirlist_parent->name = "..";
+    strcpy(dirlist_parent->name, "..");
     dirlist_parent->next = head;
     dirlist_parent->parent = head->parent;
     dirlist_parent->sub = head->parent;

@@ -211,7 +211,6 @@ void freedir_rec(struct dir *dr) {
     freedir_hlnk(tmp);
     /* remove item */
     if(tmp->sub) freedir_rec(tmp->sub);
-    free(tmp->name);
     tmp2 = tmp->next;
     free(tmp);
   }
@@ -245,7 +244,6 @@ void freedir(struct dir *dr) {
     tmp->items -= dr->items+1;
   }
 
-  free(dr->name);
   free(dr);
 }
 

@@ -168,13 +168,12 @@ int calc_item(struct dir *par, char *name) {
     return 0;
 
   /* allocate dir and fix references */
-  d = calloc(sizeof(struct dir), 1);
+  d = calloc(SDIRSIZE+strlen(name), 1);
   d->parent = par;
   d->next = par->sub;
   par->sub = d;
   if(d->next)
     d->next->prev = d;
-  d->name = malloc(strlen(name)+1);
   strcpy(d->name, name);
 
 #ifdef __CYGWIN__
@@ -434,16 +433,15 @@ int calc_process() {
   }
 
   /* initialize parent dir */
-  t = (struct dir *) calloc(1, sizeof(struct dir));
+  n = orig ? strlen(orig->name) : strlen(path)+strlen(name)+1;
+  t = (struct dir *) calloc(1, SDIRSIZE+n);
   t->size = fs.st_blocks * S_BLKSIZE;
   t->asize = fs.st_size;
   t->flags |= FF_DIR;
   if(orig) {
-    t->name = malloc(strlen(orig->name)+1);
     strcpy(t->name, orig->name);
     t->parent = orig->parent;
   } else {
-    t->name = malloc(strlen(path)+strlen(name)+2);
     t->name[0] = 0;
     if(strcmp(path, "/"))
       strcpy(t->name, path);

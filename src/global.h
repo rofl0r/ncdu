@@ -53,13 +53,21 @@
  *      fixed-size integers instead, which are much more predictable */
 struct dir {
   struct dir *parent, *next, *prev, *sub, *hlnk;
-  char *name;
   off_t size, asize;
-  unsigned long items;
-  unsigned char flags;
-  dev_t dev;
   ino_t ino;
+  unsigned long items;
+  dev_t dev;
+  unsigned char flags;
+  char name[3]; /* must be large enough to hold ".." */
 }; 
+/* sizeof(total dir) = SDIRSIZE + strlen(name) = sizeof(struct dir) - 3 + strlen(name) + 1 */
+#define SDIRSIZE (sizeof(struct dir)-2)
+
+/* Ideally, the name array should be as large as the padding added to the end of
+ * the struct, but I can't figure out a portable way to calculate this. We can
+ * be sure that it's at least 3 bytes, though, as the struct is aligned to at
+ * least 4 bytes and the flags field is a single byte. */
+
 
 /* program state */
 extern int pstate;
