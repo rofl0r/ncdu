@@ -509,6 +509,7 @@ int calc_process() {
       freedir(orig);
     }
     browse_init(root->sub);
+    dirlist_top(-3);
     return 0;
   }
 

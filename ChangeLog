@@ -4,6 +4,7 @@ git - ?
 	- Fixed crash on browsing dirs with a small window size (#2991787)
 	- Fixed buffer overflow when some directories can't be scanned (#2981704)
 	- Improved browsing performance
+	- More intuitive multi-page browsing
 	- Various minor fixes
 
 1.6 - 2009-10-23

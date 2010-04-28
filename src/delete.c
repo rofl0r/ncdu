@@ -236,6 +236,7 @@ void delete_process() {
   else {
     nextsel->flags |= FF_BSEL;
     browse_init(nextsel);
+    dirlist_top(-4);
   }
 }
 

@@ -205,12 +205,10 @@ void browse_draw() {
     return;
 
   /* get start position */
-  t = dirlist_get(-1*((winrows)/2));
-  if(t == dirlist_next(NULL))
-    t = NULL;
+  t = dirlist_top(0);
 
   /* print the list to the screen */
-  for(i=0; (t=dirlist_next(t)) && i<winrows-3; i++) {
+  for(i=0; t && i<winrows-3; t=dirlist_next(t),i++) {
     browse_draw_item(t, 2+i);
     /* save the selected row number for later */
     if(t->flags & FF_BSEL)
@@ -284,28 +282,34 @@ int browse_key(int ch) {
     case KEY_UP:
     case 'k':
       dirlist_select(dirlist_get(-1));
+      dirlist_top(-1);
       info_start = 0;
       break;
     case KEY_DOWN:
     case 'j':
       dirlist_select(dirlist_get(1));
+      dirlist_top(1);
       info_start = 0;
       break;
     case KEY_HOME:
       dirlist_select(dirlist_next(NULL));
+      dirlist_top(2);
       info_start = 0;
       break;
     case KEY_LL:
     case KEY_END:
       dirlist_select(dirlist_get(1<<30));
+      dirlist_top(1);
       info_start = 0;
       break;
     case KEY_PPAGE:
       dirlist_select(dirlist_get(-1*(winrows-3)));
+      dirlist_top(-1);
       info_start = 0;
       break;
     case KEY_NPAGE:
       dirlist_select(dirlist_get(winrows-3));
+      dirlist_top(1);
       info_start = 0;
       break;
 
@@ -338,15 +342,19 @@ int browse_key(int ch) {
     case 10:
     case KEY_RIGHT:
     case 'l':
-      if(sel != NULL && sel->sub != NULL)
+      if(sel != NULL && sel->sub != NULL) {
         dirlist_open(sel->sub);
+        dirlist_top(-3);
+      }
       info_show = 0;
       break;
     case KEY_LEFT:
     case 'h':
     case '<':
-      if(sel != NULL && sel->parent->parent != NULL)
+      if(sel != NULL && sel->parent->parent != NULL) {
         dirlist_open(sel->parent);
+        dirlist_top(-3);
+      }
       info_show = 0;
       break;
 

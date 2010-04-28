@@ -40,7 +40,7 @@ int    dirlist_sort_desc   = 1,
 
 /* private state vars */
 struct dir dirlist_parent_alloc;
-struct dir *head, *head_real, *selected;
+struct dir *head, *head_real, *selected, *top = NULL;
 
 
 
@@ -282,6 +282,67 @@ void dirlist_select(struct dir *d) {
 }
 
 
+
+/* We need a hint in order to figure out which item should be on top:
+ *  0 = only get the current top, don't set anything
+ *  1 = selected has moved down
+ * -1 = selected has moved up
+ * -2 = selected = first item in the list (faster version of '1')
+ * -3 = top should be considered as invalid (after sorting or opening an other dir)
+ * -4 = an item has been deleted
+ * -5 = hidden flag has been changed
+ *
+ * Actions:
+ *  hint = -1 or -4 -> top = selected_is_visible ? top : selected
+ *  hint = -2 or -3 -> top = selected-(winrows-3)/2
+ *  hint =  1       -> top = selected_is_visible ? top : selected-(winrows-4)
+ *  hint =  0 or -5 -> top = selected_is_visible ? top : selected-(winrows-3)/2
+ *
+ * Regardless of the hint, the returned top will always be chosen such that the
+ * selected item is visible.
+ */
+struct dir *dirlist_top(int hint) {
+  struct dir *t;
+  int i = winrows-3, visible = 0;
+
+  if(hint == -2 || hint == -3)
+    top = NULL;
+
+  /* check whether the current selected item is within the visible window */
+  if(top) {
+    i = winrows-3;
+    t = dirlist_get(0);
+    while(t && i--) {
+      if(t == top) {
+        visible++;
+        break;
+      }
+      t = dirlist_prev(t);
+    }
+  }
+
+  /* otherwise, get a new top */
+  if(!visible)
+    top = hint == -1 || hint == -4 ? dirlist_get(0) :
+          hint ==  1               ? dirlist_get(-1*(winrows-4)) :
+                                     dirlist_get(-1*(winrows-3)/2);
+
+  /* also make sure that if the list is longer than the window and the last
+   * item is visible, that this last item is also the last on the window */
+  t = top;
+  i = winrows-3;
+  while(t && i--)
+    t = dirlist_next(t);
+  t = top;
+  do {
+    top = t;
+    t = dirlist_prev(t);
+  } while(t && i-- > 0);
+
+  return top;
+}
+
+
 void dirlist_set_sort(int col, int desc, int df) {
   /* update config */
   if(col != DL_NOCHANGE)
@@ -297,11 +358,13 @@ void dirlist_set_sort(int col, int desc, int df) {
     dirlist_parent->next = head_real;
   else
     head = head_real;
+  dirlist_top(-3);
 }
 
 
 void dirlist_set_hidden(int hidden) {
   dirlist_hidden = hidden;
   dirlist_fixup();
+  dirlist_top(-5);
 }
 

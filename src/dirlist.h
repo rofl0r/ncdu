@@ -49,6 +49,9 @@ struct dir *dirlist_next(struct dir *);
  * hidden items aren't considered */
 struct dir *dirlist_get(int i);
 
+/* Get/set the first visible item in the list on the screen */
+struct dir *dirlist_top(int hint);
+
 /* Set selected dir (must be in the currently opened directory, obviously) */
 void dirlist_select(struct dir *);
 
