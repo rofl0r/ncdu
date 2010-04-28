@@ -170,10 +170,9 @@ void dirlist_fixup() {
   }
 
   /* no selected items found after one pass? select the first visible item */
-  if(!selected) {
-    selected = dirlist_next(NULL);
-    selected->flags |= FF_BSEL;
-  }
+  if(!selected)
+    if((selected = dirlist_next(NULL)))
+      selected->flags |= FF_BSEL;
 }
 
 
@@ -239,12 +238,16 @@ struct dir *dirlist_prev(struct dir *d) {
 }
 
 
-/* this function assumes that 'selected' is valid and points to a visible item */
 struct dir *dirlist_get(int i) {
   struct dir *t = selected, *d;
 
   if(!head)
     return NULL;
+
+  if(ISHIDDEN(selected)) {
+    selected = dirlist_next(NULL);
+    return selected;
+  }
 
   /* i == 0? return the selected item */
   if(!i)
@@ -273,7 +276,7 @@ struct dir *dirlist_get(int i) {
 
 
 void dirlist_select(struct dir *d) {
-  if(!head || ISHIDDEN(d) || d->parent != head->parent)
+  if(!d || !head || ISHIDDEN(d) || d->parent != head->parent)
     return;
 
   selected->flags &= ~FF_BSEL;
