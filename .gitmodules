@@ -1,0 +1,3 @@
+[submodule "compll"]
+	path = compll
+	url = git://g.blicky.net/compll.git/

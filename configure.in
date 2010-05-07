@@ -18,6 +18,8 @@ AC_CHECK_HEADERS(
 AC_TYPE_OFF_T
 AC_SYS_LARGEFILE
 AC_STRUCT_ST_BLOCKS
+AC_CHECK_TYPE([unsigned long long], [],
+              [AC_MSG_ERROR([your compiler does not have an unsigned long long type.])])
 
 # Check for library functions.
 AC_CHECK_FUNCS(
@@ -44,6 +46,28 @@ AC_CHECK_LIB([$ncurses],
              [initscr],
              [LIBS="$LIBS -l$ncurses"],
              [AC_MSG_ERROR($ncurses library is required)])
+
+
+
+# compll configuration (only zlib is supported currently)
+compll=no
+AC_ARG_WITH([compll],
+            AC_HELP_STRING([--with-compll=zlib], [use zlib for in-memory compression (experimental)]),
+            [compll=$withval])
+if test "x$compll" != "xno"; then
+  AC_CHECK_LIB([z],
+               [zlibVersion],
+               [AC_CHECK_HEADER([zlib.h], [LIBS="$LIBS -lz"; compll=zlib],
+                                [if test "x$compll" = "xauto"; then compll=no
+                                 else AC_MSG_ERROR([--with-compll is given, but zlib.h could not be found]); fi])
+               ],
+               [if test "x$compll" = "xauto"; then compll=no
+                else AC_MSG_ERROR([--with-compll is given, but no zlib library could not be found]); fi])
+fi
+if test "x$compll" = "xno"; then
+  AC_DEFINE([COMPLL_NOLIB], [1], [don't use compll])
+fi
+AM_CONDITIONAL([COMPLL], [test "x$compll" != "xno"])
 
 
 
