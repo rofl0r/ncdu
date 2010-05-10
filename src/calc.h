@@ -33,7 +33,7 @@ extern char calc_smfs;  /* stay on the same filesystem */
 int  calc_process(void);
 int  calc_key(int);
 void calc_draw(void);
-void calc_init(char *, struct dir *);
+void calc_init(char *, compll_t);
 
 
 #endif

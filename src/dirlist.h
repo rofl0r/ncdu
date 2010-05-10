@@ -38,22 +38,22 @@
 #define DL_COL_ASIZE   2
 
 
-void dirlist_open(struct dir *);
+void dirlist_open(compll_t);
 
 /* Get the next non-hidden item,
  * NULL = get first non-hidden item */
-struct dir *dirlist_next(struct dir *);
+compll_t dirlist_next(compll_t);
 
 /* Get the struct dir item relative to the selected item, or the item nearest to the requested item
  * i = 0 get selected item
  * hidden items aren't considered */
-struct dir *dirlist_get(int i);
+compll_t dirlist_get(int i);
 
 /* Get/set the first visible item in the list on the screen */
-struct dir *dirlist_top(int hint);
+compll_t dirlist_top(int hint);
 
 /* Set selected dir (must be in the currently opened directory, obviously) */
-void dirlist_select(struct dir *);
+void dirlist_select(compll_t);
 
 /* Change sort column (arguments should have a NO_CHANGE option) */
 void dirlist_set_sort(int column, int desc, int df);
@@ -65,7 +65,7 @@ void dirlist_set_hidden(int hidden);
 /* DO NOT WRITE TO ANY OF THE BELOW VARIABLES FROM OUTSIDE OF dirlist.c! */
 
 /* The 'reference to parent dir' */
-extern struct dir *dirlist_parent;
+extern compll_t dirlist_parent;
 
 /* current sorting configuration (set with dirlist_set_sort()) */
 extern int dirlist_sort_desc, dirlist_sort_col, dirlist_sort_df;

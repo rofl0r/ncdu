@@ -38,9 +38,6 @@ char fullsizedat[20]; /* max: 999.999.999.999.999 */
 char *getpathdat;
 int getpathdatl = 0;
 
-struct dir **links;
-int linksl = 0, linkst = 0;
-
 
 char *cropstr(const char *from, int s) {
   int i, j, o = strlen(from);
@@ -170,11 +167,11 @@ void ncprint(int r, int c, char *fmt, ...) {
 
 
 /* removes item from the hlnk circular linked list and size counts of the parents */
-void freedir_hlnk(struct dir *d) {
-  struct dir *t, *par, *pt;
+void freedir_hlnk(compll_t d) {
+  compll_t t, par, pt;
   int i;
 
-  if(!(d->flags & FF_HLNKC))
+  if(!(DR(d)->flags & FF_HLNKC))
     return;
 
   /* remove size from parents.
@@ -183,81 +180,80 @@ void freedir_hlnk(struct dir *d) {
    * exists within the parent it shouldn't get removed from the count.
    * XXX: Same note as for calc.c / calc_hlnk_check():
    *      this is probably not the most efficient algorithm */
-  for(i=1,par=d->parent; i&&par; par=par->parent) {
-    if(d->hlnk)
-      for(t=d->hlnk; i&&t!=d; t=t->hlnk)
-        for(pt=t->parent; i&&pt; pt=pt->parent)
+  for(i=1,par=DR(d)->parent; i&&par; par=DR(par)->parent) {
+    if(DR(d)->hlnk)
+      for(t=DR(d)->hlnk; i&&t!=d; t=DR(t)->hlnk)
+        for(pt=DR(t)->parent; i&&pt; pt=DR(pt)->parent)
           if(pt==par)
             i=0;
     if(i) {
-      par->size -= d->size;
-      par->asize -= d->asize;
+      DW(par)->size -= DR(d)->size;
+      DW(par)->asize -= DR(d)->asize;
     }
   }
 
   /* remove from hlnk */
-  if(d->hlnk) {
-    for(t=d->hlnk; t->hlnk!=d; t=t->hlnk)
+  if(DR(d)->hlnk) {
+    for(t=DR(d)->hlnk; DR(t)->hlnk!=d; t=DR(t)->hlnk)
       ;
-    t->hlnk = d->hlnk;
+    DW(t)->hlnk = DR(d)->hlnk;
   }
 }
 
 
-void freedir_rec(struct dir *dr) {
-  struct dir *tmp, *tmp2;
+void freedir_rec(compll_t dr) {
+  compll_t tmp, tmp2;
   tmp2 = dr;
-  while((tmp = tmp2) != NULL) {
+  while((tmp = tmp2)) {
     freedir_hlnk(tmp);
     /* remove item */
-    if(tmp->sub) freedir_rec(tmp->sub);
-    tmp2 = tmp->next;
-    free(tmp);
+    if(DR(tmp)->sub) freedir_rec(DR(tmp)->sub);
+    tmp2 = DR(tmp)->next;
+    compll_free(tmp);
   }
 }
 
-
-void freedir(struct dir *dr) {
-  struct dir *tmp;
+void freedir(compll_t dr) {
+  compll_t tmp;
 
   /* free dr->sub recursively */
-  if(dr->sub)
-    freedir_rec(dr->sub);
+  if(DR(dr)->sub)
+    freedir_rec(DR(dr)->sub);
  
   /* update references */
-  if(dr->parent && dr->parent->sub == dr)
-    dr->parent->sub = dr->next;
-  if(dr->prev)
-    dr->prev->next = dr->next;
-  if(dr->next)
-    dr->next->prev = dr->prev;
+  if(DR(dr)->parent && DR(DR(dr)->parent)->sub == dr)
+    DW(DR(dr)->parent)->sub = DR(dr)->next;
+  if(DR(dr)->prev)
+    DW(DR(dr)->prev)->next = DR(dr)->next;
+  if(DR(dr)->next)
+    DW(DR(dr)->next)->prev = DR(dr)->prev;
 
   freedir_hlnk(dr);
 
   /* update sizes of parent directories if this isn't a hard link.
    * If this is a hard link, freedir_hlnk() would have done so already */
-  for(tmp=dr->parent; tmp; tmp=tmp->parent) {
-    if(!(dr->flags & FF_HLNKC)) {
-      tmp->size -= dr->size;
-      tmp->asize -= dr->asize;
+  for(tmp=DR(dr)->parent; tmp; tmp=DR(tmp)->parent) {
+    if(!(DR(dr)->flags & FF_HLNKC)) {
+      DW(tmp)->size -= DR(dr)->size;
+      DW(tmp)->asize -= DR(dr)->asize;
     }
-    tmp->items -= dr->items+1;
+    DW(tmp)->items -= DR(dr)->items+1;
   }
 
-  free(dr);
+  compll_free(dr);
 }
 
 
-char *getpath(struct dir *cur) {
-  struct dir *d, **list;
+char *getpath(compll_t cur) {
+  compll_t d, *list;
   int c, i;
 
-  if(!cur->name[0])
+  if(!DR(cur)->name[0])
     return "/";
 
   c = i = 1;
-  for(d=cur; d!=NULL; d=d->parent) {
-    i += strlen(d->name)+1;
+  for(d=cur; d; d=DR(d)->parent) {
+    i += strlen(DR(d)->name)+1;
     c++;
   }
 
@@ -268,17 +264,17 @@ char *getpath(struct dir *cur) {
     getpathdatl = i;
     getpathdat = realloc(getpathdat, i);
   }
-  list = malloc(c*sizeof(struct dir *));
+  list = malloc(c*sizeof(compll_t));
 
   c = 0;
-  for(d=cur; d!=NULL; d=d->parent)
+  for(d=cur; d; d=DR(d)->parent)
     list[c++] = d;
 
   getpathdat[0] = '\0';
   while(c--) {
-    if(list[c]->parent)
+    if(DR(list[c])->parent)
       strcat(getpathdat, "/");
-    strcat(getpathdat, list[c]->name);
+    strcat(getpathdat, DR(list[c])->name);
   }
   free(list);
   return getpathdat;

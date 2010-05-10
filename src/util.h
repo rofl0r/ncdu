@@ -35,6 +35,9 @@ extern int winrows, wincols;
 /* used by the nc* functions and macros */
 extern int subwinr, subwinc;
 
+/* handy macros for accessing nodes */
+#define DR(n) ((const struct dir *) compll_read(n))
+#define DW(n) ((struct dir *) compll_write(n))
 
 /* Instead of using several ncurses windows, we only draw to stdscr.
  * the functions nccreate, ncprint and the macros ncaddstr and ncaddch
@@ -72,11 +75,11 @@ char *formatsize(const off_t);
 char *fullsize(const off_t);
 
 /* recursively free()s a directory tree */
-void freedir(struct dir *);
+void freedir(compll_t);
 
 /* generates full path from a dir item,
    returned pointer will be overwritten with a subsequent call */
-char *getpath(struct dir *);
+char *getpath(compll_t);
 
 #endif
 

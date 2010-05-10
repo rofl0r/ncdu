@@ -49,19 +49,19 @@ char failed;             /* 1 on fatal error */
 char *curpath;           /* last lstat()'ed item, used for excludes matching and display */
 char *lasterr;           /* last unreadable dir/item */
 char errmsg[128];        /* error message, when failed=1 */
-struct dir *root;        /* root directory struct we're calculating */
-struct dir *orig;        /* original directory, when recalculating */
+compll_t root;           /* root directory struct we're calculating */
+compll_t orig;           /* original directory, when recalculating */
 dev_t curdev;            /* current device we're calculating on */
 int anpos;               /* position of the animation string */
 int curpathl = 0, lasterrl = 0;
 
-struct dir **links = NULL;
+compll_t *links = NULL;
 int linksl, linkst;
 
 
 
 /* adds name to curpath */
-void calc_enterpath(char *name) {
+void calc_enterpath(const char *name) {
   int n;
 
   n = strlen(curpath)+strlen(name)+2;
@@ -88,11 +88,11 @@ void calc_leavepath() {
 
 
 /* looks in the links list and adds the file when not found */
-int calc_hlink_add(struct dir *d) {
+int calc_hlink_add(compll_t d) {
   int i;
   /* check the list */
   for(i=0; i<linkst; i++)
-    if(links[i]->dev == d->dev && links[i]->ino == d->ino)
+    if(DR(links[i])->dev == DR(d)->dev && DR(links[i])->ino == DR(d)->ino)
       break;
   /* found, do nothing and return the index */
   if(i != linkst)
@@ -102,9 +102,9 @@ int calc_hlink_add(struct dir *d) {
     linksl *= 2;
     if(!linksl) {
       linksl = 64;
-      links = malloc(linksl*sizeof(struct dir *));
+      links = malloc(linksl*sizeof(compll_t));
     } else
-      links = realloc(links, linksl*sizeof(struct dir *));
+      links = realloc(links, linksl*sizeof(compll_t));
   }
   links[linkst-1] = d;
   return -1;
@@ -112,13 +112,13 @@ int calc_hlink_add(struct dir *d) {
 
 
 /* recursively checks a dir structure for hard links and fills the lookup array */
-void calc_hlink_init(struct dir *d) {
-  struct dir *t;
+void calc_hlink_init(compll_t d) {
+  compll_t t;
 
-  for(t=d->sub; t!=NULL; t=t->next)
+  for(t=DR(d)->sub; t; t=DR(t)->next)
     calc_hlink_init(t);
 
-  if(!(d->flags & FF_HLNKC))
+  if(!(DR(d)->flags & FF_HLNKC))
     return;
   calc_hlink_add(d);
 }
@@ -126,103 +126,103 @@ void calc_hlink_init(struct dir *d) {
 
 /* checks an individual file and updates the flags and cicrular linked list,
  * also updates the sizes of the parent dirs */
-void calc_hlink_check(struct dir *d) {
-  struct dir *t, *pt, *par;
+void calc_hlink_check(compll_t d) {
+  compll_t t, pt, par;
   int i;
 
-  d->flags |= FF_HLNKC;
+  DW(d)->flags |= FF_HLNKC;
   i = calc_hlink_add(d);
 
   /* found in the list? update hlnk */
   if(i >= 0) {
-    t = d->hlnk = links[i];
-    if(t->hlnk != NULL)
-      for(t=t->hlnk; t->hlnk!=d->hlnk; t=t->hlnk)
+    t = DW(d)->hlnk = links[i];
+    if(DR(t)->hlnk)
+      for(t=DR(t)->hlnk; DR(t)->hlnk!=DR(d)->hlnk; t=DR(t)->hlnk)
         ;
-    t->hlnk = d;
+    DW(t)->hlnk = d;
   }
 
   /* now update the sizes of the parent directories,
    * This works by only counting this file in the parent directories where this
    * file hasn't been counted yet, which can be determined from the hlnk list.
    * XXX: This may not be the most efficient algorithm to do this */
-  for(i=1,par=d->parent; i&&par; par=par->parent) {
-    if(d->hlnk)
-      for(t=d->hlnk; i&&t!=d; t=t->hlnk)
-        for(pt=t->parent; i&&pt; pt=pt->parent)
+  for(i=1,par=DR(d)->parent; i&&par; par=DR(par)->parent) {
+    if(DR(d)->hlnk)
+      for(t=DR(d)->hlnk; i&&t!=d; t=DR(t)->hlnk)
+        for(pt=DR(t)->parent; i&&pt; pt=DR(pt)->parent)
           if(pt==par)
             i=0;
     if(i) {
-      par->size += d->size;
-      par->asize += d->asize;
+      DW(par)->size += DR(d)->size;
+      DW(par)->asize += DR(d)->asize;
     }
   }
 }
 
 
-int calc_item(struct dir *par, char *name) {
-  struct dir *t, *d;
+int calc_item(compll_t par, char *name) {
+  compll_t t, d;
   struct stat fs;
 
   if(name[0] == '.' && (name[1] == '\0' || (name[1] == '.' && name[2] == '\0')))
     return 0;
 
   /* allocate dir and fix references */
-  d = calloc(SDIRSIZE+strlen(name), 1);
-  d->parent = par;
-  d->next = par->sub;
-  par->sub = d;
-  if(d->next)
-    d->next->prev = d;
-  strcpy(d->name, name);
+  d = compll_alloc(SDIRSIZE+strlen(name));
+  DW(d)->parent = par;
+  DW(d)->next = DR(par)->sub;
+  DW(par)->sub = d;
+  if(DR(d)->next)
+    DW(DR(d)->next)->prev = d;
+  strcpy(DW(d)->name, name);
 
 #ifdef __CYGWIN__
   /* /proc/registry names may contain slashes */
-  if(strchr(d->name, '/') || strchr(d->name,  '\\')) {
-    d->flags |= FF_ERR;
+  if(strchr(name, '/') || strchr(name,  '\\')) {
+    DW(d)->flags |= FF_ERR;
     return 0;
   }
 #endif
 
   /* lstat */
   if(lstat(name, &fs)) {
-    d->flags |= FF_ERR;
+    DW(d)->flags |= FF_ERR;
     return 0;
   }
 
   /* check for excludes and same filesystem */
   if(exclude_match(curpath))
-    d->flags |= FF_EXL;
+    DW(d)->flags |= FF_EXL;
 
   if(calc_smfs && curdev != fs.st_dev)
-    d->flags |= FF_OTHFS;
+    DW(d)->flags |= FF_OTHFS;
 
   /* determine type of this item */
   if(S_ISREG(fs.st_mode))
-    d->flags |= FF_FILE;
+    DW(d)->flags |= FF_FILE;
   else if(S_ISDIR(fs.st_mode))
-    d->flags |= FF_DIR;
+    DW(d)->flags |= FF_DIR;
 
   /* update the items count of the parent dirs */
-  if(!(d->flags & FF_EXL))
-    for(t=d->parent; t!=NULL; t=t->parent)
-      t->items++;
+  if(!(DR(d)->flags & FF_EXL))
+    for(t=DR(d)->parent; t; t=DR(t)->parent)
+      DW(t)->items++;
 
   /* count the size */
-  if(!(d->flags & FF_EXL || d->flags & FF_OTHFS)) {
-    d->size = fs.st_blocks * S_BLKSIZE;
-    d->asize = fs.st_size;
+  if(!(DR(d)->flags & FF_EXL || DR(d)->flags & FF_OTHFS)) {
+    DW(d)->size = fs.st_blocks * S_BLKSIZE;
+    DW(d)->asize = fs.st_size;
     /* only update the sizes of the parents if it's not a hard link */
     if(S_ISDIR(fs.st_mode) || fs.st_nlink <= 1)
-      for(t=d->parent; t!=NULL; t=t->parent) {
-        t->size += d->size;
-        t->asize += d->asize;
+      for(t=DR(d)->parent; t; t=DR(t)->parent) {
+        DW(t)->size += DR(d)->size;
+        DW(t)->asize += DR(d)->asize;
       }
   }
 
   /* Hard link checking (also takes care of updating the sizes of the parents) */
-  d->ino = fs.st_ino;
-  d->dev = fs.st_dev;
+  DW(d)->ino = fs.st_ino;
+  DW(d)->dev = fs.st_dev;
   if(!S_ISDIR(fs.st_mode) && fs.st_nlink > 1)
     calc_hlink_check(d);
 
@@ -232,8 +232,8 @@ int calc_item(struct dir *par, char *name) {
 
 /* recursively walk through the directory tree,
    assumes path resides in the cwd */
-int calc_dir(struct dir *dest, char *name) {
-  struct dir *t;
+int calc_dir(compll_t dest, const char *name) {
+  compll_t t;
   DIR *dir;
   struct dirent *dr;
   int ch;
@@ -251,10 +251,10 @@ int calc_dir(struct dir *dest, char *name) {
       lasterr = realloc(lasterr, lasterrl);
     }
     strcpy(lasterr, curpath);
-    dest->flags |= FF_ERR;
+    DW(dest)->flags |= FF_ERR;
     t = dest;
-    while((t = t->parent) != NULL)
-      t->flags |= FF_SERR;
+    while((t = DR(t)->parent))
+      DW(t)->flags |= FF_SERR;
     calc_leavepath();
     if(dir != NULL)
       closedir(dir);
@@ -265,7 +265,7 @@ int calc_dir(struct dir *dest, char *name) {
   while((dr = readdir(dir)) != NULL) {
     calc_enterpath(dr->d_name);
     if(calc_item(dest, dr->d_name))
-      dest->flags |= FF_ERR;
+      DW(dest)->flags |= FF_ERR;
     if(input_handle(1)) {
       calc_leavepath();
       closedir(dir);
@@ -276,26 +276,25 @@ int calc_dir(struct dir *dest, char *name) {
   }
 
   if(errno) {
-    if(dest->flags & FF_SERR)
-      dest->flags -= FF_SERR;
-    dest->flags |= FF_ERR;
+    DW(dest)->flags &= ~FF_SERR;
+    DW(dest)->flags |= FF_ERR;
   }
   closedir(dir);
 
   /* error occured while reading this dir, update parent dirs */
-  for(t=dest->sub; t!=NULL; t=t->next)
-    if(t->flags & FF_ERR || t->flags & FF_SERR)
-      dest->flags |= FF_SERR;
-  if(dest->flags & FF_ERR || dest->flags & FF_SERR) {
-    for(t = dest; (t = t->parent) != NULL; )
-      t->flags |= FF_SERR;
+  for(t=DR(dest)->sub; t; t=DR(t)->next)
+    if(DR(t)->flags & FF_ERR || DR(t)->flags & FF_SERR)
+      DW(dest)->flags |= FF_SERR;
+  if(DR(dest)->flags & FF_ERR || DR(dest)->flags & FF_SERR) {
+    for(t = dest; (t = DR(t)->parent); )
+      DW(t)->flags |= FF_SERR;
   }
 
   /* calculate subdirectories */
   ch = 0;
-  for(t=dest->sub; t!=NULL; t=t->next)
-    if(t->flags & FF_DIR && !(t->flags & FF_EXL || t->flags & FF_OTHFS))
-      if(calc_dir(t, t->name)) {
+  for(t=DR(dest)->sub; t; t=DR(t)->next)
+    if(DR(t)->flags & FF_DIR && !(DR(t)->flags & FF_EXL || DR(t)->flags & FF_OTHFS))
+      if(calc_dir(t, DR(t)->name)) {
         calc_leavepath();
         return 1;
       }
@@ -321,7 +320,7 @@ void calc_draw_progress() {
   nccreate(10, 60, !orig ? "Calculating..." : "Recalculating...");
 
   ncprint(2, 2, "Total items: %-8d size: %s",
-    root->items, formatsize(root->size));
+    DR(root)->items, formatsize(DR(root)->size));
   ncprint(3, 2, "Current dir: %s", cropstr(curpath, 43));
   ncaddstr(8, 43, "Press q to quit");
 
@@ -385,13 +384,13 @@ int calc_key(int ch) {
 int calc_process() {
   char *path, *name;
   struct stat fs;
-  struct dir *t;
+  compll_t t;
   int n;
 
   /* create initial links array */
   linksl = linkst = 0;
   if(orig) {
-    for(t=orig; t->parent!=NULL; t=t->parent)
+    for(t=orig; DR(t)->parent; t=DR(t)->parent)
       ;
     calc_hlink_init(t);
   }
@@ -433,21 +432,21 @@ int calc_process() {
   }
 
   /* initialize parent dir */
-  n = orig ? strlen(orig->name) : strlen(path)+strlen(name)+1;
-  t = (struct dir *) calloc(1, SDIRSIZE+n);
-  t->size = fs.st_blocks * S_BLKSIZE;
-  t->asize = fs.st_size;
-  t->flags |= FF_DIR;
+  n = orig ? strlen(DR(orig)->name) : strlen(path)+strlen(name)+1;
+  t = compll_alloc(SDIRSIZE+n);
+  DW(t)->size = fs.st_blocks * S_BLKSIZE;
+  DW(t)->asize = fs.st_size;
+  DW(t)->flags |= FF_DIR;
   if(orig) {
-    strcpy(t->name, orig->name);
-    t->parent = orig->parent;
+    strcpy(DW(t)->name, DR(orig)->name);
+    DW(t)->parent = DR(orig)->parent;
   } else {
-    t->name[0] = 0;
+    DW(t)->name[0] = 0;
     if(strcmp(path, "/"))
-      strcpy(t->name, path);
+      strcpy(DW(t)->name, path);
     if(strcmp(name, ".")) {
-      strcat(t->name, "/");
-      strcat(t->name, name);
+      strcat(DW(t)->name, "/");
+      strcat(DW(t)->name, name);
     }
   }
   root = t;
@@ -455,10 +454,10 @@ int calc_process() {
 
   /* make sure to count this directory entry in its parents at this point */
   if(orig)
-    for(t=root->parent; t!=NULL; t=t->parent) {
-      t->size += root->size;
-      t->asize += root->asize;
-      t->items += 1;
+    for(t=DR(root)->parent; t; t=DR(t)->parent) {
+      DW(t)->size += DR(root)->size;
+      DW(t)->asize += DR(root)->asize;
+      DW(t)->items += 1;
     }
 
   /* update curpath */
@@ -486,7 +485,7 @@ int calc_process() {
 
   /* success */
   if(!n && !failed) {
-    if(root->sub == NULL) {
+    if(!DR(root)->sub) {
       freedir(root);
       failed = 1;
       strcpy(errmsg, "Directory empty.");
@@ -495,18 +494,18 @@ int calc_process() {
 
     /* update references and free original item */
     if(orig) {
-      root->next = orig->next;
-      root->prev = orig->prev;
-      if(root->parent && root->parent->sub == orig)
-        root->parent->sub = root;
-      if(root->prev)
-        root->prev->next = root;
-      if(root->next)
-        root->next->prev = root;
-      orig->next = orig->prev = NULL;
+      DW(root)->next = DR(orig)->next;
+      DW(root)->prev = DR(orig)->prev;
+      if(DR(root)->parent && DR(DR(root)->parent)->sub == orig)
+        DW(DR(root)->parent)->sub = root;
+      if(DR(root)->prev)
+        DW(DR(root)->prev)->next = root;
+      if(DR(root)->next)
+        DW(DR(root)->next)->prev = root;
+      DW(orig)->next = DW(orig)->prev = (compll_t)0;
       freedir(orig);
     }
-    browse_init(root->sub);
+    browse_init(DR(root)->sub);
     dirlist_top(-3);
     return 0;
   }
@@ -516,7 +515,7 @@ int calc_process() {
 calc_fail:
   while(failed && !input_handle(0))
     ;
-  if(orig == NULL)
+  if(!orig)
     return 1;
   else {
     browse_init(orig);
@@ -525,7 +524,7 @@ calc_fail:
 }
 
 
-void calc_init(char *dir, struct dir *org) {
+void calc_init(char *dir, compll_t org) {
   failed = anpos = 0;
   orig = org;
   if(curpathl == 0) {

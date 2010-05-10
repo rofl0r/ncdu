@@ -36,7 +36,7 @@
 #define DS_FAILED   2
 
 
-struct dir *root, *nextsel, *curdir;
+compll_t root, nextsel, curdir;
 char noconfirm = 0,
      ignoreerr = 0,
      state, seloption;
@@ -47,8 +47,8 @@ void delete_draw_confirm() {
   nccreate(6, 60, "Confirm delete");
 
   ncprint(1, 2, "Are you sure you want to delete \"%s\"%c",
-    cropstr(root->name, 21), root->flags & FF_DIR ? ' ' : '?');
-  if(root->flags & FF_DIR)
+    cropstr(DR(root)->name, 21), DR(root)->flags & FF_DIR ? ' ' : '?');
+  if(DR(root)->flags & FF_DIR)
     ncprint(2, 18, "and all of its contents?");
 
   if(seloption == 0)
@@ -165,8 +165,8 @@ int delete_key(int ch) {
 }
 
 
-int delete_dir(struct dir *dr) {
-  struct dir *nxt, *cur;
+int delete_dir(compll_t dr) {
+  compll_t nxt, cur;
   int r;
 
   /* check for input or screen resizes */
@@ -175,23 +175,23 @@ int delete_dir(struct dir *dr) {
     return 1;
 
   /* do the actual deleting */
-  if(dr->flags & FF_DIR) {
-    if((r = chdir(dr->name)) < 0)
+  if(DR(dr)->flags & FF_DIR) {
+    if((r = chdir(DR(dr)->name)) < 0)
       goto delete_nxt;
-    if(dr->sub != NULL) {
-      nxt = dr->sub;
-      while(nxt != NULL) {
+    if(DR(dr)->sub) {
+      nxt = DR(dr)->sub;
+      while(nxt) {
         cur = nxt;
-        nxt = cur->next;
+        nxt = DR(cur)->next;
         if(delete_dir(cur))
           return 1;
       }
     }
     if((r = chdir("..")) < 0)
       goto delete_nxt;
-    r = dr->sub == NULL ? rmdir(dr->name) : 0;
+    r = DR(dr)->sub ? 0 : rmdir(DR(dr)->name);
   } else
-    r = unlink(dr->name);
+    r = unlink(DR(dr)->name);
 
 delete_nxt:
   /* error occured, ask user what to do */
@@ -202,7 +202,7 @@ delete_nxt:
     while(state == DS_FAILED)
       if(input_handle(0))
         return 1;
-  } else if(!(dr->flags & FF_DIR && dr->sub != NULL)) {
+  } else if(!(DR(dr)->flags & FF_DIR && DR(dr)->sub)) {
     freedir(dr);
     return 0;
   }
@@ -220,7 +220,7 @@ void delete_process() {
     }
 
   /* chdir */
-  if(path_chdir(getpath(root->parent)) < 0) {
+  if(path_chdir(getpath(DR(root)->parent)) < 0) {
     state = DS_FAILED;
     lasterrno = errno;
     while(state == DS_FAILED)
@@ -234,14 +234,14 @@ void delete_process() {
   if(delete_dir(root))
     browse_init(root);
   else {
-    nextsel->flags |= FF_BSEL;
+    DW(nextsel)->flags |= FF_BSEL;
     browse_init(nextsel);
     dirlist_top(-4);
   }
 }
 
 
-void delete_init(struct dir *dr, struct dir *s) {
+void delete_init(compll_t dr, compll_t s) {
   state = DS_CONFIRM;
   root = curdir = dr;
   pstate = ST_DEL;

@@ -25,39 +25,40 @@
 
 #include "global.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 
 /* public variables */
-struct dir *dirlist_parent = NULL;
-off_t  dirlist_maxs        = 0,
-       dirlist_maxa        = 0;
+compll_t dirlist_parent    = (compll_t)0;
+off_t    dirlist_maxs      = 0,
+         dirlist_maxa      = 0;
 
-int    dirlist_sort_desc   = 1,
-       dirlist_sort_col    = DL_COL_SIZE,
-       dirlist_sort_df     = 0,
-       dirlist_hidden      = 0;
+int      dirlist_sort_desc = 1,
+         dirlist_sort_col  = DL_COL_SIZE,
+         dirlist_sort_df   = 0,
+         dirlist_hidden    = 0;
 
 /* private state vars */
-struct dir dirlist_parent_alloc;
-struct dir *head, *head_real, *selected, *top = NULL;
+compll_t dirlist_parent_alloc = (compll_t)0;
+compll_t head, head_real, selected, top = (compll_t)0;
 
 
 
-#define ISHIDDEN(d) (dirlist_hidden && (d) != dirlist_parent && (\
-    (d)->flags & FF_EXL || (d)->name[0] == '.' || (d)->name[strlen((d)->name)-1] == '~'\
+#define ISHIDDEN(d) (dirlist_hidden && d != dirlist_parent && (\
+    DR(d)->flags & FF_EXL || DR(d)->name[0] == '.' || DR(d)->name[strlen(DR(d)->name)-1] == '~'\
   ))
 
 
 
-int dirlist_cmp(struct dir *x, struct dir *y) {
+int dirlist_cmp(compll_t x, compll_t y) {
   int r;
 
   /* dirs are always before files when that option is set */
   if(dirlist_sort_df) {
-    if(y->flags & FF_DIR && !(x->flags & FF_DIR))
+    if(DR(y)->flags & FF_DIR && !(DR(x)->flags & FF_DIR))
       return 1;
-    else if(!(y->flags & FF_DIR) && x->flags & FF_DIR)
+    else if(!(DR(y)->flags & FF_DIR) && DR(x)->flags & FF_DIR)
       return -1;
   }
 
@@ -69,9 +70,9 @@ int dirlist_cmp(struct dir *x, struct dir *y) {
    *
    * Note that the method used below is supposed to be fast, not readable :-)
    */
-#define CMP_NAME  strcmp(x->name, y->name)
-#define CMP_SIZE  (x->size  > y->size  ? 1 : (x->size  == y->size  ? 0 : -1))
-#define CMP_ASIZE (x->asize > y->asize ? 1 : (x->asize == y->asize ? 0 : -1))
+#define CMP_NAME  strcmp(DR(x)->name, DR(y)->name)
+#define CMP_SIZE  (DR(x)->size  > DR(y)->size  ? 1 : (DR(x)->size  == DR(y)->size  ? 0 : -1))
+#define CMP_ASIZE (DR(x)->asize > DR(y)->asize ? 1 : (DR(x)->asize == DR(y)->asize ? 0 : -1))
 
   /* try 1 */
   r = dirlist_sort_col == DL_COL_NAME ? CMP_NAME : dirlist_sort_col == DL_COL_SIZE ? CMP_SIZE : CMP_ASIZE;
@@ -90,15 +91,15 @@ int dirlist_cmp(struct dir *x, struct dir *y) {
 }
 
 
-struct dir *dirlist_sort(struct dir *list) {
-  struct dir *p, *q, *e, *tail;
+compll_t dirlist_sort(compll_t list) {
+  compll_t p, q, e, tail;
   int insize, nmerges, psize, qsize, i;
 
   insize = 1;
   while(1) {
     p = list;
-    list = NULL;
-    tail = NULL;
+    list = (compll_t)0;
+    tail = (compll_t)0;
     nmerges = 0;
     while(p) {
       nmerges++;
@@ -106,31 +107,31 @@ struct dir *dirlist_sort(struct dir *list) {
       psize = 0;
       for(i=0; i<insize; i++) {
         psize++;
-        q = q->next;
+        q = DR(q)->next;
         if(!q) break;
       }
       qsize = insize;
       while(psize > 0 || (qsize > 0 && q)) {
         if(psize == 0) {
-          e = q; q = q->next; qsize--;
+          e = q; q = DR(q)->next; qsize--;
         } else if(qsize == 0 || !q) {
-          e = p; p = p->next; psize--;
+          e = p; p = DR(p)->next; psize--;
         } else if(dirlist_cmp(p,q) <= 0) {
-          e = p; p = p->next; psize--;
+          e = p; p = DR(p)->next; psize--;
         } else {
-          e = q; q = q->next; qsize--;
+          e = q; q = DR(q)->next; qsize--;
         }
-        if(tail) tail->next = e;
+        if(tail) DW(tail)->next = e;
         else     list = e;
-        e->prev = tail;
+        DW(e)->prev = tail;
         tail = e;
       }
       p = q;
     }
-    tail->next = NULL;
+    DW(tail)->next = (compll_t)0;
     if(nmerges <= 1) {
-      if(list->parent)
-        list->parent->sub = list;
+      if(DR(list)->parent)
+        DW(DR(list)->parent)->sub = list;
       return list;
     }
     insize *= 2;
@@ -143,109 +144,115 @@ struct dir *dirlist_sort(struct dir *list) {
  * - updates the dirlist_(maxs|maxa) values
  * - makes sure that the FF_BSEL bits are correct */
 void dirlist_fixup() {
-  struct dir *t;
+  compll_t t;
 
   /* we're going to determine the selected items from the list itself, so reset this one */
-  selected = NULL;
+  selected = (compll_t)0;
 
-  for(t=head; t; t=t->next) {
+  for(t=head; t; t=DR(t)->next) {
     /* not visible? not selected! */
-    if(ISHIDDEN(t))
-      t->flags &= ~FF_BSEL;
-    else {
+    if(ISHIDDEN(t)) {
+      if(DR(t)->flags & FF_BSEL)
+        DW(t)->flags &= ~FF_BSEL;
+    } else {
       /* visible and selected? make sure only one item is selected */
-      if(t->flags & FF_BSEL) {
+      if(DR(t)->flags & FF_BSEL) {
         if(!selected)
           selected = t;
         else
-          t->flags &= ~FF_BSEL;
+          DW(t)->flags &= ~FF_BSEL;
       }
     }
 
     /* update dirlist_(maxs|maxa) */
-    if(t->size > dirlist_maxs)
-      dirlist_maxs = t->size;
-    if(t->asize > dirlist_maxa)
-      dirlist_maxa = t->asize;
+    if(DR(t)->size > dirlist_maxs)
+      dirlist_maxs = DR(t)->size;
+    if(DR(t)->asize > dirlist_maxa)
+      dirlist_maxa = DR(t)->asize;
   }
 
   /* no selected items found after one pass? select the first visible item */
   if(!selected)
-    if((selected = dirlist_next(NULL)))
-      selected->flags |= FF_BSEL;
+    if((selected = dirlist_next((compll_t)0)))
+      DW(selected)->flags |= FF_BSEL;
 }
 
 
-void dirlist_open(struct dir *d) {
+void dirlist_open(compll_t d) {
   /* set the head of the list */
-  head_real = head = d == NULL ? NULL : d->parent == NULL ? d->sub : d->parent->sub;
+  head_real = head = !d ? d : !DR(d)->parent ? DR(d)->sub : DR(DR(d)->parent)->sub;
 
   /* reset internal status */
   dirlist_maxs = dirlist_maxa = 0;
 
   /* stop if this is not a directory list we can work with */
-  if(head == NULL) {
-    dirlist_parent = NULL;
+  if(!head) {
+    dirlist_parent = (compll_t)0;
     return;
   }
 
   /* sort the dir listing */
   head_real = head = dirlist_sort(head);
 
+  /* allocate reference to parent dir if we don't have one yet */
+  if(!dirlist_parent_alloc) {
+    dirlist_parent_alloc = compll_alloc(SDIRSIZE+2);
+    strcpy(DW(dirlist_parent_alloc)->name, "..");
+  }
+
   /* set the reference to the parent dir */
-  dirlist_parent_alloc.flags &= ~FF_BSEL;
-  if(head->parent->parent) {
-    dirlist_parent = &dirlist_parent_alloc;
-    strcpy(dirlist_parent->name, "..");
-    dirlist_parent->next = head;
-    dirlist_parent->parent = head->parent;
-    dirlist_parent->sub = head->parent;
+  DW(dirlist_parent_alloc)->flags &= ~FF_BSEL;
+  if(DR(DR(head)->parent)->parent) {
+    dirlist_parent = dirlist_parent_alloc;
+    DW(dirlist_parent)->next = head;
+    DW(dirlist_parent)->parent = DR(head)->parent;
+    DW(dirlist_parent)->sub = DR(head)->parent;
     head = dirlist_parent;
   } else
-    dirlist_parent = NULL;
+    dirlist_parent = (compll_t)0;
 
   dirlist_fixup();
 }
 
 
-struct dir *dirlist_next(struct dir *d) {
+compll_t dirlist_next(compll_t d) {
   if(!head)
-    return NULL;
+    return (compll_t)0;
   if(!d) {
     if(!ISHIDDEN(head))
       return head;
     else
       d = head;
   }
-  while((d = d->next)) {
+  while((d = DR(d)->next)) {
     if(!ISHIDDEN(d))
       return d;
   }
-  return NULL;
+  return (compll_t)0;
 }
 
 
-struct dir *dirlist_prev(struct dir *d) {
+compll_t dirlist_prev(compll_t d) {
   if(!head || !d)
-    return NULL;
-  while((d = d->prev)) {
+    return (compll_t)0;
+  while((d = DR(d)->prev)) {
     if(!ISHIDDEN(d))
       return d;
   }
   if(dirlist_parent)
     return dirlist_parent;
-  return NULL;
+  return (compll_t)0;
 }
 
 
-struct dir *dirlist_get(int i) {
-  struct dir *t = selected, *d;
+compll_t dirlist_get(int i) {
+  compll_t t = selected, d;
 
   if(!head)
-    return NULL;
+    return (compll_t)0;
 
   if(ISHIDDEN(selected)) {
-    selected = dirlist_next(NULL);
+    selected = dirlist_next((compll_t)0);
     return selected;
   }
 
@@ -275,13 +282,13 @@ struct dir *dirlist_get(int i) {
 }
 
 
-void dirlist_select(struct dir *d) {
-  if(!d || !head || ISHIDDEN(d) || d->parent != head->parent)
+void dirlist_select(compll_t d) {
+  if(!d || !head || ISHIDDEN(d) || DR(d)->parent != DR(head)->parent)
     return;
 
-  selected->flags &= ~FF_BSEL;
+  DW(selected)->flags &= ~FF_BSEL;
   selected = d;
-  selected->flags |= FF_BSEL;
+  DW(selected)->flags |= FF_BSEL;
 }
 
 
@@ -304,12 +311,12 @@ void dirlist_select(struct dir *d) {
  * Regardless of the hint, the returned top will always be chosen such that the
  * selected item is visible.
  */
-struct dir *dirlist_top(int hint) {
-  struct dir *t;
+compll_t dirlist_top(int hint) {
+  compll_t t;
   int i = winrows-3, visible = 0;
 
   if(hint == -2 || hint == -3)
-    top = NULL;
+    top = (compll_t)0;
 
   /* check whether the current selected item is within the visible window */
   if(top) {
@@ -358,7 +365,7 @@ void dirlist_set_sort(int col, int desc, int df) {
   /* sort the list (excluding the parent, which is always on top) */
   head_real = dirlist_sort(head_real);
   if(dirlist_parent)
-    dirlist_parent->next = head_real;
+    DW(dirlist_parent)->next = head_real;
   else
     head = head_real;
   dirlist_top(-3);

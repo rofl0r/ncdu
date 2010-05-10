@@ -38,13 +38,14 @@ int graph = 0,
 
 
 
-void browse_draw_info(struct dir *dr) {
-  struct dir *t;
+void browse_draw_info(compll_t dr) {
+  const struct dir *tmp = DR(dr);
+  compll_t t;
   int i;
 
   nccreate(11, 60, "Item info");
 
-  if(dr->hlnk) {
+  if(tmp->hlnk) {
     if(info_page == 0)
       attron(A_REVERSE);
     ncaddstr(0, 41, "1:Info");
@@ -65,16 +66,16 @@ void browse_draw_info(struct dir *dr) {
     ncaddstr(7, 3, "Apparent size:");
     attroff(A_BOLD);
 
-    ncaddstr(2,  9, cropstr(dr->name, 49));
-    ncaddstr(3,  9, cropstr(getpath(dr->parent), 49));
-    ncaddstr(4,  9, dr->flags & FF_DIR ? "Directory"
-        : dr->flags & FF_FILE ? "File" : "Other (link, device, socket, ..)");
-    ncprint(6, 18, "%s (%s B)", formatsize(dr->size),  fullsize(dr->size));
-    ncprint(7, 18, "%s (%s B)", formatsize(dr->asize), fullsize(dr->asize));
+    ncaddstr(2,  9, cropstr(tmp->name, 49));
+    ncaddstr(3,  9, cropstr(getpath(tmp->parent), 49));
+    ncaddstr(4,  9, tmp->flags & FF_DIR ? "Directory"
+        : DR(dr)->flags & FF_FILE ? "File" : "Other (link, device, socket, ..)");
+    ncprint(6, 18, "%s (%s B)", formatsize(tmp->size),  fullsize(tmp->size));
+    ncprint(7, 18, "%s (%s B)", formatsize(tmp->asize), fullsize(tmp->asize));
     break;
 
   case 1:
-    for(i=0,t=dr->hlnk; t!=dr; t=t->hlnk,i++) {
+    for(i=0,t=tmp->hlnk; t!=dr; t=DR(t)->hlnk,i++) {
       if(info_start > i)
         continue;
       if(i-info_start > 5)
@@ -90,12 +91,13 @@ void browse_draw_info(struct dir *dr) {
 }
 
 
-void browse_draw_item(struct dir *n, int row, char *line) {
+void browse_draw_item(compll_t n, int row, char *line) {
   char ct, dt, *size, gr[11];
+  const struct dir *t = DR(n);
   int i, o;
   float pc;
 
-  if(n->flags & FF_BSEL)
+  if(t->flags & FF_BSEL)
     attron(A_REVERSE);
 
   /* reference to parent dir has a different format */
@@ -106,34 +108,35 @@ void browse_draw_item(struct dir *n, int row, char *line) {
         graph == 2 ? 20 :
                      31 ;
     mvaddstr(row, o, "/..");
-    if(n->flags & FF_BSEL)
+    if(t->flags & FF_BSEL)
       attroff(A_REVERSE);
     return;
   }
 
   /* determine indication character */
-  ct =  n->flags & FF_EXL ? '<' :
-        n->flags & FF_ERR ? '!' :
-       n->flags & FF_SERR ? '.' :
-      n->flags & FF_OTHFS ? '>' :
-      n->flags & FF_HLNKC ? 'H' :
-     !(n->flags & FF_FILE
-    || n->flags & FF_DIR) ? '@' :
-        n->flags & FF_DIR
-        && n->sub == NULL ? 'e' :
+  ct =  t->flags & FF_EXL ? '<' :
+        t->flags & FF_ERR ? '!' :
+       t->flags & FF_SERR ? '.' :
+      t->flags & FF_OTHFS ? '>' :
+      t->flags & FF_HLNKC ? 'H' :
+     !(t->flags & FF_FILE
+    || t->flags & FF_DIR) ? '@' :
+        t->flags & FF_DIR
+               && !t->sub ? 'e' :
                             ' ' ;
-  dt = n->flags & FF_DIR ? '/' : ' ';
-  size = formatsize(show_as ? n->asize : n->size);
+  dt = t->flags & FF_DIR ? '/' : ' ';
+  size = formatsize(show_as ? t->asize : t->size);
 
   /* create graph (if necessary) */
   if(graph) {
     /* percentage */
-    if((pc = (float)(show_as ? n->parent->asize : n->parent->size)) < 1)
+    if((pc = (float)(show_as ? DR(t->parent)->asize : DR(t->parent)->size)) < 1)
       pc = 1.0f;
-    pc = ((float)(show_as ? n->asize : n->size) / pc) * 100.0f;
+    t = DR(n);
+    pc = ((float)(show_as ? t->asize : t->size) / pc) * 100.0f;
     /* graph */
     if(graph == 1 || graph == 3) {
-      o = (int)(10.0f*(float)(show_as ? n->asize : n->size) / (float)(show_as ? dirlist_maxa : dirlist_maxs));
+      o = (int)(10.0f*(float)(show_as ? t->asize : t->size) / (float)(show_as ? dirlist_maxa : dirlist_maxs));
       for(i=0; i<10; i++)
         gr[i] = i < o ? '#' : ' ';
       gr[10] = '\0';
@@ -142,19 +145,19 @@ void browse_draw_item(struct dir *n, int row, char *line) {
 
   /* format and add item to the list */
   switch(graph) {
-    case 0: mvprintw(row, 0, line, ct, size, dt, cropstr(n->name, wincols-13)); break;
-    case 1: mvprintw(row, 0, line, ct, size, gr, dt, cropstr(n->name, wincols-25)); break;
-    case 2: mvprintw(row, 0, line, ct, size, pc, dt, cropstr(n->name, wincols-21)); break;
-    case 3: mvprintw(row, 0, line, ct, size, pc, gr, dt, cropstr(n->name, wincols-32));
+    case 0: mvprintw(row, 0, line, ct, size, dt, cropstr(t->name, wincols-13)); break;
+    case 1: mvprintw(row, 0, line, ct, size, gr, dt, cropstr(t->name, wincols-25)); break;
+    case 2: mvprintw(row, 0, line, ct, size, pc, dt, cropstr(t->name, wincols-21)); break;
+    case 3: mvprintw(row, 0, line, ct, size, pc, gr, dt, cropstr(t->name, wincols-32));
   }
 
-  if(n->flags & FF_BSEL)
+  if(t->flags & FF_BSEL)
     attroff(A_REVERSE);
 }
 
 
 void browse_draw() {
-  struct dir *t;
+  compll_t t;
   char fmtsize[9], *tmp, line[35];
   int selected, i;
 
@@ -172,7 +175,7 @@ void browse_draw() {
   mvhline(1, 0, '-', wincols);
   if(t) {
     mvaddch(1, 3, ' ');
-    tmp = getpath(t->parent);
+    tmp = getpath(DR(t)->parent);
     mvaddstr(1, 4, cropstr(tmp, wincols-8));
     mvaddch(1, 4+((int)strlen(tmp) > wincols-8 ? wincols-8 : (int)strlen(tmp)), ' ');
   }
@@ -180,9 +183,9 @@ void browse_draw() {
   /* bottom line - stats */
   attron(A_REVERSE);
   if(t) {
-    strcpy(fmtsize, formatsize(t->parent->size));
+    strcpy(fmtsize, formatsize(DR(DR(t)->parent)->size));
     mvprintw(winrows-1, 0, " Total disk usage: %s  Apparent size: %s  Items: %d",
-      fmtsize, formatsize(t->parent->asize), t->parent->items);
+      fmtsize, formatsize(DR(DR(t)->parent)->asize), DR(DR(t)->parent)->items);
   } else
     mvaddstr(winrows-1, 0, " No items to display.");
   attroff(A_REVERSE);
@@ -206,7 +209,7 @@ void browse_draw() {
   for(i=0; t && i<winrows-3; t=dirlist_next(t),i++) {
     browse_draw_item(t, 2+i, line);
     /* save the selected row number for later */
-    if(t->flags & FF_BSEL)
+    if(DR(t)->flags & FF_BSEL)
       selected = i;
   }
 
@@ -221,7 +224,7 @@ void browse_draw() {
 
 
 int browse_key(int ch) {
-  struct dir *t, *sel;
+  compll_t t, sel;
   int i, catch = 0;
 
   sel = dirlist_get(0);
@@ -233,26 +236,26 @@ int browse_key(int ch) {
       info_page = 0;
       break;
     case '2':
-      if(sel->hlnk)
+      if(DR(sel)->hlnk)
         info_page = 1;
       break;
     case KEY_RIGHT:
     case 'l':
-      if(sel->hlnk) {
+      if(DR(sel)->hlnk) {
         info_page = 1;
         catch++;
       }
       break;
     case KEY_LEFT:
     case 'h':
-      if(sel->hlnk) {
+      if(DR(sel)->hlnk) {
         info_page = 0;
         catch++;
       }
       break;
     case KEY_UP:
     case 'k':
-      if(sel->hlnk && info_page == 1) {
+      if(DR(sel)->hlnk && info_page == 1) {
         if(info_start > 0)
           info_start--;
         catch++;
@@ -261,8 +264,8 @@ int browse_key(int ch) {
     case KEY_DOWN:
     case 'j':
     case ' ':
-      if(sel->hlnk && info_page == 1) {
-        for(i=0,t=sel->hlnk; t!=sel; t=t->hlnk)
+      if(DR(sel)->hlnk && info_page == 1) {
+        for(i=0,t=DR(sel)->hlnk; t!=sel; t=DR(t)->hlnk)
           i++;
         if(i > info_start+6)
           info_start++;
@@ -287,7 +290,7 @@ int browse_key(int ch) {
       info_start = 0;
       break;
     case KEY_HOME:
-      dirlist_select(dirlist_next(NULL));
+      dirlist_select(dirlist_next((compll_t)0));
       dirlist_top(2);
       info_start = 0;
       break;
@@ -337,8 +340,8 @@ int browse_key(int ch) {
     case 10:
     case KEY_RIGHT:
     case 'l':
-      if(sel != NULL && sel->sub != NULL) {
-        dirlist_open(sel->sub);
+      if(sel && DR(sel)->sub) {
+        dirlist_open(DR(sel)->sub);
         dirlist_top(-3);
       }
       info_show = 0;
@@ -346,8 +349,8 @@ int browse_key(int ch) {
     case KEY_LEFT:
     case 'h':
     case '<':
-      if(sel != NULL && sel->parent->parent != NULL) {
-        dirlist_open(sel->parent);
+      if(sel && DR(DR(sel)->parent)->parent) {
+        dirlist_open(DR(sel)->parent);
         dirlist_top(-3);
       }
       info_show = 0;
@@ -355,8 +358,8 @@ int browse_key(int ch) {
 
     /* and other stuff */
     case 'r':
-      if(sel != NULL)
-        calc_init(getpath(sel->parent), sel->parent);
+      if(sel)
+        calc_init(getpath(DR(sel)->parent), DR(sel)->parent);
       info_show = 0;
       break;
     case 'q':
@@ -378,12 +381,12 @@ int browse_key(int ch) {
       info_show = 0;
       break;
     case 'd':
-      if(sel == NULL || sel == dirlist_parent)
+      if(!sel || sel == dirlist_parent)
         break;
       info_show = 0;
       if((t = dirlist_get(1)) == sel)
         if((t = dirlist_get(-1)) == sel || t == dirlist_parent)
-          t = sel->parent;
+          t = DR(sel)->parent;
       delete_init(sel, t);
       break;
     }
@@ -392,14 +395,14 @@ int browse_key(int ch) {
   sel = dirlist_get(0);
   if(!info_show || sel == dirlist_parent)
     info_show = info_page = info_start = 0;
-  else if(sel && !sel->hlnk)
+  else if(sel && !DR(sel)->hlnk)
     info_page = info_start = 0;
 
   return 0;
 }
 
 
-void browse_init(struct dir *cur) {
+void browse_init(compll_t cur) {
   pstate = ST_BROWSE;
   dirlist_open(cur);
 }

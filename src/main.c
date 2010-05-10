@@ -33,6 +33,11 @@
 #include <sys/time.h>
 #include <locale.h>
 
+#ifndef COMPLL_NOLIB
+#include <zlib.h>
+#endif
+
+
 int pstate;
 
 int min_rows = 17,
@@ -143,6 +148,23 @@ char *argv_parse(int argc, char **argv) {
 }
 
 
+/* compression and decompression functions for compll */
+#ifndef COMPLL_NOLIB
+
+unsigned int block_compress(const unsigned char *src, unsigned int srclen, unsigned char *dst, unsigned int dstlen) {
+  uLongf len = dstlen;
+  compress2(dst, &len, src, srclen, 6);
+  return len;
+}
+
+void block_decompress(const unsigned char *src, unsigned int srclen, unsigned char *dst, unsigned int dstlen) {
+  uLongf len = dstlen;
+  uncompress(dst, &len, src, srclen);
+}
+
+#endif
+
+
 /* main program */
 int main(int argc, char **argv) {
   char *dir;
@@ -152,7 +174,12 @@ int main(int argc, char **argv) {
   if((dir = argv_parse(argc, argv)) == NULL)
     dir = ".";
 
-  calc_init(dir, NULL);
+#ifndef COMPLL_NOLIB
+  /* we probably want to make these options configurable */
+  compll_init(32*1024, sizeof(off_t), 50, block_compress, block_decompress);
+#endif
+
+  calc_init(dir, (compll_t)0);
 
   initscr();
   cbreak();

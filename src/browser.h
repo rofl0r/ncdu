@@ -30,7 +30,7 @@
 
 int  browse_key(int);
 void browse_draw(void);
-void browse_init(struct dir *);
+void browse_init(compll_t);
 
 
 #endif

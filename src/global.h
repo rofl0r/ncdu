@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "compll.h"
 
 /* File Flags (struct dir -> flags) */
 #define FF_DIR    0x01
@@ -48,17 +49,15 @@
 #define ST_HELP   3
 
 
-/* structure representing a file or directory
- * XXX: probably a good idea to get rid of the custom _t types and use
- *      fixed-size integers instead, which are much more predictable */
+/* structure representing a file or directory */
 struct dir {
-  struct dir *parent, *next, *prev, *sub, *hlnk;
+  compll_t parent, next, prev, sub, hlnk;
   off_t size, asize;
   ino_t ino;
   unsigned long items;
   dev_t dev;
   unsigned char flags;
-  char name[3]; /* must be large enough to hold ".." */
+  char name[3];
 }; 
 /* sizeof(total dir) = SDIRSIZE + strlen(name) = sizeof(struct dir) - 3 + strlen(name) + 1 */
 #define SDIRSIZE (sizeof(struct dir)-2)
