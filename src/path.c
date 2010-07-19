@@ -201,7 +201,8 @@ char *path_real(const char *orig) {
   if(orig == NULL)
     return NULL;
 
-  tmp = path_absolute(orig);
+  if((tmp = path_absolute(orig)) == NULL)
+    return NULL;
   ret = path_real_rec(tmp, &links);
   free(tmp);
   return ret;
