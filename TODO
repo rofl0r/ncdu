@@ -18,7 +18,7 @@ Small list of planned features/changes, suggestions are always welcome.
     having a special key for each column
 
 - Better handling of hard links?
-  * Link the files together in the browser interface
+  * Use hash table or BST to speed up hard link detection
   * Have a separate size variable for "shared" data
     (displayed in the browser as e.g. "291+3MiB")
     This should be both more intuitive and more correct than simply
