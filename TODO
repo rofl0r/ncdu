@@ -1,4 +1,5 @@
-Small list of planned features/changes, suggestions are always welcome.
+Small list of planned features/changes, in no particular order.
+Suggestions are always welcome.
 
 
 - Add export/import feature for filelists
@@ -7,6 +8,8 @@ Small list of planned features/changes, suggestions are always welcome.
 - Improve browser interface
   * Option to display number of files
   * Mutt-like status bar?
+  * More information in file info window:
+    > dev, ino, mode, gid, uid, mtime, atime, number of files
 
 - Add custom key bindings
   * Using a config file (/etc/ncdurc, ~/.ncdurc)
@@ -14,15 +17,15 @@ Small list of planned features/changes, suggestions are always welcome.
 
 - Improved sorting configuration
   * Sort by number of files
-  * Use one key to open up a menu with sort options, instead of
-    having a special key for each column
+  * Use one key to open up a menu with sort options, instead of having a
+    special key for each column
 
-- Better handling of hard links?
+- Better handling of hard links
   * Use hash table or BST to speed up hard link detection
   * Have a separate size variable for "shared" data
     (displayed in the browser as e.g. "291+3MiB")
-    This should be both more intuitive and more correct than simply
-    counting a semi-random occurence and ignoring others, as we do now.
+  * Support directory hard links (on Darwin and Solaris)
+    (And recognise bind-mounted paths as such on Linux?)
 
 - Better handling of multibyte or multicolumn characters
   * strlen() <> number_of_columns() <> number_of_characters()

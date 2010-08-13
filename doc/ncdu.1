@@ -1,10 +1,10 @@
-.TH NCDU 1 "Oct 23, 2009" "ncdu-git" "ncdu manual"
+.TH ncdu 1 "Aug 13, 2010" "ncdu-git" "ncdu manual"
 
 .SH NAME
 \fBncdu \fP- NCurses Disk Usage
 
 .SH SYNOPSIS
-\fBncdu\fP [\fB-hqvx\fP] [\fB--exclude PATTERN\fP] [\fB-X FILE\fP] \fIdir\fP
+\fBncdu\fP [\fB-hqvx\fP] [\fB--exclude\fP \fIPATTERN\fP] [\fB-X\fP \fIFILE\fP] \fIdir\fP
 
 .SH DESCRIPTION
 \fBncdu\fP (NCurses Disk Usage) is a curses-based version of
@@ -36,7 +36,7 @@ be added multiple times to add more patterns.
 .TP
 \fB-X\fP FILE, \fB--exclude-from\fP FILE
 Exclude files that match any pattern in FILE. Patterns
-should be seperated by a newline.
+should be separated by a newline.
 
 .SH KEYS
 .TP
@@ -90,11 +90,47 @@ Refresh/recalculate the current directory.
 \fBq\fP
 Quit
 
-.SH AUTHOR
-Written by Yoran Heling <projects@yorhel.nl>.
+.SH HARD LINKS
+Every disk usage analysis utility has its own way of (not) counting hard links.
+There does not seem to be any universally agreed method of handling hard links,
+and it is even inconsistent among different versions of ncdu. This section
+explains what each version of ncdu does.
+.P
+ncdu 1.5 and below does not support any hard link detection at all: each link
+is considered a separate inode and its size is counted for every link. This
+means that the displayed directory sizes are incorrect when analyzing
+directories which contain hard links.
+.P
+ncdu 1.6 has basic hard link detection: When a link to a previously encountered
+inode is detected, the link is considered to have a file size of zero bytes.
+Its size is not counted again, and the link is indicated in the browser
+interface with a 'H' mark. The displayed directory sizes are only correct when
+all links to an inode reside within that directory. When this is not the case,
+the sizes may or may not be correct, depending on which links were considered
+as "duplicate" and which as "original". The indicated size of the topmost
+directory (that is, the one specified on the command line upon starting ncdu)
+is always correct.
+.P
+ncdu 1.7 has improved hard link detection. Each file that has more than two
+links has the "H" mark visible in the browser interface. Each hard link is
+counted exactly once for every directory it appears in. The indicated size of
+each directory is therefore, correctly, the sum of the sizes of all unique
+inodes that can be found in that directory. Note, however, that this may not
+always be same as the space that will be reclaimed after deleting the
+directory, as some inodes may still be accessible from hard links outside it.
 
 .SH BUGS
-Infinite. Please contact the author if you find one.
+Directory hard links are not supported. They will not be detected as being hard
+links, and will thus be scanned and counted multiple times.
+.P
+Some minor glitches may appear when displaying filenames that contain multibyte
+or multicolumn characters.
+.P
+Please report any other bugs you may find at the bug tracker, which can be
+found on the web site at http://dev.yorhel.nl/ncdu
+
+.SH AUTHOR
+Written by Yoran Heling <projects@yorhel.nl>.
 
 .SH SEE ALSO
 \fBdu\fP(1)
