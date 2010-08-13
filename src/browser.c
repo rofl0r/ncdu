@@ -30,7 +30,7 @@
 #include <ncurses.h>
 
 
-int graph = 0,
+int graph = 1,
     show_as = 0,
     info_show = 0,
     info_page = 0,
