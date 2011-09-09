@@ -66,7 +66,7 @@ char *formatsize(const off_t from) {
   float r = from; 
   char c = ' ';
   if(r < 1000.0f)      { }
-  else if(r < 1023e3f) { c = 'k'; r/=1024.0f; }
+  else if(r < 1023e3f) { c = 'K'; r/=1024.0f; }
   else if(r < 1023e6f) { c = 'M'; r/=1048576.0f; }
   else if(r < 1023e9f) { c = 'G'; r/=1073741824.0f; }
   else                 { c = 'T'; r/=1099511627776.0f; }
