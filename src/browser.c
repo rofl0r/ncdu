@@ -370,7 +370,7 @@ int browse_key(int ch) {
       info_show = 0;
       break;
     case 'd':
-      if(sel == NULL || sel == dirlist_parent)
+      if(read_only || sel == NULL || sel == dirlist_parent)
         break;
       info_show = 0;
       if((t = dirlist_get(1)) == sel)

@@ -37,6 +37,7 @@ int pstate;
 
 int min_rows = 17,
     min_cols = 60;
+int read_only = 0;
 long update_delay = 100,
      lastupdate = 999;
 
@@ -118,6 +119,7 @@ char *argv_parse(int argc, char **argv) {
       for(j=1; j<len; j++)
         switch(argv[i][j]) {
           case 'x': calc_smfs = 1; break;
+          case 'r': read_only = 1; break;
           case 'q': update_delay = 2000;     break;
           case '?':
           case 'h':
@@ -126,6 +128,7 @@ char *argv_parse(int argc, char **argv) {
             printf("  -q                         Quiet mode, refresh interval 2 seconds\n");
             printf("  -v                         Print version\n");
             printf("  -x                         Same filesystem\n");
+            printf("  -r                         Read only\n");
             printf("  --exclude PATTERN          Exclude files that match PATTERN\n");
             printf("  -X, --exclude-from FILE    Exclude files that match any pattern in FILE\n");
             exit(0);

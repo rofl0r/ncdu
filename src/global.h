@@ -71,6 +71,8 @@ struct dir {
 
 /* program state */
 extern int pstate;
+/* read-only flag */
+extern int read_only;
 /* minimum screen update interval when calculating, in ms */
 extern long update_delay;
 
