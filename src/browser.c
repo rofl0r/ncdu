@@ -166,6 +166,8 @@ void browse_draw() {
   mvhline(0, 0, ' ', wincols);
   mvhline(winrows-1, 0, ' ', wincols);
   mvprintw(0,0,"%s %s ~ Use the arrow keys to navigate, press ? for help", PACKAGE_NAME, PACKAGE_VERSION);
+  if(read_only)
+    mvaddstr(0, wincols-11, "[read-only]");
   attroff(A_REVERSE);
 
   /* second line - the path */
