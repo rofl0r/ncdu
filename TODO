@@ -21,7 +21,6 @@ Suggestions are always welcome.
     special key for each column
 
 - Better handling of hard links
-  * Use hash table or BST to speed up hard link detection
   * Have a separate size variable for "shared" data
     (displayed in the browser as e.g. "291+3MiB")
   * Support directory hard links (on Darwin and Solaris)

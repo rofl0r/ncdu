@@ -34,6 +34,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
+#include "khash.h"
 
 /* set S_BLKSIZE if not defined already in sys/stat.h */
 #ifndef S_BLKSIZE
@@ -55,8 +56,12 @@ dev_t curdev;            /* current device we're calculating on */
 int anpos;               /* position of the animation string */
 int curpathl = 0, lasterrl = 0;
 
-struct dir **links = NULL;
-int linksl, linkst;
+
+// Table of struct dir items with more than one link (in order to detect hard links)
+#define links_dir_hash(d)     (kh_int64_hash_func((khint64_t)d->dev) ^ kh_int64_hash_func((khint64_t)d->ino))
+#define links_dir_equal(a, b) ((a)->dev == (b)->dev && (a)->ino == (b)->ino)
+KHASH_INIT(hl, struct dir *, char, 0, links_dir_hash, links_dir_equal);
+khash_t(hl) *links = NULL;
 
 
 
@@ -87,30 +92,6 @@ void calc_leavepath() {
 }
 
 
-/* looks in the links list and adds the file when not found */
-int calc_hlink_add(struct dir *d) {
-  int i;
-  /* check the list */
-  for(i=0; i<linkst; i++)
-    if(links[i]->dev == d->dev && links[i]->ino == d->ino)
-      break;
-  /* found, do nothing and return the index */
-  if(i != linkst)
-    return i;
-  /* otherwise, add to list and return -1 */
-  if(++linkst > linksl) {
-    linksl *= 2;
-    if(!linksl) {
-      linksl = 64;
-      links = malloc(linksl*sizeof(struct dir *));
-    } else
-      links = realloc(links, linksl*sizeof(struct dir *));
-  }
-  links[linkst-1] = d;
-  return -1;
-}
-
-
 /* recursively checks a dir structure for hard links and fills the lookup array */
 void calc_hlink_init(struct dir *d) {
   struct dir *t;
@@ -120,7 +101,8 @@ void calc_hlink_init(struct dir *d) {
 
   if(!(d->flags & FF_HLNKC))
     return;
-  calc_hlink_add(d);
+  int r;
+  kh_put(hl, links, d, &r);
 }
 
 
@@ -131,11 +113,13 @@ void calc_hlink_check(struct dir *d) {
   int i;
 
   d->flags |= FF_HLNKC;
-  i = calc_hlink_add(d);
 
-  /* found in the list? update hlnk */
-  if(i >= 0) {
-    t = d->hlnk = links[i];
+  // add to links table
+  khiter_t k = kh_put(hl, links, d, &i);
+
+  /* found in the table? update hlnk */
+  if(!i) {
+    t = d->hlnk = kh_key(links, k);
     if(t->hlnk != NULL)
       for(t=t->hlnk; t->hlnk!=d->hlnk; t=t->hlnk)
         ;
@@ -236,7 +220,6 @@ int calc_dir(struct dir *dest, char *name) {
   struct dir *t;
   DIR *dir;
   struct dirent *dr;
-  int ch;
 
   if(input_handle(1))
     return 1;
@@ -292,7 +275,6 @@ int calc_dir(struct dir *dest, char *name) {
   }
 
   /* calculate subdirectories */
-  ch = 0;
   for(t=dest->sub; t!=NULL; t=t->next)
     if(t->flags & FF_DIR && !(t->flags & FF_EXL || t->flags & FF_OTHFS))
       if(calc_dir(t, t->name)) {
@@ -388,8 +370,8 @@ int calc_process() {
   struct dir *t;
   int n;
 
-  /* create initial links array */
-  linksl = linkst = 0;
+  /* create initial links set */
+  links = kh_init(hl);
   if(orig) {
     for(t=orig; t->parent!=NULL; t=t->parent)
       ;
@@ -479,8 +461,8 @@ int calc_process() {
     free(name);
   free(path);
 
-  if(links != NULL) {
-    free(links);
+  if(links) {
+    kh_destroy(hl, links);
     links = NULL;
   }
 
