@@ -33,16 +33,16 @@
 #include <sys/time.h>
 #include <locale.h>
 
+
 int pstate;
-
-int min_rows = 17,
-    min_cols = 60;
 int read_only = 0;
-long update_delay = 100,
-     lastupdate = 999;
+long update_delay = 100;
+
+static int min_rows = 17, min_cols = 60;
+static long lastupdate = 999;
 
 
-void screen_draw() {
+static void screen_draw() {
   switch(pstate) {
     case ST_CALC:   calc_draw();   break;
     case ST_BROWSE: browse_draw(); break;
@@ -92,7 +92,7 @@ int input_handle(int wait) {
 
 
 /* parse command line */
-char *argv_parse(int argc, char **argv) {
+static char *argv_parse(int argc, char **argv) {
   int i, j, len;
   char *dir = NULL;
 

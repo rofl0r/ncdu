@@ -30,15 +30,11 @@
 #include <ncurses.h>
 
 
-int graph = 1,
-    show_as = 0,
-    info_show = 0,
-    info_page = 0,
-    info_start = 0;
+static int graph = 1, show_as = 0, info_show = 0, info_page = 0, info_start = 0;
 
 
 
-void browse_draw_info(struct dir *dr) {
+static void browse_draw_info(struct dir *dr) {
   struct dir *t;
   int i;
 
@@ -90,7 +86,7 @@ void browse_draw_info(struct dir *dr) {
 }
 
 
-void browse_draw_item(struct dir *n, int row) {
+static void browse_draw_item(struct dir *n, int row) {
   char ct, dt, *size, gr[11];
   int i, o;
   float pc;

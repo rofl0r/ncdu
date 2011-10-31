@@ -39,8 +39,8 @@ int    dirlist_sort_desc   = 1,
        dirlist_hidden      = 0;
 
 /* private state vars */
-struct dir dirlist_parent_alloc;
-struct dir *head, *head_real, *selected, *top = NULL;
+static struct dir dirlist_parent_alloc;
+static struct dir *head, *head_real, *selected, *top = NULL;
 
 
 
@@ -50,7 +50,7 @@ struct dir *head, *head_real, *selected, *top = NULL;
 
 
 
-int dirlist_cmp(struct dir *x, struct dir *y) {
+static int dirlist_cmp(struct dir *x, struct dir *y) {
   int r;
 
   /* dirs are always before files when that option is set */
@@ -90,7 +90,7 @@ int dirlist_cmp(struct dir *x, struct dir *y) {
 }
 
 
-struct dir *dirlist_sort(struct dir *list) {
+static struct dir *dirlist_sort(struct dir *list) {
   struct dir *p, *q, *e, *tail;
   int insize, nmerges, psize, qsize, i;
 
@@ -142,7 +142,7 @@ struct dir *dirlist_sort(struct dir *list) {
  * - makes sure one, and only one, visible item is selected
  * - updates the dirlist_(maxs|maxa) values
  * - makes sure that the FF_BSEL bits are correct */
-void dirlist_fixup() {
+static void dirlist_fixup() {
   struct dir *t;
 
   /* we're going to determine the selected items from the list itself, so reset this one */
@@ -225,7 +225,7 @@ struct dir *dirlist_next(struct dir *d) {
 }
 
 
-struct dir *dirlist_prev(struct dir *d) {
+static struct dir *dirlist_prev(struct dir *d) {
   if(!head || !d)
     return NULL;
   while((d = d->prev)) {

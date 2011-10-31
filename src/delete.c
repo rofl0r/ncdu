@@ -36,14 +36,12 @@
 #define DS_FAILED   2
 
 
-struct dir *root, *nextsel, *curdir;
-char noconfirm = 0,
-     ignoreerr = 0,
-     state, seloption;
-int lasterrno;
+static struct dir *root, *nextsel, *curdir;
+static char noconfirm = 0, ignoreerr = 0, state, seloption;
+static int lasterrno;
 
 
-void delete_draw_confirm() {
+static void delete_draw_confirm() {
   nccreate(6, 60, "Confirm delete");
 
   ncprint(1, 2, "Are you sure you want to delete \"%s\"%c",
@@ -68,7 +66,7 @@ void delete_draw_confirm() {
 }
 
 
-void delete_draw_progress() {
+static void delete_draw_progress() {
   nccreate(6, 60, "Deleting...");
 
   ncaddstr(1, 2, cropstr(getpath(curdir), 47));
@@ -76,7 +74,7 @@ void delete_draw_progress() {
 }
 
 
-void delete_draw_error() {
+static void delete_draw_error() {
   nccreate(6, 60, "Error!");
 
   ncprint(1, 2, "Can't delete %s:", cropstr(getpath(curdir), 42));
@@ -165,7 +163,7 @@ int delete_key(int ch) {
 }
 
 
-int delete_dir(struct dir *dr) {
+static int delete_dir(struct dir *dr) {
   struct dir *nxt, *cur;
   int r;
 

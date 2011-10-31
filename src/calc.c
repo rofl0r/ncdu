@@ -46,27 +46,27 @@
 char calc_smfs  = 0;
 
 /* global vars for internal use */
-char failed;             /* 1 on fatal error */
-char *curpath;           /* last lstat()'ed item, used for excludes matching and display */
-char *lasterr;           /* last unreadable dir/item */
-char errmsg[128];        /* error message, when failed=1 */
-struct dir *root;        /* root directory struct we're calculating */
-struct dir *orig;        /* original directory, when recalculating */
-dev_t curdev;            /* current device we're calculating on */
-int anpos;               /* position of the animation string */
-int curpathl = 0, lasterrl = 0;
+static char failed;             /* 1 on fatal error */
+static char *curpath;           /* last lstat()'ed item, used for excludes matching and display */
+static char *lasterr;           /* last unreadable dir/item */
+static char errmsg[128];        /* error message, when failed=1 */
+static struct dir *root;        /* root directory struct we're calculating */
+static struct dir *orig;        /* original directory, when recalculating */
+static dev_t curdev;            /* current device we're calculating on */
+static int anpos;               /* position of the animation string */
+static int curpathl = 0, lasterrl = 0;
 
 
 // Table of struct dir items with more than one link (in order to detect hard links)
 #define links_dir_hash(d)     (kh_int64_hash_func((khint64_t)d->dev) ^ kh_int64_hash_func((khint64_t)d->ino))
 #define links_dir_equal(a, b) ((a)->dev == (b)->dev && (a)->ino == (b)->ino)
 KHASH_INIT(hl, struct dir *, char, 0, links_dir_hash, links_dir_equal);
-khash_t(hl) *links = NULL;
+static khash_t(hl) *links = NULL;
 
 
 
 /* adds name to curpath */
-void calc_enterpath(char *name) {
+static void calc_enterpath(char *name) {
   int n;
 
   n = strlen(curpath)+strlen(name)+2;
@@ -81,7 +81,7 @@ void calc_enterpath(char *name) {
 
 
 /* removes last component from curpath */
-void calc_leavepath() {
+static void calc_leavepath() {
   char *tmp;
   if((tmp = strrchr(curpath, '/')) == NULL)
     strcpy(curpath, "/");
@@ -93,7 +93,7 @@ void calc_leavepath() {
 
 
 /* recursively checks a dir structure for hard links and fills the lookup array */
-void calc_hlink_init(struct dir *d) {
+static void calc_hlink_init(struct dir *d) {
   struct dir *t;
 
   for(t=d->sub; t!=NULL; t=t->next)
@@ -108,7 +108,7 @@ void calc_hlink_init(struct dir *d) {
 
 /* checks an individual file and updates the flags and cicrular linked list,
  * also updates the sizes of the parent dirs */
-void calc_hlink_check(struct dir *d) {
+static void calc_hlink_check(struct dir *d) {
   struct dir *t, *pt, *par;
   int i;
 
@@ -144,7 +144,7 @@ void calc_hlink_check(struct dir *d) {
 }
 
 
-int calc_item(struct dir *par, char *name) {
+static int calc_item(struct dir *par, char *name) {
   struct dir *t, *d;
   struct stat fs;
 
@@ -216,7 +216,7 @@ int calc_item(struct dir *par, char *name) {
 
 /* recursively walk through the directory tree,
    assumes path resides in the cwd */
-int calc_dir(struct dir *dest, char *name) {
+static int calc_dir(struct dir *dest, char *name) {
   struct dir *t;
   DIR *dir;
   struct dirent *dr;
@@ -295,7 +295,7 @@ int calc_dir(struct dir *dest, char *name) {
 }
 
 
-void calc_draw_progress() {
+static void calc_draw_progress() {
   static char antext[15] = "Calculating...";
   char ani[15];
   int i;
@@ -333,7 +333,7 @@ void calc_draw_progress() {
 }
 
 
-void calc_draw_error(char *cur, char *msg) {
+static void calc_draw_error(char *cur, char *msg) {
   nccreate(7, 60, "Error!");
 
   attron(A_BOLD);

@@ -48,7 +48,7 @@
   a pointer to a reversed array of components is stored in res and the
   number of components is returned.
   cur is modified, and res has to be free()d after use */
-int path_split(char *cur, char ***res) {
+static int path_split(char *cur, char ***res) {
   char **old;
   int i, j, n;
 
@@ -91,7 +91,7 @@ int path_split(char *cur, char ***res) {
 
 /* copies path and prepends cwd if needed, to ensure an absolute path
    return value has to be free()'d manually */
-char *path_absolute(const char *path) {
+static char *path_absolute(const char *path) {
   int i, n;
   char *ret;
 
@@ -125,8 +125,8 @@ char *path_absolute(const char *path) {
 
 
 /* NOTE: cwd and the memory cur points to are unreliable after calling this function */
-char *path_real_rec(char *cur, int *links) {
-  int i, j, n, tmpl, lnkl = 0;
+static char *path_real_rec(char *cur, int *links) {
+  int i, n, tmpl, lnkl = 0;
   char **arr, *tmp, *lnk, *ret = NULL;
 
   tmpl = strlen(cur)+1;
@@ -138,7 +138,6 @@ char *path_real_rec(char *cur, int *links) {
   /* re-create full path */
   strcpy(tmp, "/");
   if(i > 0) {
-    j = 1;
     lnkl = RPATH_CNKSZ;
     lnk = malloc(lnkl);
     if(chdir("/") < 0)

@@ -32,37 +32,30 @@
 int winrows, wincols;
 int subwinr, subwinc;
 
-char cropstrdat[4096];
-char formatsizedat[9]; /* "xxx.xMiB" */
-char fullsizedat[20]; /* max: 999.999.999.999.999 */
-char *getpathdat;
-int getpathdatl = 0;
-
-struct dir **links;
-int linksl = 0, linkst = 0;
-
 
 char *cropstr(const char *from, int s) {
+  static char dat[4096];
   int i, j, o = strlen(from);
   if(o < s) {
-    strcpy(cropstrdat, from);
-    return cropstrdat;
+    strcpy(dat, from);
+    return dat;
   }
   j=s/2-3;
   for(i=0; i<j; i++)
-    cropstrdat[i] = from[i];
-  cropstrdat[i] = '.';
-  cropstrdat[++i] = '.';
-  cropstrdat[++i] = '.';
+    dat[i] = from[i];
+  dat[i] = '.';
+  dat[++i] = '.';
+  dat[++i] = '.';
   j=o-s;
   while(++i<s)
-    cropstrdat[i] = from[j+i];
-  cropstrdat[s] = '\0';
-  return cropstrdat;
+    dat[i] = from[j+i];
+  dat[s] = '\0';
+  return dat;
 }
 
 
 char *formatsize(const off_t from) {
+  static char dat[9]; /* "xxx.xMiB" */
   float r = from; 
   char c = ' ';
   if(r < 1000.0f)      { }
@@ -70,12 +63,13 @@ char *formatsize(const off_t from) {
   else if(r < 1023e6f) { c = 'M'; r/=1048576.0f; }
   else if(r < 1023e9f) { c = 'G'; r/=1073741824.0f; }
   else                 { c = 'T'; r/=1099511627776.0f; }
-  sprintf(formatsizedat, "%5.1f%c%cB", r, c, c == ' ' ? ' ' : 'i');
-  return formatsizedat;
+  sprintf(dat, "%5.1f%c%cB", r, c, c == ' ' ? ' ' : 'i');
+  return dat;
 }
 
 
 char *fullsize(const off_t from) {
+  static char dat[20]; /* max: 999.999.999.999.999 */
   char tmp[20];
   off_t n = from;
   int i, j;
@@ -90,13 +84,13 @@ char *fullsize(const off_t from) {
   /* reverse and add thousand seperators */
   j = 0;
   while(i--) {
-    fullsizedat[j++] = tmp[i];
+    dat[j++] = tmp[i];
     if(i != 0 && i%3 == 0)
-      fullsizedat[j++] = '.';
+      dat[j++] = '.';
   }
-  fullsizedat[j] = '\0';
+  dat[j] = '\0';
 
-  return fullsizedat;
+  return dat;
 }
 
 
@@ -170,7 +164,7 @@ void ncprint(int r, int c, char *fmt, ...) {
 
 
 /* removes item from the hlnk circular linked list and size counts of the parents */
-void freedir_hlnk(struct dir *d) {
+static void freedir_hlnk(struct dir *d) {
   struct dir *t, *par, *pt;
   int i;
 
@@ -204,7 +198,7 @@ void freedir_hlnk(struct dir *d) {
 }
 
 
-void freedir_rec(struct dir *dr) {
+static void freedir_rec(struct dir *dr) {
   struct dir *tmp, *tmp2;
   tmp2 = dr;
   while((tmp = tmp2) != NULL) {
@@ -249,6 +243,8 @@ void freedir(struct dir *dr) {
 
 
 char *getpath(struct dir *cur) {
+  static char *dat;
+  static int datl = 0;
   struct dir *d, **list;
   int c, i;
 
@@ -261,12 +257,12 @@ char *getpath(struct dir *cur) {
     c++;
   }
 
-  if(getpathdatl == 0) {
-    getpathdatl = i;
-    getpathdat = malloc(i);
-  } else if(getpathdatl < i) {
-    getpathdatl = i;
-    getpathdat = realloc(getpathdat, i);
+  if(datl == 0) {
+    datl = i;
+    dat = malloc(i);
+  } else if(datl < i) {
+    datl = i;
+    dat = realloc(dat, i);
   }
   list = malloc(c*sizeof(struct dir *));
 
@@ -274,13 +270,13 @@ char *getpath(struct dir *cur) {
   for(d=cur; d!=NULL; d=d->parent)
     list[c++] = d;
 
-  getpathdat[0] = '\0';
+  dat[0] = '\0';
   while(c--) {
     if(list[c]->parent)
-      strcat(getpathdat, "/");
-    strcat(getpathdat, list[c]->name);
+      strcat(dat, "/");
+    strcat(dat, list[c]->name);
   }
   free(list);
-  return getpathdat;
+  return dat;
 }
 
