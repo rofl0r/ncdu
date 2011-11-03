@@ -1,3 +1,8 @@
+1.8 - 2011-11-03
+	- Use hash table to speed up hard link detection
+	- Added read-only option (-r)
+	- Use KiB instead of kiB (#3399279)
+
 1.7 - 2010-08-13
 	- List the detected hard links in file info window
 	- Count the size of a hard linked file once for each directory it appears in

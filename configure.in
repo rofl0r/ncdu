@@ -1,5 +1,5 @@
 
-AC_INIT(ncdu, git, projects@yorhel.nl)
+AC_INIT(ncdu, 1.8g, projects@yorhel.nl)
 AC_CONFIG_SRCDIR([src/global.h])
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
