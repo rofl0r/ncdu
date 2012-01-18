@@ -14,3 +14,4 @@ missing
 *.o
 stamp-h1
 src/ncdu
+doc/ncdu.1

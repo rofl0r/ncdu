@@ -1,109 +1,144 @@
-.TH ncdu 1 "Nov 3, 2011" "ncdu-1.8g" "ncdu manual"
+.TH ncdu 1 "Nov 3, 2011" "ncdu-1.8" "ncdu manual"
 
-.SH NAME
-\fBncdu \fP- NCurses Disk Usage
+=head1 NAME
 
-.SH SYNOPSIS
-\fBncdu\fP [\fB-hqvx\fP] [\fB--exclude\fP \fIPATTERN\fP] [\fB-X\fP \fIFILE\fP] \fIdir\fP
+B<ncdu> - NCurses Disk Usage
 
-.SH DESCRIPTION
-\fBncdu\fP (NCurses Disk Usage) is a curses-based version of
-the well-known 'du', and provides a fast way to see what
-directories are using your disk space.
 
-.SH OPTIONS
-.TP
-\fB-h\fP
-Print a small help message
-.TP
-\fB-q\fP
-Quiet mode. While calculating disk space, \fBncdu\fP will
-update the screen 10 times a second by default, this
-will be decreased to once every 2 seconds in quiet
-mode. Use this feature to save bandwidth over remote
-connections.
-.TP
-\fB-r\fP
+=head1 SYNOPSIS
+
+B<ncdu> [I<options>] I<dir>
+
+
+=head1 DESCRIPTION
+
+ncdu (NCurses Disk Usage) is a curses-based version of the well-known 'du', and
+provides a fast way to see what directories are using your disk space.
+
+
+=head1 OPTIONS
+
+=over
+
+=item -h
+
+Print a short help message.
+
+=item -q
+
+Quiet mode. While calculating disk space, ncdu will update the screen 10 times
+a second by default, this will be decreased to once every 2 seconds in quiet
+mode. Use this feature to save bandwidth over remote connections.
+
+=item -r
+
 Read-only mode. This will disable the built-in file deletion feature.
-.TP
-\fB-v\fP
-Print version.
-.TP
-\fB-x\fP
-Only count files and directories on the same
-filesystem as the specified \fIdir\fP.
-.TP
-\fB--exclude\fP PATTERN
-Exclude files that match PATTERN. This argument can
-be added multiple times to add more patterns.
-.TP
-\fB-X\fP FILE, \fB--exclude-from\fP FILE
-Exclude files that match any pattern in FILE. Patterns
-should be separated by a newline.
 
-.SH KEYS
-.TP
-\fB?\fP
+=item -v
+
+Print version.
+
+=item -x
+
+Only count files and directories on the same filesystem as the specified
+I<dir>.
+
+=item --exclude I<PATTERN>
+
+Exclude files that match I<PATTERN>. This argument can be added multiple times
+to add more patterns.
+
+=item -X I<FILE>, --exclude-from I<FILE>
+
+Exclude files that match any pattern in I<FILE>. Patterns should be separated
+by a newline.
+
+=back
+
+
+=head1 KEYS
+
+=over
+
+=item ?
+
 Show help + keys + about screen
-.TP
-\fBup, down j, k\fP
+
+=item up, down j, k
+
 Cycle through the items
-.TP
-\fBright, enter, l\fP
+
+=item right, enter, l
+
 Open selected directory
-.TP
-\fBleft, <, h\fP
+
+=item left, <, h
+
 Go to parent directory
-.TP
-\fBn\fP
+
+=item n
+
 Order by filename (press again for descending order)
-.TP
-\fBs\fP
+
+=item s
+
 Order by filesize (press again for descending order)
-.TP
-\fBa\fP
+
+=item a
+
 Toggle between showing disk usage and showing apparent size.
-.TP
-\fBd\fP
-Delete the selected file or directory. An error message will be shown
-when the contents of the directory do not match or do not exist anymore
-on the filesystem.
-.TP
-\fBt\fP
+
+=item d
+
+Delete the selected file or directory. An error message will be shown when the
+contents of the directory do not match or do not exist anymore on the
+filesystem.
+
+=item t
+
 Toggle dirs before files when sorting.
-.TP
-\fBg\fP
-Toggle between showing percentage, graph, both, or none. Percentage
-is relative to the size of the current directory, graph is relative
-to the largest item in the current directory.
-.TP
-\fBe\fP
-Show/hide 'hidden' or 'excluded' files and directories. Please note that
-even though you can't see the hidden files and directories, they are still
-there and they are still included in the directory sizes. If you suspect
-that the totals shown at the bottom of the screen are not correct, make
-sure you haven't enabled this option.
-.TP
-\fBi\fP
+
+=item g
+
+Toggle between showing percentage, graph, both, or none. Percentage is relative
+to the size of the current directory, graph is relative to the largest item in
+the current directory.
+
+=item e
+
+Show/hide 'hidden' or 'excluded' files and directories. Please note that even
+though you can't see the hidden files and directories, they are still there and
+they are still included in the directory sizes. If you suspect that the totals
+shown at the bottom of the screen are not correct, make sure you haven't
+enabled this option.
+
+=item i
+
 Show information about the current selected item.
-.TP
-\fBr\fP
+
+=item r
+
 Refresh/recalculate the current directory.
-.TP
-\fBq\fP
+
+=item q
+
 Quit
 
-.SH HARD LINKS
+=back
+
+
+=head1 HARD LINKS
+
 Every disk usage analysis utility has its own way of (not) counting hard links.
 There does not seem to be any universally agreed method of handling hard links,
 and it is even inconsistent among different versions of ncdu. This section
 explains what each version of ncdu does.
-.P
+
 ncdu 1.5 and below does not support any hard link detection at all: each link
 is considered a separate inode and its size is counted for every link. This
 means that the displayed directory sizes are incorrect when analyzing
 directories which contain hard links.
-.P
+
 ncdu 1.6 has basic hard link detection: When a link to a previously encountered
 inode is detected, the link is considered to have a file size of zero bytes.
 Its size is not counted again, and the link is indicated in the browser
@@ -113,7 +148,7 @@ the sizes may or may not be correct, depending on which links were considered
 as "duplicate" and which as "original". The indicated size of the topmost
 directory (that is, the one specified on the command line upon starting ncdu)
 is always correct.
-.P
+
 ncdu 1.7 has improved hard link detection. Each file that has more than two
 links has the "H" mark visible in the browser interface. Each hard link is
 counted exactly once for every directory it appears in. The indicated size of
@@ -122,18 +157,24 @@ inodes that can be found in that directory. Note, however, that this may not
 always be same as the space that will be reclaimed after deleting the
 directory, as some inodes may still be accessible from hard links outside it.
 
-.SH BUGS
+
+=head1 BUGS
+
 Directory hard links are not supported. They will not be detected as being hard
 links, and will thus be scanned and counted multiple times.
-.P
+
 Some minor glitches may appear when displaying filenames that contain multibyte
 or multicolumn characters.
-.P
+
 Please report any other bugs you may find at the bug tracker, which can be
 found on the web site at http://dev.yorhel.nl/ncdu
 
-.SH AUTHOR
+
+=head1 AUTHOR
+
 Written by Yoran Heling <projects@yorhel.nl>.
 
-.SH SEE ALSO
-\fBdu\fP(1)
+
+=head1 SEE ALSO
+
+L<du(1)>
