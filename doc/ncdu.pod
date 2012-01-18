@@ -149,12 +149,12 @@ as "duplicate" and which as "original". The indicated size of the topmost
 directory (that is, the one specified on the command line upon starting ncdu)
 is always correct.
 
-ncdu 1.7 has improved hard link detection. Each file that has more than two
-links has the "H" mark visible in the browser interface. Each hard link is
-counted exactly once for every directory it appears in. The indicated size of
-each directory is therefore, correctly, the sum of the sizes of all unique
-inodes that can be found in that directory. Note, however, that this may not
-always be same as the space that will be reclaimed after deleting the
+ncdu 1.7 and later has improved hard link detection. Each file that has more
+than two links has the "H" mark visible in the browser interface. Each hard
+link is counted exactly once for every directory it appears in. The indicated
+size of each directory is therefore, correctly, the sum of the sizes of all
+unique inodes that can be found in that directory. Note, however, that this may
+not always be same as the space that will be reclaimed after deleting the
 directory, as some inodes may still be accessible from hard links outside it.
 
 
