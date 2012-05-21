@@ -2,7 +2,7 @@
 AC_INIT(ncdu, 1.8g, projects@yorhel.nl)
 AC_CONFIG_SRCDIR([src/global.h])
 AC_CONFIG_HEADER([config.h])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([foreign subdir-objects])
 
 # Check for programs.
 AC_PROG_CC
@@ -47,7 +47,5 @@ AC_CHECK_LIB([$ncurses],
 
 
 
-AC_OUTPUT([Makefile src/Makefile doc/Makefile])
+AC_OUTPUT([Makefile])
 
-echo ""
-echo "Now type \"make\" and \"make install\" to build and install ncdu"

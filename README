@@ -25,6 +25,12 @@ INSTALL
     make
     make install
 
+  If you're building directly from the git repository, make sure you have perl
+  (or rather, pod2man) and GNU autoconf/automake installed, then run
+  'autoreconf -i', and you're ready to continue with the usual ./configure and
+  make route.
+
+
 COPYING
 
   Copyright (c) 2007-2012 Yoran Heling
