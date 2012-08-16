@@ -11,7 +11,8 @@ depcomp
 install-sh
 missing
 .deps/
+.dirstamp
 *.o
 stamp-h1
-src/ncdu
-doc/ncdu.1
+ncdu
+ncdu.1
