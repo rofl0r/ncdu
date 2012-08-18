@@ -458,11 +458,6 @@ int calc_process() {
   /* calculate */
   n = calc_dir(root, name);
 
-  /* free some resources */
-  if(!path[1] && strcmp(name, "."))
-    free(name);
-  free(path);
-
   if(links) {
     kh_destroy(hl, links);
     links = NULL;
@@ -473,6 +468,7 @@ int calc_process() {
     if(root->sub == NULL) {
       freedir(root);
       failed = 1;
+      calc_enterpath(name);
       strcpy(errmsg, "Directory empty.");
       goto calc_fail;
     }
@@ -498,6 +494,10 @@ int calc_process() {
   /* something went wrong... */
   freedir(root);
 calc_fail:
+  if(!path[1] && strcmp(name, "."))
+    free(name);
+  free(path);
+
   while(failed && !input_handle(0))
     ;
   if(orig == NULL)
