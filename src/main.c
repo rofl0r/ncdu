@@ -76,6 +76,8 @@ int input_handle(int wait) {
     if(ch == KEY_RESIZE) {
       if(ncresize(min_rows, min_cols))
         min_rows = min_cols = 0;
+      /* ncresize() may change nodelay state, make sure to revert it. */
+      nodelay(stdscr, wait?1:0);
       screen_draw();
       continue;
     }
