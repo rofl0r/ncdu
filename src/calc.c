@@ -299,20 +299,21 @@ static void calc_draw_progress() {
   static char antext[15] = "Calculating...";
   char ani[15];
   int i;
+  int width = wincols-5;
 
-  nccreate(10, 60, !orig ? "Calculating..." : "Recalculating...");
+  nccreate(10, width, !orig ? "Calculating..." : "Recalculating...");
 
   ncprint(2, 2, "Total items: %-8d size: %s",
     root->items, formatsize(root->size));
-  ncprint(3, 2, "Current dir: %s", cropstr(curpath, 43));
-  ncaddstr(8, 43, "Press q to quit");
+  ncprint(3, 2, "Current dir: %s", cropstr(curpath, width-17));
+  ncaddstr(8, width-17, "Press q to quit");
 
   /* show warning if we couldn't open a dir */
   if(lasterr[0] != '\0') {
      attron(A_BOLD);
      ncaddstr(5, 2, "Warning:");
      attroff(A_BOLD);
-     ncprint(5, 11, "could not open %-32s", cropstr(lasterr, 32));
+     ncprint(5, 11, "could not open %-32s", cropstr(lasterr, width-28));
      ncaddstr(6, 3, "some directory sizes may not be correct");
   }
 
