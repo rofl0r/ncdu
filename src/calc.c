@@ -335,15 +335,16 @@ static void calc_draw_progress() {
 
 
 static void calc_draw_error(char *cur, char *msg) {
-  nccreate(7, 60, "Error!");
+  int width = wincols-5;
+  nccreate(7, width, "Error!");
 
   attron(A_BOLD);
   ncaddstr(2, 2, "Error:");
   attroff(A_BOLD);
 
-  ncprint(2, 9, "could not open %s", cropstr(cur, 34));
-  ncprint(3, 4, "%s", cropstr(msg, 52));
-  ncaddstr(5, 30, "press any key to continue...");
+  ncprint(2, 9, "could not open %s", cropstr(cur, width-26));
+  ncprint(3, 4, "%s", cropstr(msg, width-8));
+  ncaddstr(5, width-30, "press any key to continue...");
 }
 
 
