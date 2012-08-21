@@ -367,7 +367,7 @@ int calc_key(int ch) {
 
 
 int calc_process() {
-  char *path, *name;
+  char *path = NULL, *name = NULL;
   struct stat fs;
   struct dir *t;
   int n;
@@ -494,7 +494,7 @@ int calc_process() {
   /* something went wrong... */
   freedir(root);
 calc_fail:
-  if(!path[1] && strcmp(name, "."))
+  if(name && path && !path[1] && strcmp(name, "."))
     free(name);
   free(path);
 
