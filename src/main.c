@@ -44,7 +44,7 @@ static long lastupdate = 999;
 
 static void screen_draw() {
   switch(pstate) {
-    case ST_CALC:   /* TODO */     break;
+    case ST_CALC:   dir_draw();    break;
     case ST_BROWSE: browse_draw(); break;
     case ST_HELP:   help_draw();   break;
     case ST_DEL:    delete_draw(); break;
@@ -82,7 +82,7 @@ int input_handle(int wait) {
       continue;
     }
     switch(pstate) {
-      case ST_CALC:   return 0; /* TODO */
+      case ST_CALC:   return dir_key(ch);
       case ST_BROWSE: return browse_key(ch);
       case ST_HELP:   return help_key(ch);
       case ST_DEL:    return delete_key(ch);

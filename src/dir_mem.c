@@ -144,6 +144,11 @@ static void item(struct dir *item) {
   if(item->flags & FF_DIR)
     curdir = item;
 
+  /* Special-case the name of the root item to be empty instead of "/". This is
+   * what getpath() expects. */
+  if(item == root && strcmp(item->name, "/") == 0)
+    item->name[0] = 0;
+
   /* Update stats of parents. Don't update the size/asize fields if this is a
    * possible hard link, because hlnk_check() will take care of it in that
    * case. */
@@ -157,6 +162,9 @@ static void item(struct dir *item) {
   if(item->flags & FF_SERR || item->flags & FF_ERR)
     for(t=item->parent; t; t=t->parent)
       t->flags |= FF_SERR;
+
+  dir_output.size = root->size;
+  dir_output.items = root->items;
 }
 
 
@@ -200,6 +208,8 @@ void dir_mem_init(struct dir *_orig) {
 
   dir_output.item = item;
   dir_output.final = final;
+  dir_output.size = 0;
+  dir_output.items = 0;
 
   /* Init hash table for hard link detection */
   links = kh_init(hl);

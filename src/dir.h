@@ -76,6 +76,11 @@ struct dir_output {
    * Return value should be 0 to continue running ncdu, 1 to exit.
    */
   int (*final)(int);
+
+  /* The output code is responsible for updating these stats. Can be 0 when not
+   * available. */
+  off_t size;
+  long items;
 };
 
 
@@ -108,9 +113,16 @@ void dir_curpath_leave();
 /* Sets the path where the last error occured, or reset on NULL. */
 void dir_setlasterr(const char *);
 
+/* Error message on fatal error, or NULL if there hasn't been a fatal error yet. */
+extern char *dir_fatalerr;
+void dir_seterr(const char *, ...);
+
 /* Return an empty struct dir with the given name, for use with
  * dir_output.item(). Returned memory may be freed/overwritten on a subsequent
  * call. */
 struct dir *dir_createstruct(const char *);
+
+int dir_key(int);
+void dir_draw();
 
 #endif

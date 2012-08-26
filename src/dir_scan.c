@@ -135,7 +135,11 @@ static int dir_scan_recurse(struct dir *d) {
     d->flags |= FF_ERR;
     dir_output.item(d);
     dir_output.item(NULL);
-    return chdir("..") ? 1 : 0; /* TODO: Error reporting */
+    if(chdir("..")) {
+      dir_seterr("Error going back to parent directory: %s", strerror(errno));
+      return 1;
+    } else
+      return 0;
   }
 
   /* readdir() failed halfway, not fatal. */
@@ -147,8 +151,10 @@ static int dir_scan_recurse(struct dir *d) {
   dir_output.item(NULL);
 
   /* Not being able to chdir back is fatal */
-  if(!fail && chdir(".."))
-    return 1; /* TODO: Error reporting */
+  if(!fail && chdir("..")) {
+    dir_seterr("Error going back to parent directory: %s", strerror(errno));
+    return 1;
+  }
 
   return fail;
 }
@@ -182,14 +188,14 @@ static int dir_scan_item(struct dir *d) {
 
   /* Recurse into the dir or output the item */
   if(d->flags & FF_DIR && !(d->flags & (FF_ERR|FF_EXL|FF_OTHFS)))
-    dir_scan_recurse(d);
+    fail = dir_scan_recurse(d);
   else if(d->flags & FF_DIR) {
     dir_output.item(d);
     dir_output.item(NULL);
   } else
     dir_output.item(d);
 
-  return fail; /* TODO: UI */
+  return fail || input_handle(1);
 }
 
 
@@ -222,42 +228,50 @@ int dir_scan_process() {
   struct stat fs;
   struct dir *d;
 
-  if((path = path_real(dir_curpath)) == NULL) {
-    /* TODO */
+  if((path = path_real(dir_curpath)) == NULL)
+    dir_seterr("Error obtaining full path: %s", strerror(errno));
+  else {
+    dir_curpath_set(path);
+    free(path);
   }
-  dir_curpath_set(path);
-  free(path);
 
-  if(path_chdir(dir_curpath) < 0) {
-    /* TODO */
-  }
+  if(!dir_fatalerr && path_chdir(dir_curpath) < 0)
+    dir_seterr("Error changing directory: %s", strerror(errno));
 
   /* Can these even fail after a chdir? */
-  if(lstat(".", &fs) != 0 || !S_ISDIR(fs.st_mode)) {
-    /* TODO */
+  if(!dir_fatalerr && lstat(".", &fs) != 0)
+    dir_seterr("Error obtaining directory information: %s", strerror(errno));
+  if(!dir_fatalerr && !S_ISDIR(fs.st_mode))
+    dir_seterr("Not a directory");
+
+  if(!dir_fatalerr && !(dir = dir_read(&fail)))
+    dir_seterr("Error reading directory: %s", strerror(errno));
+
+  /* Special case: empty directory = error */
+  if(!dir_fatalerr && !*dir)
+    dir_seterr("Directory empty");
+
+  if(!dir_fatalerr) {
+    curdev = fs.st_dev;
+    d = dir_createstruct(dir_curpath);
+    if(fail)
+      d->flags |= FF_ERR;
+    stat_to_dir(d, &fs);
+
+    dir_output.item(d);
+    fail = dir_walk(dir);
+    dir_output.item(NULL);
   }
 
-  dir = dir_read(&fail);
-  if(!dir) {
-    /* TODO */
-  }
-
-  curdev = fs.st_dev;
-  d = dir_createstruct(dir_curpath);
-  if(fail)
-    d->flags |= FF_ERR;
-  stat_to_dir(d, &fs);
-
-  dir_output.item(d);
-  fail = dir_walk(dir);
-  dir_output.item(NULL);
-
-  return dir_output.final(fail);
+  while(dir_fatalerr && !input_handle(0))
+    ;
+  return dir_output.final(dir_fatalerr || fail);
 }
 
 
 void dir_scan_init(const char *path) {
   dir_curpath_set(path);
   dir_setlasterr(NULL);
+  dir_seterr(NULL);
   pstate = ST_CALC;
 }

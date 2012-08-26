@@ -27,10 +27,12 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 
 char *dir_curpath;   /* Full path of the last seen item. */
 struct dir_output dir_output;
+char *dir_fatalerr; /* Error message on a fatal error. (NULL if there was no fatal error) */
 static char *lasterr; /* Path where the last error occured. */
 static int curpathl; /* Allocated length of dir_curpath */
 static int lasterrl; /* ^ of lasterr */
@@ -86,6 +88,21 @@ void dir_setlasterr(const char *path) {
 }
 
 
+void dir_seterr(const char *fmt, ...) {
+  free(dir_fatalerr);
+  dir_fatalerr = NULL;
+  if(!fmt)
+    return;
+
+  va_list va;
+  va_start(va, fmt);
+  dir_fatalerr = malloc(1024); /* Should be enough for everything... */
+  vsnprintf(dir_fatalerr, 1023, fmt, va);
+  dir_fatalerr[1023] = 0;
+  va_end(va);
+}
+
+
 struct dir *dir_createstruct(const char *name) {
   static struct dir *d = NULL;
   static size_t len = 0;
@@ -97,4 +114,75 @@ struct dir *dir_createstruct(const char *name) {
   memset(d, 0, SDIRSIZE);
   strcpy(d->name, name);
   return d;
+}
+
+
+static void draw_progress() {
+  static const char antext[] = "Scanning...";
+  static int anpos = 0;
+  char ani[20] = {};
+  int i;
+  int width = wincols-5;
+
+  nccreate(10, width, "Scanning...");
+
+  ncprint(2, 2, "Total items: %-8d size: %s", dir_output.items, formatsize(dir_output.size));
+  ncprint(3, 2, "Current item: %s", cropstr(dir_curpath, width-18));
+  ncaddstr(8, width-18, "Press q to abort");
+
+  /* show warning if we couldn't open a dir */
+  if(lasterr) {
+     attron(A_BOLD);
+     ncaddstr(5, 2, "Warning:");
+     attroff(A_BOLD);
+     ncprint(5, 11, "error scanning %-32s", cropstr(lasterr, width-28));
+     ncaddstr(6, 3, "some directory sizes may not be correct");
+  }
+
+  /* animation - but only if the screen refreshes more than or once every second */
+  if(update_delay <= 1000) {
+    if(++anpos == strlen(antext)*2)
+       anpos = 0;
+    memset(ani, ' ', strlen(antext));
+    if(anpos < strlen(antext))
+      for(i=0; i<=anpos; i++)
+        ani[i] = antext[i];
+    else
+      for(i=strlen(antext)-1; i>anpos-strlen(antext); i--)
+        ani[i] = antext[i];
+  } else
+    strcpy(ani, antext);
+  ncaddstr(8, 3, ani);
+}
+
+
+static void draw_error(char *cur, char *msg) {
+  int width = wincols-5;
+  nccreate(7, width, "Error!");
+
+  attron(A_BOLD);
+  ncaddstr(2, 2, "Error:");
+  attroff(A_BOLD);
+
+  ncprint(2, 9, "could not open %s", cropstr(cur, width-26));
+  ncprint(3, 4, "%s", cropstr(msg, width-8));
+  ncaddstr(5, width-30, "press any key to continue...");
+}
+
+
+void dir_draw() {
+  browse_draw();
+  if(dir_fatalerr)
+    draw_error(dir_curpath, dir_fatalerr);
+  else
+    draw_progress();
+}
+
+
+int dir_key(int ch) {
+  if(dir_fatalerr)
+    return 1;
+  if(ch == 'q')
+    return 1;
+  return 0;
 }
