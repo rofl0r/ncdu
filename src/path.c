@@ -127,7 +127,7 @@ static char *path_absolute(const char *path) {
 /* NOTE: cwd and the memory cur points to are unreliable after calling this function */
 static char *path_real_rec(char *cur, int *links) {
   int i, n, tmpl, lnkl = 0;
-  char **arr, *tmp, *lnk, *ret = NULL;
+  char **arr, *tmp, *lnk = NULL, *ret = NULL;
 
   tmpl = strlen(cur)+1;
   tmp = malloc(tmpl);

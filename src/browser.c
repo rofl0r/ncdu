@@ -152,7 +152,7 @@ static void browse_draw_item(struct dir *n, int row) {
 void browse_draw() {
   struct dir *t;
   char fmtsize[9], *tmp;
-  int selected, i;
+  int selected = 0, i;
 
   erase();
   t = dirlist_get(0);

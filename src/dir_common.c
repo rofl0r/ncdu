@@ -119,9 +119,9 @@ struct dir *dir_createstruct(const char *name) {
 
 static void draw_progress() {
   static const char antext[] = "Scanning...";
-  static int anpos = 0;
+  static size_t anpos = 0;
   char ani[20] = {};
-  int i;
+  size_t i;
   int width = wincols-5;
 
   nccreate(10, width, "Scanning...");

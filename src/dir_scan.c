@@ -248,8 +248,10 @@ int dir_scan_process() {
     dir_seterr("Error reading directory: %s", strerror(errno));
 
   /* Special case: empty directory = error */
-  if(!dir_fatalerr && !*dir)
+  if(!dir_fatalerr && !*dir) {
     dir_seterr("Directory empty");
+    free(dir);
+  }
 
   if(!dir_fatalerr) {
     curdev = fs.st_dev;
