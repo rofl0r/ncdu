@@ -44,7 +44,7 @@ static long lastupdate = 999;
 
 static void screen_draw() {
   switch(pstate) {
-    case ST_CALC:   calc_draw();   break;
+    case ST_CALC:   /* TODO */     break;
     case ST_BROWSE: browse_draw(); break;
     case ST_HELP:   help_draw();   break;
     case ST_DEL:    delete_draw(); break;
@@ -82,7 +82,7 @@ int input_handle(int wait) {
       continue;
     }
     switch(pstate) {
-      case ST_CALC:   return calc_key(ch);
+      case ST_CALC:   return 0; /* TODO */
       case ST_BROWSE: return browse_key(ch);
       case ST_HELP:   return help_key(ch);
       case ST_DEL:    return delete_key(ch);
@@ -120,7 +120,7 @@ static char *argv_parse(int argc, char **argv) {
       len = strlen(argv[i]);
       for(j=1; j<len; j++)
         switch(argv[i][j]) {
-          case 'x': calc_smfs = 1; break;
+          case 'x': dir_scan_smfs = 1; break;
           case 'r': read_only = 1; break;
           case 'q': update_delay = 2000;     break;
           case '?':
@@ -157,7 +157,8 @@ int main(int argc, char **argv) {
   if((dir = argv_parse(argc, argv)) == NULL)
     dir = ".";
 
-  calc_init(dir, NULL);
+  dir_mem_init(NULL);
+  dir_scan_init(dir);
 
   initscr();
   cbreak();
@@ -168,7 +169,7 @@ int main(int argc, char **argv) {
     min_rows = min_cols = 0;
 
   while(1) {
-    if(pstate == ST_CALC && calc_process())
+    if(pstate == ST_CALC && dir_scan_process())
       break;
     else if(pstate == ST_DEL)
       delete_process();

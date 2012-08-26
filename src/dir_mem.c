@@ -1,0 +1,209 @@
+/* ncdu - NCurses Disk Usage
+
+  Copyright (c) 2007-2012 Yoran Heling
+
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal in the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+
+  The above copyright notice and this permission notice shall be included
+  in all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+  CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+*/
+
+#include "global.h"
+#include "khash.h"
+
+#include <string.h>
+#include <stdlib.h>
+
+
+static struct dir *root;   /* root directory struct we're scanning */
+static struct dir *curdir; /* directory item that we're currently adding items to */
+static struct dir *orig;   /* original directory, when refreshing an already scanned dir */
+
+/* Table of struct dir items with more than one link (in order to detect hard links) */
+#define hlink_hash(d)     (kh_int64_hash_func((khint64_t)d->dev) ^ kh_int64_hash_func((khint64_t)d->ino))
+#define hlink_equal(a, b) ((a)->dev == (b)->dev && (a)->ino == (b)->ino)
+KHASH_INIT(hl, struct dir *, char, 0, hlink_hash, hlink_equal);
+static khash_t(hl) *links = NULL;
+
+
+/* recursively checks a dir structure for hard links and fills the lookup array */
+static void hlink_init(struct dir *d) {
+  struct dir *t;
+
+  for(t=d->sub; t!=NULL; t=t->next)
+    hlink_init(t);
+
+  if(!(d->flags & FF_HLNKC))
+    return;
+  int r;
+  kh_put(hl, links, d, &r);
+}
+
+
+/* checks an individual file for hard links and updates its cicrular linked
+ * list, also updates the sizes of the parent dirs */
+static void hlink_check(struct dir *d) {
+  struct dir *t, *pt, *par;
+  int i;
+
+  /* add to links table */
+  khiter_t k = kh_put(hl, links, d, &i);
+
+  /* found in the table? update hlnk */
+  if(!i) {
+    t = d->hlnk = kh_key(links, k);
+    if(t->hlnk != NULL)
+      for(t=t->hlnk; t->hlnk!=d->hlnk; t=t->hlnk)
+        ;
+    t->hlnk = d;
+  }
+
+  /* now update the sizes of the parent directories,
+   * This works by only counting this file in the parent directories where this
+   * file hasn't been counted yet, which can be determined from the hlnk list.
+   * XXX: This may not be the most efficient algorithm to do this */
+  for(i=1,par=d->parent; i&&par; par=par->parent) {
+    if(d->hlnk)
+      for(t=d->hlnk; i&&t!=d; t=t->hlnk)
+        for(pt=t->parent; i&&pt; pt=pt->parent)
+          if(pt==par)
+            i=0;
+    if(i) {
+      par->size += d->size;
+      par->asize += d->asize;
+    }
+  }
+}
+
+
+/* Make a copy of *item so that we'll keep it in memory. In the special case
+ * of !root && orig, we need to copy over the name of *orig instead of *item.
+ */
+static struct dir *item_copy(struct dir *item) {
+  struct dir *t;
+
+  if(!root && orig) {
+    t = malloc(SDIRSIZE+strlen(orig->name));
+    memcpy(t, item, SDIRSIZE);
+    strcpy(t->name, orig->name);
+  } else {
+    t = malloc(SDIRSIZE+strlen(item->name));
+    memcpy(t, item, SDIRSIZE+strlen(item->name));
+  }
+  return t;
+}
+
+
+/* Add item to the correct place in the memory structure */
+static void item_add(struct dir *item) {
+  if(!root) {
+    root = item;
+    /* Make sure that the *root appears to be part of the same dir structure as
+     * *orig, otherwise the directory size calculation will be incorrect in the
+     * case of hard links. */
+    if(orig)
+      root->parent = orig->parent;
+  } else {
+    item->parent = curdir;
+    item->next = curdir->sub;
+    if(item->next)
+      item->next->prev = item;
+    curdir->sub = item;
+  }
+}
+
+
+static void item(struct dir *item) {
+  struct dir *t;
+
+  /* Go back to parent dir */
+  if(!item) {
+    curdir = curdir->parent;
+    return;
+  }
+
+  item = item_copy(item);
+  item_add(item);
+
+  /* Ensure that any next items will go to this directory */
+  if(item->flags & FF_DIR)
+    curdir = item;
+
+  /* Update stats of parents. Don't update the size/asize fields if this is a
+   * possible hard link, because hlnk_check() will take care of it in that
+   * case. */
+  if(item->flags & FF_HLNKC) {
+    addparentstats(item->parent, 0, 0, 1);
+    hlink_check(item);
+  } else
+    addparentstats(item->parent, item->size, item->asize, 1);
+
+  /* propagate ERR and SERR back up to the root */
+  if(item->flags & FF_SERR || item->flags & FF_ERR)
+    for(t=item->parent; t; t=t->parent)
+      t->flags |= FF_SERR;
+}
+
+
+static int final(int fail) {
+  kh_destroy(hl, links);
+  links = NULL;
+
+  if(fail) {
+    freedir(root);
+    if(orig) {
+      browse_init(orig);
+      return 0;
+    } else
+      return 1;
+  }
+
+  /* success, update references and free original item */
+  if(orig) {
+    root->next = orig->next;
+    root->prev = orig->prev;
+    if(root->parent && root->parent->sub == orig)
+      root->parent->sub = root;
+    if(root->prev)
+      root->prev->next = root;
+    if(root->next)
+      root->next->prev = root;
+    orig->next = orig->prev = NULL;
+    freedir(orig);
+  }
+
+  browse_init(root->sub);
+  dirlist_top(-3);
+  return 0;
+}
+
+
+void dir_mem_init(struct dir *_orig) {
+  orig = _orig;
+  root = curdir = NULL;
+  pstate = ST_CALC;
+
+  dir_output.item = item;
+  dir_output.final = final;
+
+  /* Init hash table for hard link detection */
+  links = kh_init(hl);
+  if(orig)
+    hlink_init(getroot(orig));
+}
+

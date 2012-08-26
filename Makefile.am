@@ -2,9 +2,11 @@ bin_PROGRAMS=ncdu
 
 ncdu_SOURCES=\
 	src/browser.c\
-	src/calc.c\
 	src/delete.c\
 	src/dirlist.c\
+	src/dir_common.c\
+	src/dir_mem.c\
+	src/dir_scan.c\
 	src/exclude.c\
 	src/help.c\
 	src/main.c\
@@ -13,8 +15,8 @@ ncdu_SOURCES=\
 
 noinst_HEADERS=\
 	src/browser.h\
-	src/calc.h\
 	src/delete.h\
+	src/dir.h\
 	src/dirlist.h\
 	src/exclude.h\
 	src/global.h\

@@ -345,8 +345,10 @@ int browse_key(int ch) {
 
     /* and other stuff */
     case 'r':
-      if(sel != NULL)
-        calc_init(getpath(sel->parent), sel->parent);
+      if(sel != NULL) {
+        dir_mem_init(sel->parent);
+        dir_scan_init(getpath(sel->parent));
+      }
       info_show = 0;
       break;
     case 'q':

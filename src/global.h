@@ -55,7 +55,7 @@ struct dir {
   struct dir *parent, *next, *prev, *sub, *hlnk;
   off_t size, asize;
   ino_t ino;
-  unsigned long items;
+  long items;
   dev_t dev;
   unsigned char flags;
   char name[3]; /* must be large enough to hold ".." */
@@ -81,13 +81,13 @@ int input_handle(int);
 
 
 /* import all other global functions and variables */
-#include "exclude.h"
-#include "util.h"
-#include "calc.h"
-#include "delete.h"
 #include "browser.h"
+#include "delete.h"
+#include "dir.h"
+#include "dirlist.h"
+#include "exclude.h"
 #include "help.h"
 #include "path.h"
-#include "dirlist.h"
+#include "util.h"
 
 #endif

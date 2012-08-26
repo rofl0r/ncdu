@@ -78,5 +78,11 @@ void freedir(struct dir *);
    returned pointer will be overwritten with a subsequent call */
 char *getpath(struct dir *);
 
+/* returns the root element of the given dir struct */
+struct dir *getroot(struct dir *);
+
+/* Adds a value to the size, asize and items fields of *d and its parents */
+void addparentstats(struct dir *, off_t, off_t, long);
+
 #endif
 

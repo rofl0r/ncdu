@@ -175,7 +175,7 @@ static void freedir_hlnk(struct dir *d) {
    * This works the same as with adding: only the parents in which THIS is the
    * only occurence of the hard link will be modified, if the same file still
    * exists within the parent it shouldn't get removed from the count.
-   * XXX: Same note as for calc.c / calc_hlnk_check():
+   * XXX: Same note as for dir_mem.c / hlink_check():
    *      this is probably not the most efficient algorithm */
   for(i=1,par=d->parent; i&&par; par=par->parent) {
     if(d->hlnk)
@@ -212,7 +212,8 @@ static void freedir_rec(struct dir *dr) {
 
 
 void freedir(struct dir *dr) {
-  struct dir *tmp;
+  if(!dr)
+    return;
 
   /* free dr->sub recursively */
   if(dr->sub)
@@ -230,13 +231,7 @@ void freedir(struct dir *dr) {
 
   /* update sizes of parent directories if this isn't a hard link.
    * If this is a hard link, freedir_hlnk() would have done so already */
-  for(tmp=dr->parent; tmp; tmp=tmp->parent) {
-    if(!(dr->flags & FF_HLNKC)) {
-      tmp->size -= dr->size;
-      tmp->asize -= dr->asize;
-    }
-    tmp->items -= dr->items+1;
-  }
+  addparentstats(dr->parent, dr->flags & FF_HLNKC ? 0 : -dr->size, dr->flags & FF_HLNKC ? 0 : -dr->asize, -(dr->items+1));
 
   free(dr);
 }
@@ -280,3 +275,19 @@ char *getpath(struct dir *cur) {
   return dat;
 }
 
+
+struct dir *getroot(struct dir *d) {
+  while(d && d->parent)
+    d = d->parent;
+  return d;
+}
+
+
+void addparentstats(struct dir *d, off_t size, off_t asize, long items) {
+  while(d) {
+    d->size += size;
+    d->asize += asize;
+    d->items += items;
+    d = d->parent;
+  }
+}
