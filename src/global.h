@@ -31,6 +31,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef HAVE_INTTYPES_H
+# include <inttypes.h>
+#endif
+#ifdef HAVE_STDINT_H
+# include <stdint.h>
+#endif
+
 /* File Flags (struct dir -> flags) */
 #define FF_DIR    0x01
 #define FF_FILE   0x02
@@ -53,7 +60,7 @@
  *      fixed-size integers instead, which are much more predictable */
 struct dir {
   struct dir *parent, *next, *prev, *sub, *hlnk;
-  off_t size, asize;
+  int64_t size, asize;
   ino_t ino;
   long items;
   dev_t dev;

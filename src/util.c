@@ -54,7 +54,7 @@ char *cropstr(const char *from, int s) {
 }
 
 
-char *formatsize(const off_t from) {
+char *formatsize(int64_t from) {
   static char dat[9]; /* "xxx.xMiB" */
   float r = from; 
   char c = ' ';
@@ -68,10 +68,10 @@ char *formatsize(const off_t from) {
 }
 
 
-char *fullsize(const off_t from) {
+char *fullsize(int64_t from) {
   static char dat[20]; /* max: 999.999.999.999.999 */
   char tmp[20];
-  off_t n = from;
+  int64_t n = from;
   int i, j;
 
   /* the K&R method - more portable than sprintf with %lld */
@@ -283,7 +283,7 @@ struct dir *getroot(struct dir *d) {
 }
 
 
-void addparentstats(struct dir *d, off_t size, off_t asize, long items) {
+void addparentstats(struct dir *d, int64_t size, int64_t asize, long items) {
   while(d) {
     d->size += size;
     d->asize += asize;

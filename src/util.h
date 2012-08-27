@@ -66,10 +66,10 @@ void ncprint(int, int, char *, ...);
 char *cropstr(const char *, int);
 
 /* formats size in the form of xxx.xXB */
-char *formatsize(const off_t);
+char *formatsize(int64_t );
 
 /* int2string with thousand separators */
-char *fullsize(const off_t);
+char *fullsize(int64_t);
 
 /* recursively free()s a directory tree */
 void freedir(struct dir *);
@@ -82,7 +82,7 @@ char *getpath(struct dir *);
 struct dir *getroot(struct dir *);
 
 /* Adds a value to the size, asize and items fields of *d and its parents */
-void addparentstats(struct dir *, off_t, off_t, long);
+void addparentstats(struct dir *, int64_t, int64_t, long);
 
 #endif
 

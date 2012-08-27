@@ -79,7 +79,7 @@ struct dir_output {
 
   /* The output code is responsible for updating these stats. Can be 0 when not
    * available. */
-  off_t size;
+  int64_t size;
   long items;
 };
 
