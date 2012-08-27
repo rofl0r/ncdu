@@ -27,12 +27,14 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdarg.h>
 
 
 char *dir_curpath;   /* Full path of the last seen item. */
 struct dir_output dir_output;
 char *dir_fatalerr; /* Error message on a fatal error. (NULL if there was no fatal error) */
+int dir_ui;         /* User interface to use */
 static char *lasterr; /* Path where the last error occured. */
 static int curpathl; /* Allocated length of dir_curpath */
 static int lasterrl; /* ^ of lasterr */
@@ -171,14 +173,31 @@ static void draw_error(char *cur, char *msg) {
 
 
 void dir_draw() {
-  browse_draw();
-  if(dir_fatalerr)
-    draw_error(dir_curpath, dir_fatalerr);
-  else
-    draw_progress();
+  switch(dir_ui) {
+  case 0:
+    if(dir_fatalerr)
+      fprintf(stderr, "%s.\n", dir_fatalerr);
+    break;
+  case 1:
+    if(dir_fatalerr)
+      fprintf(stderr, "\r%s.\n", dir_fatalerr);
+    else
+      fprintf(stderr, "\r%-55s %8ld files /%s",
+        cropstr(dir_curpath, 55), dir_output.items, formatsize(dir_output.size));
+    break;
+  case 2:
+    browse_draw();
+    if(dir_fatalerr)
+      draw_error(dir_curpath, dir_fatalerr);
+    else
+      draw_progress();
+    break;
+  }
 }
 
 
+/* This function can't be called unless dir_ui == 2
+ * (Doesn't really matter either way). */
 int dir_key(int ch) {
   if(dir_fatalerr)
     return 1;

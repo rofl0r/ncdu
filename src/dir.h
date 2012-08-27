@@ -122,6 +122,7 @@ void dir_seterr(const char *, ...);
  * call. */
 struct dir *dir_createstruct(const char *);
 
+extern int dir_ui;
 int dir_key(int);
 void dir_draw();
 

@@ -26,6 +26,7 @@
 #include "global.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <errno.h>
 
@@ -39,6 +40,7 @@ int read_only = 0;
 long update_delay = 100;
 
 static int min_rows = 17, min_cols = 60;
+static int ncurses_init = 0;
 static long lastupdate = 999;
 
 
@@ -61,7 +63,6 @@ int input_handle(int wait) {
   int ch;
   struct timeval tv;
 
-  nodelay(stdscr, wait?1:0);
   if(wait != 1)
     screen_draw();
   else {
@@ -72,6 +73,12 @@ int input_handle(int wait) {
       lastupdate = tv.tv_usec;
     }
   }
+
+  /* No actual input handling is done if ncurses hasn't been initialized yet. */
+  if(!ncurses_init)
+    return wait == 0 ? 1 : 0;
+
+  nodelay(stdscr, wait?1:0);
   while((ch = getch()) != ERR) {
     if(ch == KEY_RESIZE) {
       if(ncresize(min_rows, min_cols))
@@ -97,18 +104,24 @@ int input_handle(int wait) {
 static char *argv_parse(int argc, char **argv) {
   int i, j, len;
   char *dir = NULL;
+  dir_ui = 2;
 
   /* read from commandline */
   for(i=1; i<argc; i++) {
     if(argv[i][0] == '-') {
-     /* flags requiring arguments */
-      if(argv[i][1] == 'X' || !strcmp(argv[i], "--exclude-from") || !strcmp(argv[i], "--exclude")
-          || argv[i][1] == 'e' || argv[i][1] == 'l') {
+      /* flags requiring arguments */
+      if(!strcmp(argv[i], "-X") || !strcmp(argv[i], "-u") || !strcmp(argv[i], "--exclude-from") || !strcmp(argv[i], "--exclude")) {
         if(i+1 >= argc) {
           printf("Option %s requires an argument\n", argv[i]);
           exit(1);
-        }
-        else if(strcmp(argv[i], "--exclude") == 0)
+        } else if(strcmp(argv[i], "-u") == 0) {
+          i++;
+          if(!(argv[i][0] == '0' || argv[i][0] == '1' || argv[i][0] == '2') || argv[i][1] != 0) {
+            printf("Option -u expects either 0, 1 or 2 as argument.\n");
+            exit(1);
+          }
+          dir_ui = argv[i][0]-'0';
+        } else if(strcmp(argv[i], "--exclude") == 0)
           exclude_add(argv[++i]);
         else if(exclude_addfile(argv[++i])) {
           printf("Can't open %s: %s\n", argv[i], strerror(errno));
@@ -116,7 +129,7 @@ static char *argv_parse(int argc, char **argv) {
         }
         continue;
       }
-     /* small flags */
+      /* short flags */
       len = strlen(argv[i]);
       for(j=1; j<len; j++)
         switch(argv[i][j]) {
@@ -125,18 +138,19 @@ static char *argv_parse(int argc, char **argv) {
           case 'q': update_delay = 2000;     break;
           case '?':
           case 'h':
-            printf("ncdu [-hqvx] [--exclude PATTERN] [-X FILE] directory\n\n");
+            printf("ncdu <options> <directory>\n\n");
             printf("  -h                         This help message\n");
             printf("  -q                         Quiet mode, refresh interval 2 seconds\n");
             printf("  -v                         Print version\n");
             printf("  -x                         Same filesystem\n");
             printf("  -r                         Read only\n");
+            printf("  -u <0-2>                   UI to use when scanning (0=minimal,2=verbose)\n");
             printf("  --exclude PATTERN          Exclude files that match PATTERN\n");
             printf("  -X, --exclude-from FILE    Exclude files that match any pattern in FILE\n");
             exit(0);
           case 'v':
             printf("ncdu %s\n", PACKAGE_VERSION);
-            exit(0);  
+            exit(0);
           default:
             printf("Unknown option: -%c\nSee '%s -h' for more information.\n", argv[i][j], argv[0]);
             exit(1);
@@ -145,6 +159,21 @@ static char *argv_parse(int argc, char **argv) {
       dir = argv[i];
   }
   return dir;
+}
+
+
+/* Initializes ncurses only when not done yet. */
+static void init_nc() {
+  if(ncurses_init)
+    return;
+  ncurses_init = 1;
+  initscr();
+  cbreak();
+  noecho();
+  curs_set(0);
+  keypad(stdscr, TRUE);
+  if(ncresize(min_rows, min_cols))
+    min_rows = min_cols = 0;
 }
 
 
@@ -160,26 +189,32 @@ int main(int argc, char **argv) {
   dir_mem_init(NULL);
   dir_scan_init(dir);
 
-  initscr();
-  cbreak();
-  noecho();
-  curs_set(0);
-  keypad(stdscr, TRUE);
-  if(ncresize(min_rows, min_cols))
-    min_rows = min_cols = 0;
+  if(dir_ui == 2)
+    init_nc();
 
   while(1) {
-    if(pstate == ST_CALC && dir_scan_process())
-      break;
-    else if(pstate == ST_DEL)
+    /* We may need to initialize/clean up the screen when switching from the
+     * (sometimes non-ncurses) CALC state to something else. */
+    if(pstate != ST_CALC) {
+      if(dir_ui == 1)
+        fputc('\n', stderr);
+      init_nc();
+    }
+
+    if(pstate == ST_CALC) {
+      if(dir_scan_process())
+        break;
+    } else if(pstate == ST_DEL)
       delete_process();
     else if(input_handle(0))
       break;
   }
 
-  erase();
-  refresh();
-  endwin();
+  if(ncurses_init) {
+    erase();
+    refresh();
+    endwin();
+  }
   exclude_clear();
 
   return 0;
