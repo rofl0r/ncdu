@@ -1,5 +1,5 @@
-/* ncdu - NCurses Disk Usage 
-    
+/* ncdu - NCurses Disk Usage
+
   Copyright (c) 2007-2012 Yoran Heling
 
   Permission is hereby granted, free of charge, to any person obtaining
@@ -9,10 +9,10 @@
   distribute, sublicense, and/or sell copies of the Software, and to
   permit persons to whom the Software is furnished to do so, subject to
   the following conditions:
-  
+
   The above copyright notice and this permission notice shall be included
   in all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -56,7 +56,7 @@ char *cropstr(const char *from, int s) {
 
 char *formatsize(int64_t from) {
   static char dat[9]; /* "xxx.xMiB" */
-  float r = from; 
+  float r = from;
   char c = ' ';
   if(r < 1000.0f)      { }
   else if(r < 1023e3f) { c = 'K'; r/=1024.0f; }
@@ -111,7 +111,7 @@ int ncresize(int minrows, int mincols) {
       erase();
       refresh();
       endwin();
-      exit(0); 
+      exit(0);
     }
     if(ch == 'i')
       return 1;
@@ -218,7 +218,7 @@ void freedir(struct dir *dr) {
   /* free dr->sub recursively */
   if(dr->sub)
     freedir_rec(dr->sub);
- 
+
   /* update references */
   if(dr->parent && dr->parent->sub == dr)
     dr->parent->sub = dr->next;
