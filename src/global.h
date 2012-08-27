@@ -62,7 +62,7 @@ struct dir {
   struct dir *parent, *next, *prev, *sub, *hlnk;
   int64_t size, asize;
   ino_t ino;
-  long items;
+  int items;
   dev_t dev;
   unsigned char flags;
   char name[3]; /* must be large enough to hold ".." */

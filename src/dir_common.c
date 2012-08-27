@@ -182,7 +182,7 @@ void dir_draw() {
     if(dir_fatalerr)
       fprintf(stderr, "\r%s.\n", dir_fatalerr);
     else
-      fprintf(stderr, "\r%-55s %8ld files /%s",
+      fprintf(stderr, "\r%-55s %8d files /%s",
         cropstr(dir_curpath, 55), dir_output.items, formatsize(dir_output.size));
     break;
   case 2:

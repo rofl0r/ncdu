@@ -82,7 +82,7 @@ char *getpath(struct dir *);
 struct dir *getroot(struct dir *);
 
 /* Adds a value to the size, asize and items fields of *d and its parents */
-void addparentstats(struct dir *, int64_t, int64_t, long);
+void addparentstats(struct dir *, int64_t, int64_t, int);
 
 #endif
 
