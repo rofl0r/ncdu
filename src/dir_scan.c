@@ -49,7 +49,7 @@ static dev_t curdev;   /* current device we're scanning on */
 /* Populates the struct dir item with information from the stat struct. Sets
  * everything necessary for output_dir.item() except FF_ERR and FF_EXL. */
 static void stat_to_dir(struct dir *d, struct stat *fs) {
-  d->ino = fs->st_ino;
+  d->ino = (uint64_t)fs->st_ino;
   d->dev = fs->st_dev;
 
   if(S_ISREG(fs->st_mode))

@@ -61,7 +61,7 @@
 struct dir {
   struct dir *parent, *next, *prev, *sub, *hlnk;
   int64_t size, asize;
-  ino_t ino;
+  uint64_t ino;
   int items;
   dev_t dev;
   unsigned char flags;

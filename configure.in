@@ -16,6 +16,7 @@ AC_CHECK_HEADERS(
 
 # Check for typedefs, structures, and compiler characteristics.
 AC_TYPE_INT64_T
+AC_TYPE_UINT64_T
 AC_SYS_LARGEFILE
 AC_STRUCT_ST_BLOCKS
 
