@@ -43,14 +43,14 @@
 
 int dir_scan_smfs; /* Stay on the same filesystem */
 
-static dev_t curdev;   /* current device we're scanning on */
+static uint64_t curdev;   /* current device we're scanning on */
 
 
 /* Populates the struct dir item with information from the stat struct. Sets
  * everything necessary for output_dir.item() except FF_ERR and FF_EXL. */
 static void stat_to_dir(struct dir *d, struct stat *fs) {
   d->ino = (uint64_t)fs->st_ino;
-  d->dev = fs->st_dev;
+  d->dev = (uint64_t)fs->st_dev;
 
   if(S_ISREG(fs->st_mode))
     d->flags |= FF_FILE;
@@ -60,7 +60,7 @@ static void stat_to_dir(struct dir *d, struct stat *fs) {
   if(!S_ISDIR(fs->st_mode) && fs->st_nlink > 1)
     d->flags |= FF_HLNKC;
 
-  if(dir_scan_smfs && curdev != fs->st_dev)
+  if(dir_scan_smfs && curdev != d->dev)
     d->flags |= FF_OTHFS;
 
   if(!(d->flags & (FF_OTHFS|FF_EXL))) {
@@ -254,7 +254,7 @@ int dir_scan_process() {
   }
 
   if(!dir_fatalerr) {
-    curdev = fs.st_dev;
+    curdev = (uint64_t)fs.st_dev;
     d = dir_createstruct(dir_curpath);
     if(fail)
       d->flags |= FF_ERR;
