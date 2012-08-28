@@ -103,14 +103,16 @@ int input_handle(int wait) {
 /* parse command line */
 static char *argv_parse(int argc, char **argv) {
   int i, j, len;
+  char *export = NULL;
   char *dir = NULL;
-  dir_ui = 2;
+  dir_ui = -1;
 
   /* read from commandline */
   for(i=1; i<argc; i++) {
     if(argv[i][0] == '-') {
       /* flags requiring arguments */
-      if(!strcmp(argv[i], "-X") || !strcmp(argv[i], "-u") || !strcmp(argv[i], "--exclude-from") || !strcmp(argv[i], "--exclude")) {
+      if(!strcmp(argv[i], "-X") || !strcmp(argv[i], "-u") || !strcmp(argv[i], "-o")
+          || !strcmp(argv[i], "--exclude-from") || !strcmp(argv[i], "--exclude")) {
         if(i+1 >= argc) {
           printf("Option %s requires an argument\n", argv[i]);
           exit(1);
@@ -121,7 +123,9 @@ static char *argv_parse(int argc, char **argv) {
             exit(1);
           }
           dir_ui = argv[i][0]-'0';
-        } else if(strcmp(argv[i], "--exclude") == 0)
+        } else if(strcmp(argv[i], "-o") == 0)
+          export = argv[++i];
+        else if(strcmp(argv[i], "--exclude") == 0)
           exclude_add(argv[++i]);
         else if(exclude_addfile(argv[++i])) {
           printf("Can't open %s: %s\n", argv[i], strerror(errno));
@@ -144,6 +148,7 @@ static char *argv_parse(int argc, char **argv) {
             printf("  -v                         Print version\n");
             printf("  -x                         Same filesystem\n");
             printf("  -r                         Read only\n");
+            printf("  -o FILE                    Export scanned directory to FILE\n");
             printf("  -u <0-2>                   UI to use when scanning (0=minimal,2=verbose)\n");
             printf("  --exclude PATTERN          Exclude files that match PATTERN\n");
             printf("  -X, --exclude-from FILE    Exclude files that match any pattern in FILE\n");
@@ -158,6 +163,20 @@ static char *argv_parse(int argc, char **argv) {
     } else
       dir = argv[i];
   }
+
+  if(export) {
+    /* TODO: Support exporting to stdout */
+    if(dir_export_init(export)) {
+      printf("Can't open %s: %s\n", export, strerror(errno));
+      exit(1);
+    }
+  } else
+    dir_mem_init(NULL);
+
+  /* Use the single-line scan feedback by default when exporting. */
+  if(dir_ui == -1)
+    dir_ui = export ? 1 : 2;
+
   return dir;
 }
 
@@ -186,7 +205,6 @@ int main(int argc, char **argv) {
   if((dir = argv_parse(argc, argv)) == NULL)
     dir = ".";
 
-  dir_mem_init(NULL);
   dir_scan_init(dir);
 
   if(dir_ui == 2)
@@ -202,8 +220,11 @@ int main(int argc, char **argv) {
     }
 
     if(pstate == ST_CALC) {
-      if(dir_scan_process())
+      if(dir_scan_process()) {
+        if(dir_ui == 1)
+          fputc('\n', stderr);
         break;
+      }
     } else if(pstate == ST_DEL)
       delete_process();
     else if(input_handle(0))

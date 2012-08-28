@@ -94,6 +94,9 @@ struct dir_output {
  */
 void dir_mem_init(struct dir *);
 
+/* Initializes the SCAN state and dir_output for exporting to a file. */
+int dir_export_init(const char *fn);
+
 
 /* Scanning a live directory */
 extern int dir_scan_smfs;
