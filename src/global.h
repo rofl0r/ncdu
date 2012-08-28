@@ -28,6 +28,7 @@
 
 #include "config.h"
 #include <stdio.h>
+#include <stddef.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -57,15 +58,15 @@
 
 /* structure representing a file or directory */
 struct dir {
-  struct dir *parent, *next, *prev, *sub, *hlnk;
   int64_t size, asize;
   uint64_t ino, dev;
+  struct dir *parent, *next, *prev, *sub, *hlnk;
   int items;
   unsigned char flags;
   char name[3]; /* must be large enough to hold ".." */
 };
-/* sizeof(total dir) = SDIRSIZE + strlen(name) = sizeof(struct dir) - 3 + strlen(name) + 1 */
-#define SDIRSIZE (sizeof(struct dir)-2)
+/* sizeof(total dir) = SDIRSIZE + strlen(name) = offsetof(struct dir, name) + strlen(name) + 1 */
+#define SDIRSIZE (offsetof(struct dir, name)+1)
 
 /* A note on the ino and dev fields above: ino is usually represented as ino_t,
  * which POSIX specifies to be an unsigned integer.  dev is usually represented
