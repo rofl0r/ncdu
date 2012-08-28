@@ -11,7 +11,7 @@ AC_PROG_RANLIB
 
 # Check for header files.
 AC_CHECK_HEADERS(
-  [limits.h stdlib.h string.h sys/time.h sys/types.h sys/stat.h dirent.h unistd.h fnmatch.h ncurses.h locale.h],[],
+  [limits.h sys/time.h sys/types.h sys/stat.h dirent.h unistd.h fnmatch.h ncurses.h locale.h],[],
   AC_MSG_ERROR([required header file not found]))
 
 # Check for typedefs, structures, and compiler characteristics.
@@ -22,7 +22,7 @@ AC_STRUCT_ST_BLOCKS
 
 # Check for library functions.
 AC_CHECK_FUNCS(
-  [getcwd gettimeofday memset fnmatch chdir rmdir unlink lstat getcwd setlocale],[],
+  [getcwd gettimeofday fnmatch chdir rmdir unlink lstat setlocale],[],
   AC_MSG_ERROR([required function missing]))
 
 
@@ -35,16 +35,18 @@ AC_ARG_WITH([ncurses],
 AC_ARG_WITH([ncursesw],
             AC_HELP_STRING([--with-ncursesw], [compile/link with wide-char ncurses library @<:@default@:>@]),
             [ncurses=ncursesw])
-if test "$ncurses" = "auto"; then
+if test "$ncurses" = "auto" -o "$ncurses" = "ncursesw"; then
   AC_CHECK_LIB([ncursesw],
                [initscr],
-               [ncurses=ncursesw],
+               [LIBS="$LIBS -lncursesw"; ncurses=ncursesw],
                [ncurses=ncurses])
 fi
-AC_CHECK_LIB([$ncurses],
-             [initscr],
-             [LIBS="$LIBS -l$ncurses"],
-             [AC_MSG_ERROR($ncurses library is required)])
+if test "$ncurses" = "ncurses"; then
+  AC_CHECK_LIB([ncurses],
+               [initscr],
+               [LIBS="$LIBS -lncurses"],
+               [AC_MSG_ERROR(ncurses library is required)])
+fi
 
 
 
