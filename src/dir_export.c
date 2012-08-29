@@ -32,7 +32,7 @@
 
 static FILE *stream;
 
-/* Stack of device IDs, also used to determine the  */
+/* Stack of device IDs, also used to keep track of the level of nesting */
 struct stack {
   uint64_t *list;
   int size, top;
@@ -77,6 +77,7 @@ static void output_info(struct dir *d) {
   fputs("{\"name\":\"", stream);
   output_string(d->name);
   fputc('"', stream);
+
   /* No need for asize/dsize if they're 0 (which happens with excluded or failed-to-stat files) */
   if(d->asize) {
     fputs(",\"asize\":", stream);
@@ -86,22 +87,27 @@ static void output_info(struct dir *d) {
     fputs(",\"dsize\":", stream);
     output_int((uint64_t)d->size);
   }
+
   if(d->dev != nstack_top(&stack, 0)) {
     fputs(",\"dev\":", stream);
     output_int(d->dev);
   }
   fputs(",\"ino\":", stream);
   output_int(d->ino);
-  if(d->flags & FF_HLNKC) /* TODO: Including the actual number of links would be nicer. */
+
+  /* TODO: Including the actual number of links would be nicer. */
+  if(d->flags & FF_HLNKC)
     fputs(",\"hlnkc\":true", stream);
   if(d->flags & FF_ERR)
     fputs(",\"read_error\":true", stream);
-  if(!(d->flags & (FF_DIR|FF_FILE)))
+  /* excluded/error'd files are "unknown" with respect to the "notreg" field. */
+  if(!(d->flags & (FF_DIR|FF_FILE|FF_ERR|FF_EXL|FF_OTHFS)))
     fputs(",\"notreg\":true", stream);
   if(d->flags & FF_EXL)
     fputs(",\"excluded\":\"pattern\"", stream);
   else if(d->flags & FF_OTHFS)
     fputs(",\"excluded\":\"othfs\"", stream);
+
   fputc('}', stream);
 }
 
