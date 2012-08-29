@@ -64,8 +64,11 @@ struct dir_output {
    * All other fields/flags should be initialzed to NULL or 0.
    * *item may be overwritten or freed in subsequent calls, so this function
    * should make a copy if necessary.
+   *
+   * The function should return non-zero on error, at which point errno is
+   * assumed to be set to something sensible.
    */
-  void (*item)(struct dir *);
+  int (*item)(struct dir *);
 
   /* Finalizes the output to go to the next program state or exit ncdu. Called
    * after item(NULL) has been called for the root item or before any item()

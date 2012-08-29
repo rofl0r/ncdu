@@ -125,16 +125,20 @@ static int dir_scan_recurse(struct dir *d) {
   if(chdir(d->name)) {
     dir_setlasterr(dir_curpath);
     d->flags |= FF_ERR;
-    dir_output.item(d);
-    dir_output.item(NULL);
+    if(dir_output.item(d) || dir_output.item(NULL)) {
+      dir_seterr("Output error: %s", strerror(errno));
+      return 1;
+    }
     return 0;
   }
 
   if((dir = dir_read(&fail)) == NULL) {
     dir_setlasterr(dir_curpath);
     d->flags |= FF_ERR;
-    dir_output.item(d);
-    dir_output.item(NULL);
+    if(dir_output.item(d) || dir_output.item(NULL)) {
+      dir_seterr("Output error: %s", strerror(errno));
+      return 1;
+    }
     if(chdir("..")) {
       dir_seterr("Error going back to parent directory: %s", strerror(errno));
       return 1;
@@ -146,9 +150,15 @@ static int dir_scan_recurse(struct dir *d) {
   if(fail)
     d->flags |= FF_ERR;
 
-  dir_output.item(d);
+  if(dir_output.item(d)) {
+    dir_seterr("Output error: %s", strerror(errno));
+    return 1;
+  }
   fail = dir_walk(dir);
-  dir_output.item(NULL);
+  if(dir_output.item(NULL)) {
+    dir_seterr("Output error: %s", strerror(errno));
+    return 1;
+  }
 
   /* Not being able to chdir back is fatal */
   if(!fail && chdir("..")) {
@@ -190,10 +200,14 @@ static int dir_scan_item(struct dir *d) {
   if(d->flags & FF_DIR && !(d->flags & (FF_ERR|FF_EXL|FF_OTHFS)))
     fail = dir_scan_recurse(d);
   else if(d->flags & FF_DIR) {
-    dir_output.item(d);
-    dir_output.item(NULL);
-  } else
-    dir_output.item(d);
+    if(dir_output.item(d) || dir_output.item(NULL)) {
+      dir_seterr("Output error: %s", strerror(errno));
+      fail = 1;
+    }
+  } else if(dir_output.item(d)) {
+    dir_seterr("Output error: %s", strerror(errno));
+    fail = 1;
+  }
 
   return fail || input_handle(1);
 }
@@ -260,9 +274,16 @@ int dir_scan_process() {
       d->flags |= FF_ERR;
     stat_to_dir(d, &fs);
 
-    dir_output.item(d);
-    fail = dir_walk(dir);
-    dir_output.item(NULL);
+    if(dir_output.item(d)) {
+      dir_seterr("Output error: %s", strerror(errno));
+      fail = 1;
+    }
+    if(!fail)
+      fail = dir_walk(dir);
+    if(!fail && dir_output.item(NULL)) {
+      dir_seterr("Output error: %s", strerror(errno));
+      fail = 1;
+    }
   }
 
   while(dir_fatalerr && !input_handle(0))

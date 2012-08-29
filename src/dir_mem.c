@@ -128,13 +128,13 @@ static void item_add(struct dir *item) {
 }
 
 
-static void item(struct dir *item) {
+static int item(struct dir *item) {
   struct dir *t;
 
   /* Go back to parent dir */
   if(!item) {
     curdir = curdir->parent;
-    return;
+    return 0;
   }
 
   item = item_copy(item);
@@ -165,6 +165,8 @@ static void item(struct dir *item) {
 
   dir_output.size = root->size;
   dir_output.items = root->items;
+
+  return 0;
 }
 
 

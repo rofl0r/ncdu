@@ -100,15 +100,19 @@ static void output_info(struct dir *d) {
 }
 
 
-/* TODO: Error handling / reporting! */
-static void item(struct dir *item) {
+/* Note on error handling: For convenience, we just keep writing to *stream
+ * without checking the return values of the functions. Only at the and of each
+ * item() call do we check for ferror(). This greatly simplifies the code, but
+ * assumes that calls to fwrite()/fput./etc don't do any weird stuff when
+ * called with a stream that's in an error state. */
+static int item(struct dir *item) {
   if(!item) {
     if(!--level) { /* closing of the root item */
       fputs("]]", stream);
-      fclose(stream);
+      return fclose(stream);
     } else /* closing of a regular directory item */
       fputs("]", stream);
-    return;
+    return ferror(stream);
   }
 
   dir_output.items++;
@@ -123,6 +127,7 @@ static void item(struct dir *item) {
     fputc('[', stream);
 
   output_info(item);
+  return ferror(stream);
 }
 
 
