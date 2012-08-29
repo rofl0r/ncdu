@@ -128,7 +128,9 @@ static void draw_progress() {
 
   nccreate(10, width, "Scanning...");
 
-  ncprint(2, 2, "Total items: %-8d size: %s", dir_output.items, formatsize(dir_output.size));
+  ncprint(2, 2, "Total items: %-8d", dir_output.items);
+  if(dir_output.size)
+    ncprint(2, 23, "size: %s", formatsize(dir_output.size));
   ncprint(3, 2, "Current item: %s", cropstr(dir_curpath, width-18));
   ncaddstr(8, width-18, "Press q to abort");
 
@@ -181,9 +183,11 @@ void dir_draw() {
   case 1:
     if(dir_fatalerr)
       fprintf(stderr, "\r%s.\n", dir_fatalerr);
-    else
+    else if(dir_output.size)
       fprintf(stderr, "\r%-55s %8d files /%s",
         cropstr(dir_curpath, 55), dir_output.items, formatsize(dir_output.size));
+    else
+      fprintf(stderr, "\r%-65s %8d files", cropstr(dir_curpath, 65), dir_output.items);
     break;
   case 2:
     browse_draw();
