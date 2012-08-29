@@ -31,7 +31,12 @@
 
 
 static FILE *stream;
-static int level; /* Current level of nesting */
+
+/* Stack of device IDs, also used to determine the  */
+struct stack {
+  uint64_t *list;
+  int size, top;
+} stack;
 
 
 static void output_string(const char *str) {
@@ -81,9 +86,10 @@ static void output_info(struct dir *d) {
     fputs(",\"dsize\":", stream);
     output_int((uint64_t)d->size);
   }
-  /* TODO: No need to include a dev is it's the same as the parent dir. */
-  fputs(",\"dev\":", stream);
-  output_int(d->dev);
+  if(d->dev != nstack_top(&stack, 0)) {
+    fputs(",\"dev\":", stream);
+    output_int(d->dev);
+  }
   fputs(",\"ino\":", stream);
   output_int(d->ino);
   if(d->flags & FF_HLNKC) /* TODO: Including the actual number of links would be nicer. */
@@ -93,9 +99,9 @@ static void output_info(struct dir *d) {
   if(!(d->flags & (FF_DIR|FF_FILE)))
     fputs(",\"notreg\":true", stream);
   if(d->flags & FF_EXL)
-    fputs(",\"excluded\":\"pattern", stream);
+    fputs(",\"excluded\":\"pattern\"", stream);
   else if(d->flags & FF_OTHFS)
-    fputs(",\"excluded\":\"othfs", stream);
+    fputs(",\"excluded\":\"othfs\"", stream);
   fputc('}', stream);
 }
 
@@ -107,7 +113,8 @@ static void output_info(struct dir *d) {
  * called with a stream that's in an error state. */
 static int item(struct dir *item) {
   if(!item) {
-    if(!--level) { /* closing of the root item */
+    nstack_pop(&stack);
+    if(!stack.top) { /* closing of the root item */
       fputs("]]", stream);
       return fclose(stream);
     } else /* closing of a regular directory item */
@@ -119,7 +126,7 @@ static int item(struct dir *item) {
 
   /* File header.
    * TODO: Add scan options? */
-  if(item->flags & FF_DIR && !level++)
+  if(!stack.top)
     fputs("[1,0,{\"progname\":\""PACKAGE"\",\"progver\":\""PACKAGE_VERSION"\"}", stream);
 
   fputs(",\n", stream);
@@ -127,11 +134,16 @@ static int item(struct dir *item) {
     fputc('[', stream);
 
   output_info(item);
+
+  if(item->flags & FF_DIR)
+    nstack_push(&stack, item->dev);
+
   return ferror(stream);
 }
 
 
 static int final(int fail) {
+  nstack_free(&stack);
   return fail ? 1 : 1; /* Silences -Wunused-parameter */
 }
 
@@ -142,7 +154,8 @@ int dir_export_init(const char *fn) {
   else if((stream = fopen(fn, "w")) == NULL)
     return 1;
 
-  level = 0;
+  nstack_init(&stack);
+
   pstate = ST_CALC;
   dir_output.item = item;
   dir_output.final = final;

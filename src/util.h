@@ -84,5 +84,26 @@ struct dir *getroot(struct dir *);
 /* Adds a value to the size, asize and items fields of *d and its parents */
 void addparentstats(struct dir *, int64_t, int64_t, int);
 
+
+/* A simple stack implemented in macros */
+#define nstack_init(_s) do {\
+    (_s)->size = 10;\
+    (_s)->top = 0;\
+    (_s)->list = malloc(10*sizeof(*(_s)->list));\
+  } while(0)
+
+#define nstack_push(_s, _v) do {\
+    if((_s)->size <= (_s)->top) {\
+      (_s)->size *= 2;\
+      (_s)->list = realloc((_s)->list, (_s)->size*sizeof(*(_s)->list));\
+    }\
+    (_s)->list[(_s)->top++] = _v;\
+  } while(0)
+
+#define nstack_pop(_s) (_s)->top--
+#define nstack_top(_s, _d) ((_s)->top > 0 ? (_s)->list[(_s)->top-1] : (_d))
+#define nstack_free(_s) free((_s)->list)
+
+
 #endif
 
