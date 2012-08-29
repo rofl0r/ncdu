@@ -124,7 +124,10 @@ static char *path_absolute(const char *path) {
 }
 
 
-/* NOTE: cwd and the memory cur points to are unreliable after calling this function */
+/* NOTE: cwd and the memory cur points to are unreliable after calling this
+ * function.
+ * TODO: This code is rather fragile and inefficient. A rewrite is in order.
+ */
 static char *path_real_rec(char *cur, int *links) {
   int i, n, tmpl, lnkl = 0;
   char **arr, *tmp, *lnk = NULL, *ret = NULL;
@@ -159,17 +162,29 @@ static char *path_real_rec(char *cur, int *links) {
         errno = ELOOP;
         goto path_real_done;
       }
-      lnk[n] = 0;
-      /* create new path and call path_real_rec() again */
-      if(lnk[0] != '/') {
-        n += strlen(tmp) + 1;
+      lnk[n++] = 0;
+      /* create new path */
+      if(lnk[0] != '/')
+        n += strlen(tmp);
+      if(tmpl < n) {
+        tmpl = n;
+        tmp = realloc(tmp, tmpl);
+      }
+      if(lnk[0] != '/')
+        strcat(tmp, lnk);
+      else
+        strcpy(tmp, lnk);
+      /* append remaining directories */
+      while(--i>=0) {
+        n += strlen(arr[i])+1;
         if(tmpl < n) {
           tmpl = n;
           tmp = realloc(tmp, tmpl);
         }
-        strcat(tmp, lnk);
-      } else
-        strcpy(tmp, lnk);
+        strcat(tmp, "/");
+        strcat(tmp, arr[i]);
+      }
+      /* call path_real_rec() with the new path */
       ret = path_real_rec(tmp, links);
       goto path_real_done;
     }
