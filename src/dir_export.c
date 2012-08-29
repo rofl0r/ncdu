@@ -27,6 +27,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 
 static FILE *stream;
@@ -131,8 +132,9 @@ static int final(int fail) {
 
 
 int dir_export_init(const char *fn) {
-  /* TODO: stdout support */
-  if((stream = fopen(fn, "w")) == NULL)
+  if(strcmp(fn, "-") == 0)
+    stream = stdout;
+  else if((stream = fopen(fn, "w")) == NULL)
     return 1;
 
   level = 0;

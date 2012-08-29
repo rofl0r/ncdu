@@ -41,6 +41,7 @@ long update_delay = 100;
 
 static int min_rows = 17, min_cols = 60;
 static int ncurses_init = 0;
+static int ncurses_tty = 0; /* Explicitely open /dev/tty instead of using stdio */
 static long lastupdate = 999;
 
 
@@ -165,17 +166,19 @@ static char *argv_parse(int argc, char **argv) {
   }
 
   if(export) {
-    /* TODO: Support exporting to stdout */
     if(dir_export_init(export)) {
       printf("Can't open %s: %s\n", export, strerror(errno));
       exit(1);
     }
+    if(strcmp(export, "-") == 0)
+      ncurses_tty = 1;
   } else
     dir_mem_init(NULL);
 
-  /* Use the single-line scan feedback by default when exporting. */
+  /* Use the single-line scan feedback by default when exporting to file, no
+   * feedback when exporting to stdout. */
   if(dir_ui == -1)
-    dir_ui = export ? 1 : 2;
+    dir_ui = export && strcmp(export, "-") == 0 ? 0 : export ? 1 : 2;
 
   return dir;
 }
@@ -183,10 +186,32 @@ static char *argv_parse(int argc, char **argv) {
 
 /* Initializes ncurses only when not done yet. */
 static void init_nc() {
+  int ok = 0;
+  FILE *tty;
+  SCREEN *term;
+
   if(ncurses_init)
     return;
   ncurses_init = 1;
-  initscr();
+
+  if(ncurses_tty) {
+    tty = fopen("/dev/tty", "r+");
+    if(!tty) {
+      fprintf(stderr, "Error opening /dev/tty: %s\n", strerror(errno));
+      exit(1);
+    }
+    term = newterm(NULL, tty, tty);
+    if(term)
+      set_term(term);
+    ok = !!term;
+  } else
+    ok = !!initscr();
+
+  if(!ok) {
+    fprintf(stderr, "Error while initializing ncurses.\n");
+    exit(1);
+  }
+
   cbreak();
   noecho();
   curs_set(0);
