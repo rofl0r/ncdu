@@ -6,6 +6,7 @@ ncdu_SOURCES=\
 	src/dirlist.c\
 	src/dir_common.c\
 	src/dir_export.c\
+	src/dir_import.c\
 	src/dir_mem.c\
 	src/dir_scan.c\
 	src/exclude.c\

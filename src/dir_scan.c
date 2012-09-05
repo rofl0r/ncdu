@@ -234,8 +234,7 @@ static int dir_walk(char *dir) {
 }
 
 
-/* Returns 0 to continue running ncdu, 1 to quit. */
-int dir_scan_process() {
+static int process() {
   char *path;
   char *dir;
   int fail = 0;
@@ -296,5 +295,6 @@ void dir_scan_init(const char *path) {
   dir_curpath_set(path);
   dir_setlasterr(NULL);
   dir_seterr(NULL);
+  dir_process = process;
   pstate = ST_CALC;
 }

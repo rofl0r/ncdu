@@ -101,10 +101,15 @@ void dir_mem_init(struct dir *);
 int dir_export_init(const char *fn);
 
 
+/* Function set by input code. Returns dir_output.final(). */
+int (*dir_process)();
+
 /* Scanning a live directory */
 extern int dir_scan_smfs;
 void dir_scan_init(const char *path);
-int dir_scan_process();
+
+/* Importing a file */
+int dir_import_init(const char *fn);
 
 
 /* The currently configured output functions. */
