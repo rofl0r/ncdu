@@ -125,8 +125,9 @@ static int fill(int n) {
 
 /* Two macros that break function calling behaviour, but are damn convenient */
 #define E(_x, _m) do {\
-    if((_x) && !dir_fatalerr) {\
-      dir_seterr("Line %d byte %d: %s", ctx->line, ctx->byte, _m);\
+    if(_x) {\
+      if(!dir_fatalerr)\
+        dir_seterr("Line %d byte %d: %s", ctx->line, ctx->byte, _m);\
       return 1;\
     }\
   } while(0)
@@ -185,6 +186,8 @@ static int cons() {
 
 static int rstring_esc(char **dest, int *destlen) {
   unsigned int n;
+
+  C(rfill1);
 
 #define ap(c) if(*destlen > 1) { *((*dest)++) = c; (*destlen)--; }
   switch(*ctx->buf) {
@@ -290,7 +293,7 @@ static int rnum() {
   C(rfill1);
   while(1) {
     C(!*ctx->buf && fill(1));
-    if(*ctx->buf == 'e' || *ctx->buf == 'E' || *ctx->buf == '-' || *ctx->buf == '+' || (*ctx->buf >= '0' && *ctx->buf <= '9')) {
+    if(*ctx->buf == 'e' || *ctx->buf == 'E' || *ctx->buf == '-' || *ctx->buf == '+' || *ctx->buf == '.' || (*ctx->buf >= '0' && *ctx->buf <= '9')) {
       haschar = 1;
       con(1);
     } else {
@@ -341,6 +344,9 @@ static int rval() {
   case '{': /* object */
     con(1);
     while(1) {
+      C(cons());
+      if(*ctx->buf == '}')
+        break;
       C(rkey(NULL, 0) || rval() || cons());
       if(*ctx->buf == '}')
         break;
@@ -352,6 +358,9 @@ static int rval() {
   case '[': /* array */
     con(1);
     while(1) {
+      C(cons());
+      if(*ctx->buf == ']')
+        break;
       C(cons() || rval() || cons());
       if(*ctx->buf == ']')
         break;
@@ -409,8 +418,7 @@ static int itemdir(uint64_t dev) {
       break;
     E(*ctx->buf != ',', "Expected ',' or ']'");
     con(1);
-    C(cons());
-    item(dev);
+    C(cons() || item(dev));
   }
   con(1);
   C(cons());
