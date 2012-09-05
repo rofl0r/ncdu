@@ -30,7 +30,6 @@
  *   parser doesn't know anything about encoding).
  * - Doesn't validate that there are no duplicate keys in JSON objects.
  * - Isn't very strict with validating non-integer numbers.
- * - Does not check nesting level, easily allows stack overflow. (TODO: FIX!)
  */
 
 #include "global.h"
@@ -55,6 +54,12 @@
  * improves performance. */
 #define READ_BUF_SIZE (32*1024)
 
+/* Maximum nesting level for JSON objects / arrays.  (Well, approximately. In
+ * some cases an object/array can be nested inside an other object/array while
+ * only counting as a single level rather than two.  Anyway, the point of this
+ * limit is to prevent stack overflow, which it should do.) */
+#define MAX_LEVEL 100
+
 
 /* Use a struct for easy batch-allocation and deallocation of state data. */
 struct ctx {
@@ -64,6 +69,7 @@ struct ctx {
   int byte;
   int eof;
   int items;
+  int level;
   char *buf; /* points into readbuf, always zero-terminated. */
   char *lastfill; /* points into readbuf, location of the zero terminator. */
 
@@ -315,6 +321,9 @@ static int rkey(char *dest, int destlen) {
 
 /* (Recursively) parse and consume any JSON value. The result is discarded. */
 static int rval() {
+  ctx->level++;
+  E(ctx->level > MAX_LEVEL, "Recursion depth exceeded");
+
   C(rfill1);
   switch(*ctx->buf) {
   case 't': /* true */
@@ -355,6 +364,8 @@ static int rval() {
     C(rnum());
     break;
   }
+
+  ctx->level--;
   return 0;
 }
 
@@ -389,6 +400,9 @@ static int item(uint64_t);
 
 /* Read and add dir contents */
 static int itemdir(uint64_t dev) {
+  ctx->level++;
+  E(ctx->level > MAX_LEVEL, "Recursion depth exceeded");
+
   while(1) {
     C(cons());
     if(*ctx->buf == ']')
@@ -400,6 +414,7 @@ static int itemdir(uint64_t dev) {
   }
   con(1);
   C(cons());
+  ctx->level--;
   return 0;
 }
 
@@ -565,7 +580,7 @@ int dir_import_init(const char *fn) {
   ctx = malloc(sizeof(struct ctx));
   ctx->stream = stream;
   ctx->line = 1;
-  ctx->byte = ctx->eof = ctx->items = 0;
+  ctx->byte = ctx->eof = ctx->items = ctx->level = 0;
   ctx->buf = ctx->lastfill = ctx->readbuf;
   ctx->readbuf[0] = 0;
 
