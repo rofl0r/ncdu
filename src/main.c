@@ -113,18 +113,11 @@ static void argv_parse(int argc, char **argv) {
   for(i=1; i<argc; i++) {
     if(argv[i][0] == '-') {
       /* flags requiring arguments */
-      if(!strcmp(argv[i], "-X") || !strcmp(argv[i], "-u") || !strcmp(argv[i], "-o") || !strcmp(argv[i], "-f")
+      if(!strcmp(argv[i], "-X") || !strcmp(argv[i], "-o") || !strcmp(argv[i], "-f")
           || !strcmp(argv[i], "--exclude-from") || !strcmp(argv[i], "--exclude")) {
         if(i+1 >= argc) {
           printf("Option %s requires an argument\n", argv[i]);
           exit(1);
-        } else if(strcmp(argv[i], "-u") == 0) {
-          i++;
-          if(!(argv[i][0] == '0' || argv[i][0] == '1' || argv[i][0] == '2') || argv[i][1] != 0) {
-            printf("Option -u expects either 0, 1 or 2 as argument.\n");
-            exit(1);
-          }
-          dir_ui = argv[i][0]-'0';
         } else if(strcmp(argv[i], "-o") == 0)
           export = argv[++i];
         else if(strcmp(argv[i], "-f") == 0)
@@ -141,6 +134,9 @@ static void argv_parse(int argc, char **argv) {
       len = strlen(argv[i]);
       for(j=1; j<len; j++)
         switch(argv[i][j]) {
+          case '0': dir_ui = 0; break;
+          case '1': dir_ui = 1; break;
+          case '2': dir_ui = 2; break;
           case 'x': dir_scan_smfs = 1; break;
           case 'r': read_only = 1; break;
           case 'q': update_delay = 2000;     break;
@@ -154,7 +150,7 @@ static void argv_parse(int argc, char **argv) {
             printf("  -r                         Read only\n");
             printf("  -o FILE                    Export scanned directory to FILE\n");
             printf("  -f FILE                    Import scanned directory from FILE\n");
-            printf("  -u <0-2>                   UI to use when scanning (0=minimal,2=verbose)\n");
+            printf("  -0,-1,-2                   UI to use when scanning (0=none,2=full ncurses)\n");
             printf("  --exclude PATTERN          Exclude files that match PATTERN\n");
             printf("  -X, --exclude-from FILE    Exclude files that match any pattern in FILE\n");
             exit(0);

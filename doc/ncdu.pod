@@ -30,13 +30,13 @@ Quiet mode. While calculating disk space, ncdu will update the screen 10 times
 a second by default, this will be decreased to once every 2 seconds in quiet
 mode. Use this feature to save bandwidth over remote connections.
 
-=item -u I<0,1,2>
+=item -0, -1, -2
 
-Interface used to give feedback on scanning progress. C<0> will prevent any
-output from being displayed before ncdu is done scanning, while C<1> will
-display compact progress information on a single line of output. C<2> presents
-a full-screen ncurses interface while scanning (the default). C<0> and C<1> do
-not initialize ncurses before the directory has been scanned, while C<2> is the
+Interface used to give feedback on scanning progress. C<-0> will prevent any
+output from being displayed before ncdu is done scanning, while C<-1> will
+display compact progress information on a single line of output. C<-2> presents
+a full-screen ncurses interface while scanning (the default). C<-0> and C<-1> do
+not initialize ncurses before the directory has been scanned, while C<-2> is the
 only interface that provides feedback on recoverable errors. This does not
 affect the interface used when re-scanning a directory from the ncurses
 browser, where the full ncurses interface is always used.
