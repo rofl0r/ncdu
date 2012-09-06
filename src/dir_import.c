@@ -568,10 +568,10 @@ static int process() {
   if(!dir_fatalerr)
     fail = item(0);
 
-  if(!dir_fatalerr)
+  if(!dir_fatalerr && !fail)
     footer();
 
-  if(fclose(ctx->stream) && !dir_fatalerr)
+  if(fclose(ctx->stream) && !dir_fatalerr && !fail)
     dir_seterr("Error closing file: %s", strerror(errno));
   free(ctx);
 
