@@ -216,8 +216,16 @@ static void init_nc() {
     if(term)
       set_term(term);
     ok = !!term;
-  } else
+  } else {
+    /* Make sure the user doesn't accidentally pipe in data to ncdu's standard
+     * input without using "-f -". An annoying input sequence could result in
+     * the deletion of your files, which we want to prevent at all costs. */
+    if(!isatty(0)) {
+      fprintf(stderr, "Standard input is not a TTY. Did you mean to import a file using '-f -'?\n");
+      exit(1);
+    }
     ok = !!initscr();
+  }
 
   if(!ok) {
     fprintf(stderr, "Error while initializing ncurses.\n");
