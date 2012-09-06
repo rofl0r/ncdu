@@ -502,7 +502,11 @@ static int iteminfo(struct dir **item, uint64_t dev, int isdir) {
   E(!*d->name, "No name field present in item information object");
   *item = d;
   ctx->items++;
-  return input_handle(1);
+  /* Only call input_handle() once for every 32 items. Importing items is so
+   * fast that the time spent in input_handle() dominates when called every
+   * time. Don't set this value too high, either, as feedback should still be
+   * somewhat responsive when our import data comes from a slow-ish source. */
+  return !(ctx->items & 31) ? input_handle(1) : 0;
 }
 
 
