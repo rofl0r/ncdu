@@ -31,6 +31,7 @@
 
 
 static int graph = 1, show_as = 0, info_show = 0, info_page = 0, info_start = 0;
+static char *message = NULL;
 
 
 
@@ -202,9 +203,16 @@ void browse_draw() {
       selected = i;
   }
 
+  /* draw message window */
+  if(message) {
+    nccreate(6, 60, "Message");
+    ncaddstr(2, 2, message);
+    ncaddstr(4, 34, "Press any key to continue");
+  }
+
   /* draw information window */
   t = dirlist_get(0);
-  if(info_show && t != dirlist_parent)
+  if(!message && info_show && t != dirlist_parent)
     browse_draw_info(t);
 
   /* move cursor to selected row for accessibility */
@@ -215,6 +223,12 @@ void browse_draw() {
 int browse_key(int ch) {
   struct dir *t, *sel;
   int i, catch = 0;
+
+  /* message window overwrites all keys */
+  if(message) {
+    message = NULL;
+    return 0;
+  }
 
   sel = dirlist_get(0);
 
@@ -347,6 +361,10 @@ int browse_key(int ch) {
 
     /* and other stuff */
     case 'r':
+      if(dir_import_active) {
+        message = "Directory imported from file, won't refresh.";
+        break;
+      }
       if(sel != NULL) {
         dir_ui = 2;
         dir_mem_init(sel->parent);
@@ -373,7 +391,13 @@ int browse_key(int ch) {
       info_show = 0;
       break;
     case 'd':
-      if(read_only || sel == NULL || sel == dirlist_parent)
+      if(read_only || dir_import_active) {
+        message = read_only
+          ? "File deletion disabled in read-only mode."
+          : "File deletion not available for imported directories.";
+        break;
+      }
+      if(sel == NULL || sel == dirlist_parent)
         break;
       info_show = 0;
       if((t = dirlist_get(1)) == sel)
@@ -396,6 +420,7 @@ int browse_key(int ch) {
 
 void browse_init(struct dir *cur) {
   pstate = ST_BROWSE;
+  message = NULL;
   dirlist_open(cur);
 }
 
