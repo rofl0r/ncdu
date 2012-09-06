@@ -109,6 +109,7 @@ extern int dir_scan_smfs;
 void dir_scan_init(const char *path);
 
 /* Importing a file */
+extern int dir_import_active;
 int dir_import_init(const char *fn);
 
 

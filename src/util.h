@@ -52,7 +52,7 @@ extern int subwinr, subwinc;
 int ncresize(int, int);
 
 /* creates a new centered window with border */
-void nccreate(int, int, char *);
+void nccreate(int, int, const char *);
 
 /* printf something somewhere in the last created window */
 void ncprint(int, int, char *, ...);

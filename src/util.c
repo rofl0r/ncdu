@@ -121,7 +121,7 @@ int ncresize(int minrows, int mincols) {
 }
 
 
-void nccreate(int height, int width, char *title) {
+void nccreate(int height, int width, const char *title) {
   int i;
 
   subwinr = winrows/2-height/2;

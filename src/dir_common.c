@@ -120,13 +120,15 @@ struct dir *dir_createstruct(const char *name) {
 
 
 static void draw_progress() {
-  static const char antext[] = "Scanning...";
+  static const char scantext[] = "Scanning...";
+  static const char loadtext[] = "Loading...";
   static size_t anpos = 0;
-  char ani[20] = {};
+  const char *antext = dir_import_active ? loadtext : scantext;
+  char ani[16] = {};
   size_t i;
   int width = wincols-5;
 
-  nccreate(10, width, "Scanning...");
+  nccreate(10, width, antext);
 
   ncprint(2, 2, "Total items: %-8d", dir_output.items);
   if(dir_output.size)

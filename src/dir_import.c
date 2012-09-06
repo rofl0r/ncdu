@@ -61,6 +61,9 @@
 #define MAX_LEVEL 100
 
 
+int dir_import_active = 0;
+
+
 /* Use a struct for easy batch-allocation and deallocation of state data. */
 struct ctx {
   FILE *stream;
@@ -594,6 +597,7 @@ int dir_import_init(const char *fn) {
 
   dir_curpath_set(fn);
   dir_process = process;
+  dir_import_active = 1;
   return 0;
 }
 
