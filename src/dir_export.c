@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 
 static FILE *stream;
@@ -132,8 +133,11 @@ static int item(struct dir *item) {
 
   /* File header.
    * TODO: Add scan options? */
-  if(!stack.top)
-    fputs("[1,0,{\"progname\":\""PACKAGE"\",\"progver\":\""PACKAGE_VERSION"\"}", stream);
+  if(!stack.top) {
+    fputs("[1,0,{\"progname\":\""PACKAGE"\",\"progver\":\""PACKAGE_VERSION"\",\"timestamp\":", stream);
+    output_int((uint64_t)time(NULL));
+    fputc('}', stream);
+  }
 
   fputs(",\n", stream);
   if(item->flags & FF_DIR)
