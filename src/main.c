@@ -34,6 +34,8 @@
 #include <sys/time.h>
 #include <locale.h>
 
+#include "yopt.h"
+
 
 int pstate;
 int read_only = 0;
@@ -103,66 +105,70 @@ int input_handle(int wait) {
 
 /* parse command line */
 static void argv_parse(int argc, char **argv) {
-  int i, j, len;
+  yopt_t yopt;
+  int v;
+  char *val;
   char *export = NULL;
   char *import = NULL;
   char *dir = NULL;
+
+  static yopt_opt_t opts[] = {
+    { 'h', 0, "-h,-?" },
+    { 'q', 0, "-q" },
+    { 'v', 0, "-v" },
+    { 'x', 0, "-x" },
+    { 'r', 0, "-r" },
+    { 'o', 1, "-o" },
+    { 'f', 1, "-f" },
+    { '0', 0, "-0" },
+    { '1', 0, "-1" },
+    { '2', 0, "-2" },
+    {  1,  1, "--exclude" },
+    { 'X', 1, "-X,--exclude-from" },
+    {0,0,NULL}
+  };
+
   dir_ui = -1;
 
-  /* read from commandline */
-  for(i=1; i<argc; i++) {
-    if(argv[i][0] == '-') {
-      /* flags requiring arguments */
-      if(!strcmp(argv[i], "-X") || !strcmp(argv[i], "-o") || !strcmp(argv[i], "-f")
-          || !strcmp(argv[i], "--exclude-from") || !strcmp(argv[i], "--exclude")) {
-        if(i+1 >= argc) {
-          printf("Option %s requires an argument\n", argv[i]);
-          exit(1);
-        } else if(strcmp(argv[i], "-o") == 0)
-          export = argv[++i];
-        else if(strcmp(argv[i], "-f") == 0)
-          import = argv[++i];
-        else if(strcmp(argv[i], "--exclude") == 0)
-          exclude_add(argv[++i]);
-        else if(exclude_addfile(argv[++i])) {
-          printf("Can't open %s: %s\n", argv[i], strerror(errno));
-          exit(1);
-        }
-        continue;
+  yopt_init(&yopt, argc, argv, opts);
+  while((v = yopt_next(&yopt, &val)) != -1) {
+    switch(v) {
+    case  0 : dir = val; break;
+    case 'h':
+      printf("ncdu <options> <directory>\n\n");
+      printf("  -h                         This help message\n");
+      printf("  -q                         Quiet mode, refresh interval 2 seconds\n");
+      printf("  -v                         Print version\n");
+      printf("  -x                         Same filesystem\n");
+      printf("  -r                         Read only\n");
+      printf("  -o FILE                    Export scanned directory to FILE\n");
+      printf("  -f FILE                    Import scanned directory from FILE\n");
+      printf("  -0,-1,-2                   UI to use when scanning (0=none,2=full ncurses)\n");
+      printf("  --exclude PATTERN          Exclude files that match PATTERN\n");
+      printf("  -X, --exclude-from FILE    Exclude files that match any pattern in FILE\n");
+      exit(0);
+    case 'q': update_delay = 2000; break;
+    case 'v':
+      printf("ncdu %s\n", PACKAGE_VERSION);
+      exit(0);
+    case 'x': dir_scan_smfs = 1; break;
+    case 'r': read_only = 1; break;
+    case 'o': export = val; break;
+    case 'f': import = val; break;
+    case '0': dir_ui = 0; break;
+    case '1': dir_ui = 1; break;
+    case '2': dir_ui = 2; break;
+    case  1 : exclude_add(val); break; /* --exclude */
+    case 'X':
+      if(exclude_addfile(val)) {
+        printf("Can't open %s: %s\n", val, strerror(errno));
+        exit(1);
       }
-      /* short flags */
-      len = strlen(argv[i]);
-      for(j=1; j<len; j++)
-        switch(argv[i][j]) {
-          case '0': dir_ui = 0; break;
-          case '1': dir_ui = 1; break;
-          case '2': dir_ui = 2; break;
-          case 'x': dir_scan_smfs = 1; break;
-          case 'r': read_only = 1; break;
-          case 'q': update_delay = 2000;     break;
-          case '?':
-          case 'h':
-            printf("ncdu <options> <directory>\n\n");
-            printf("  -h                         This help message\n");
-            printf("  -q                         Quiet mode, refresh interval 2 seconds\n");
-            printf("  -v                         Print version\n");
-            printf("  -x                         Same filesystem\n");
-            printf("  -r                         Read only\n");
-            printf("  -o FILE                    Export scanned directory to FILE\n");
-            printf("  -f FILE                    Import scanned directory from FILE\n");
-            printf("  -0,-1,-2                   UI to use when scanning (0=none,2=full ncurses)\n");
-            printf("  --exclude PATTERN          Exclude files that match PATTERN\n");
-            printf("  -X, --exclude-from FILE    Exclude files that match any pattern in FILE\n");
-            exit(0);
-          case 'v':
-            printf("ncdu %s\n", PACKAGE_VERSION);
-            exit(0);
-          default:
-            printf("Unknown option: -%c\nSee '%s -h' for more information.\n", argv[i][j], argv[0]);
-            exit(1);
-        }
-    } else
-      dir = argv[i];
+      break;
+    case -2:
+      printf("ncdu: %s.\n", val);
+      exit(1);
+    }
   }
 
   if(export) {

@@ -25,7 +25,8 @@ noinst_HEADERS=\
 	src/help.h\
 	src/khash.h\
 	src/path.h\
-	src/util.h
+	src/util.h\
+	src/yopt.h
 
 
 man_MANS=ncdu.1
