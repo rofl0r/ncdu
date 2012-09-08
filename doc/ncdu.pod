@@ -18,46 +18,105 @@ provides a fast way to see what directories are using your disk space.
 
 =head1 OPTIONS
 
+=head2 Mode Selection
+
 =over
 
 =item -h
 
-Print a short help message.
-
-=item -q
-
-Quiet mode. While calculating disk space, ncdu will update the screen 10 times
-a second by default, this will be decreased to once every 2 seconds in quiet
-mode. Use this feature to save bandwidth over remote connections.
-
-=item -0, -1, -2
-
-Interface used to give feedback on scanning progress. C<-0> will prevent any
-output from being displayed before ncdu is done scanning, while C<-1> will
-display compact progress information on a single line of output. C<-2> presents
-a full-screen ncurses interface while scanning (the default). C<-0> and C<-1> do
-not initialize ncurses before the directory has been scanned, while C<-2> is the
-only interface that provides feedback on recoverable errors. This does not
-affect the interface used when re-scanning a directory from the ncurses
-browser, where the full ncurses interface is always used.
-
-=item -r
-
-Read-only mode. This will disable the built-in file deletion feature.
+Print a short help message and quit.
 
 =item -v
 
-Print version.
+Print ncdu version and quit.
+
+=item -f I<FILE>
+
+Load the given file, which has earlier been created with the C<-o> option. If
+I<FILE> is equivalent to C<->, the file is read from standard input.
+
+For the sake of preventing a screw-up, the current version of ncdu will assume
+that the directory information in the imported file does not represent the
+filesystem on which the file is being imported. That is, the refresh and file
+deletion options in the browser will be disabled.
+
+=item I<dir>
+
+Scan the given directory.
+
+=item -o I<FILE>
+
+Export all necessary information to I<FILE> instead of opening the browser
+interface. If I<FILE> is C<->, the data is written to standard output.
+
+Be warned that the exported data may grow quite large when exporting a
+directory with many files. 10.000 files will get you an export in the order of
+600 to 700 KiB uncompressed, or a little over 100 KiB when compressed with
+gzip. This scales linearly, so be prepared to handle a few tens of megabytes
+when dealing with millions of files.
+
+=back
+
+=head2 Interface options
+
+=over
+
+=item -0
+
+Don't give any feedback while scanning a directory or importing a file, other
+than when a fatal error occurs. Ncurses will not be initialized until the scan
+is complete. When exporting the data with C<-o>, ncurses will not be
+initialized at all. This option is the default when exporting to standard
+output.
+
+=item -1
+
+Similar to C<-0>, but does give feedback on the scanning progress with a single
+line of output. This option is the default when exporting to a file.
+
+In some cases, the ncurses browser interface which you'll see after the
+scan/import is complete may look garbled when using this option. If you're not
+exporting to a file, C<-2> is probably a better choice.
+
+=item -2
+
+Provide a full-screen ncurses interface while scanning a directory or importing
+a file. This is the only interface that provides feedback on any non-fatal
+errors while scanning.
+
+=item -q
+
+Quiet mode. While scanning or importing the directory, ncdu will update the
+screen 10 times a second by default, this will be decreased to once every 2
+seconds in quiet mode. Use this feature to save bandwidth over remote
+connections. This option has no effect when C<-0> is used.
+
+=item -r
+
+Read-only mode. This will disable the built-in file deletion feature. This
+option has no effect when C<-o> is used, because there will not be a browser
+interface in that case. It has no effect when C<-f> is used, either, because
+the deletion feature is disabled in that case anyway.
+
+=back
+
+=head2 Scan Options
+
+These options affect the scanning progress, and have no effect when importing
+directory information from a file.
+
+=over
 
 =item -x
 
-Only count files and directories on the same filesystem as the specified
-I<dir>.
+Do not cross filesystem boundaries, i.e. only count files and directories on
+the same filesystem as the directory being scanned.
 
 =item --exclude I<PATTERN>
 
-Exclude files that match I<PATTERN>. This argument can be added multiple times
-to add more patterns.
+Exclude files that match I<PATTERN>. The files will still be displayed by
+default, but are not counted towards the disk usage statistics. This argument
+can be added multiple times to add more patterns.
 
 =item -X I<FILE>, --exclude-from I<FILE>
 
