@@ -1,5 +1,3 @@
-.TH ncdu 1 "Nov 3, 2011" "ncdu-1.8" "ncdu manual"
-
 =head1 NAME
 
 B<ncdu> - NCurses Disk Usage
@@ -47,7 +45,8 @@ Scan the given directory.
 =item -o I<FILE>
 
 Export all necessary information to I<FILE> instead of opening the browser
-interface. If I<FILE> is C<->, the data is written to standard output.
+interface. If I<FILE> is C<->, the data is written to standard output.  See the
+examples section below for some handy use cases.
 
 Be warned that the exported data may grow quite large when exporting a
 directory with many files. 10.000 files will get you an export in the order of
@@ -195,6 +194,47 @@ Refresh/recalculate the current directory.
 Quit
 
 =back
+
+
+=head1 EXAMPLES
+
+To scan and browse the directory you're currently in, all you need is a simple:
+
+  ncdu
+
+If you want to scan a full filesystem, your root filesystem, for example, then
+you'll want to use C<-x>:
+
+  ncdu -x /
+
+Since scanning a large directory may take a while, you can scan a directory and
+export the results for later viewing:
+
+  ncdu -1xo- / | gzip >export.gz
+  # ...some time later:
+  zcat export.gz | ncdu -f-
+
+To export from a cron job, make sure to replace C<-1> with C<-0> to suppress
+any unnecessary output.
+
+You can also export a directory and browse it once scanning is done:
+
+  ncdu -o- | tee export.file | ./ncdu -f-
+
+The same is possible with gzip compression, but is a bit kludgey:
+
+  ncdu -o- | gzip | tee export.gz | gunzip | ./ncdu -f-
+
+To scan a system remotely, but browse through the files locally:
+
+  ssh -C user@system ncdu -o- / | ./ncdu -f-
+
+The C<-C> option to ssh enables compression, which will be very useful over
+slow links. Remote scanning and local viewing has two major advantages when
+compared to running ncdu directly on the remote system: You can browse through
+the scanned directory on the local system without any network latency, and ncdu
+does not keep the entire directory structure in memory when exporting, so you
+won't consume much memory on the remote system.
 
 
 =head1 HARD LINKS
