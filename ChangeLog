@@ -1,3 +1,15 @@
+1.9 - 2012-09-27
+	- Added option to dump scanned directory information to a file (-o)
+	- Added option to load scanned directory information from a file (-f)
+	- Added multiple scan and load interfaces (-0,-1,-2)
+	- Fit loading and error windows to the terminal width (#13)
+	- Fix symlink resolving bug (#18)
+	- Fix path display when scanning an empty directory (#15)
+	- Fix hang when terminal is resized to a too small size while loading
+	- Use top-level automake build
+	- Remove useless AUTHORS, INSTALL and NEWS files
+	- ncdu.1 now uses POD as source format
+
 1.8 - 2011-11-03
 	- Use hash table to speed up hard link detection
 	- Added read-only option (-r)
