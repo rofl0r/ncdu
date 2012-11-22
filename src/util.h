@@ -81,11 +81,14 @@ char *getpath(struct dir *);
 /* returns the root element of the given dir struct */
 struct dir *getroot(struct dir *);
 
-/* Add two positive signed 64-bit integers. Returns INT64_MAX if the result
- * would overflow.
+/* Add two signed 64-bit integers. Returns INT64_MAX if the result would
+ * overflow, or 0 if it would be negative. At least one of the integers must be
+ * positive.
  * I use uint64_t's to detect the overflow, as (a + b < 0) relies on undefined
  * behaviour, and (INT64_MAX - b >= a) didn't work for some reason. */
-#define adds64(a, b) ((uint64_t)(a) + (uint64_t)(b) > (uint64_t)INT64_MAX ? INT64_MAX : (a)+(b))
+#define adds64(a, b) ((a) > 0 && (b) > 0\
+    ? ((uint64_t)(a) + (uint64_t)(b) > (uint64_t)INT64_MAX ? INT64_MAX : (a)+(b))\
+    : (a)+(b) < 0 ? 0 : (a)+(b))
 
 /* Adds a value to the size, asize and items fields of *d and its parents */
 void addparentstats(struct dir *, int64_t, int64_t, int);

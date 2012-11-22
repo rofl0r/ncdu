@@ -186,8 +186,8 @@ static void freedir_hlnk(struct dir *d) {
           if(pt==par)
             i=0;
     if(i) {
-      par->size -= d->size;
-      par->asize -= d->asize;
+      par->size = adds64(par->size, -d->size);
+      par->asize = adds64(par->size, -d->asize);
     }
   }
 
