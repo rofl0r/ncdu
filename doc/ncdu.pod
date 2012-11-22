@@ -276,6 +276,10 @@ links, and will thus be scanned and counted multiple times.
 Some minor glitches may appear when displaying filenames that contain multibyte
 or multicolumn characters.
 
+All sizes are internally represented as a signed 64bit integer. If you have a
+directory larger than 8 EiB minus one byte, ncdu will clip its size to 8 EiB
+minus one byte.
+
 Please report any other bugs you may find at the bug tracker, which can be
 found on the web site at http://dev.yorhel.nl/ncdu
 

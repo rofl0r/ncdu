@@ -287,8 +287,8 @@ struct dir *getroot(struct dir *d) {
 
 void addparentstats(struct dir *d, int64_t size, int64_t asize, int items) {
   while(d) {
-    d->size += size;
-    d->asize += asize;
+    d->size = adds64(d->size, size);
+    d->asize = adds64(d->asize, asize);
     d->items += items;
     d = d->parent;
   }

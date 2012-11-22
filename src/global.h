@@ -29,6 +29,7 @@
 #include "config.h"
 #include <stdio.h>
 #include <stddef.h>
+#include <limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
