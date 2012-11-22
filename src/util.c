@@ -62,15 +62,17 @@ char *formatsize(int64_t from) {
   else if(r < 1023e3f) { c = 'K'; r/=1024.0f; }
   else if(r < 1023e6f) { c = 'M'; r/=1048576.0f; }
   else if(r < 1023e9f) { c = 'G'; r/=1073741824.0f; }
-  else                 { c = 'T'; r/=1099511627776.0f; }
+  else if(r < 1023e12f){ c = 'T'; r/=1099511627776.0f; }
+  else if(r < 1023e15f){ c = 'P'; r/=1125899906842624.0f; }
+  else                 { c = 'E'; r/=1152921504606846976.0f; }
   sprintf(dat, "%5.1f%c%cB", r, c, c == ' ' ? ' ' : 'i');
   return dat;
 }
 
 
 char *fullsize(int64_t from) {
-  static char dat[20]; /* max: 999.999.999.999.999 */
-  char tmp[20];
+  static char dat[26]; /* max: 9.223.372.036.854.775.807  (= 2^63-1) */
+  char tmp[26];
   int64_t n = from;
   int i, j;
 
