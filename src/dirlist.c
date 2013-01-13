@@ -62,25 +62,34 @@ static int dirlist_cmp(struct dir *x, struct dir *y) {
   }
 
   /* sort columns:
-   *           1   ->   2   ->   3
-   *   NAME: name  -> size  -> asize
-   *   SIZE: size  -> asize -> name
-   *  ASIZE: asize -> size  -> name
+   *           1   ->   2   ->   3   ->   4
+   *   NAME: name  -> size  -> asize -> items
+   *   SIZE: size  -> asize -> name  -> items
+   *  ASIZE: asize -> size  -> name  -> items
+   *  ITEMS: items -> size  -> asize -> name
    *
    * Note that the method used below is supposed to be fast, not readable :-)
    */
 #define CMP_NAME  strcmp(x->name, y->name)
 #define CMP_SIZE  (x->size  > y->size  ? 1 : (x->size  == y->size  ? 0 : -1))
 #define CMP_ASIZE (x->asize > y->asize ? 1 : (x->asize == y->asize ? 0 : -1))
+#define CMP_ITEMS (x->items > y->items ? 1 : (x->items == y->items ? 0 : -1))
 
   /* try 1 */
-  r = dirlist_sort_col == DL_COL_NAME ? CMP_NAME : dirlist_sort_col == DL_COL_SIZE ? CMP_SIZE : CMP_ASIZE;
+  r = dirlist_sort_col == DL_COL_NAME ? CMP_NAME :
+      dirlist_sort_col == DL_COL_SIZE ? CMP_SIZE :
+      dirlist_sort_col == DL_COL_ASIZE ? CMP_ASIZE :
+      CMP_ITEMS;
   /* try 2 */
   if(!r)
     r = dirlist_sort_col == DL_COL_SIZE ? CMP_ASIZE : CMP_SIZE;
   /* try 3 */
   if(!r)
-    r = dirlist_sort_col == DL_COL_NAME ? CMP_ASIZE : CMP_NAME;
+    r = (dirlist_sort_col == DL_COL_NAME || dirlist_sort_col == DL_COL_ITEMS) ?
+         CMP_ASIZE : CMP_NAME;
+  /* try 4 */
+  if(!r)
+    r = dirlist_sort_col == DL_COL_ITEMS ? CMP_NAME : CMP_ITEMS;
 
   /* reverse when sorting in descending order */
   if(dirlist_sort_desc && r != 0)

@@ -341,6 +341,10 @@ int browse_key(int ch) {
       dirlist_set_sort(i, dirlist_sort_col == i ? !dirlist_sort_desc : 1, DL_NOCHANGE);
       info_show = 0;
       break;
+    case 'C':
+      dirlist_set_sort(DL_COL_ITEMS, dirlist_sort_col == DL_COL_ITEMS ? !dirlist_sort_desc : 1, DL_NOCHANGE);
+      info_show = 0;
+      break;
     case 'e':
       dirlist_set_hidden(!dirlist_hidden);
       info_show = 0;
