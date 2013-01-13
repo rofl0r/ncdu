@@ -16,3 +16,5 @@ missing
 stamp-h1
 ncdu
 ncdu.1
+*~
+*.swp
