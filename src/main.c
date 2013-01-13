@@ -246,6 +246,7 @@ static void init_nc() {
 /* main program */
 int main(int argc, char **argv) {
   setlocale(LC_ALL, "");
+  read_locale();
   argv_parse(argc, argv);
 
   if(dir_ui == 2)

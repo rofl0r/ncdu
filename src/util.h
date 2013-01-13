@@ -71,6 +71,9 @@ char *formatsize(int64_t );
 /* int2string with thousand separators */
 char *fullsize(int64_t);
 
+/* read locale information from the environment */
+void read_locale();
+
 /* recursively free()s a directory tree */
 void freedir(struct dir *);
 

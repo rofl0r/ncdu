@@ -28,9 +28,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ncurses.h>
+#include <locale.h>
 
 int winrows, wincols;
 int subwinr, subwinc;
+char thou_sep;
 
 
 char *cropstr(const char *from, int s) {
@@ -88,11 +90,21 @@ char *fullsize(int64_t from) {
   while(i--) {
     dat[j++] = tmp[i];
     if(i != 0 && i%3 == 0)
-      dat[j++] = '.';
+      dat[j++] = thou_sep;
   }
   dat[j] = '\0';
 
   return dat;
+}
+
+
+void read_locale() {
+  char *locale_thou_sep = localeconv()->thousands_sep;
+  if (locale_thou_sep && 1 == strlen(locale_thou_sep)) {
+    thou_sep = locale_thou_sep[0];
+  } else {
+    thou_sep = '.';
+  }
 }
 
 
