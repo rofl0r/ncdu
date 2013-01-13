@@ -30,7 +30,7 @@
 #include <ncurses.h>
 
 
-static int graph = 1, show_as = 0, info_show = 0, info_page = 0, info_start = 0;
+static int graph = 1, show_as = 0, info_show = 0, info_page = 0, info_start = 0, show_items = 0;
 static char *message = NULL;
 
 
@@ -88,8 +88,8 @@ static void browse_draw_info(struct dir *dr) {
 
 
 static void browse_draw_item(struct dir *n, int row) {
-  char ct, dt, *size, gr[11];
-  int i, o;
+  char ct, dt, *size, gr[11], *items;
+  int i, o, x;
   float pc;
 
   if(n->flags & FF_BSEL)
@@ -102,6 +102,9 @@ static void browse_draw_item(struct dir *n, int row) {
         graph == 1 ? 24 :
         graph == 2 ? 20 :
                      31 ;
+    if (show_items) {
+      o += 7;
+    }
     mvaddstr(row, o, "/..");
     if(n->flags & FF_BSEL)
       attroff(A_REVERSE);
@@ -137,12 +140,26 @@ static void browse_draw_item(struct dir *n, int row) {
     }
   }
 
+  x = 0;
+
+  mvprintw(row, x, "%c %8s ", ct, size);
+  x += 11;
+
+  if (show_items) {
+    if (n->items > 99999)
+      items = "> 100k";
+    else
+      items = n->items ? fullsize(n->items) : "";
+    mvprintw(row, x, "%6s ", items);
+    x += 7;
+  }
+
   /* format and add item to the list */
   switch(graph) {
-    case 0: mvprintw(row, 0, "%c %8s  %c%-*s",               ct, size,         dt, wincols-13, cropstr(n->name, wincols-13)); break;
-    case 1: mvprintw(row, 0, "%c %8s [%10s] %c%-*s",         ct, size,     gr, dt, wincols-25, cropstr(n->name, wincols-25)); break;
-    case 2: mvprintw(row, 0, "%c %8s [%5.1f%%] %c%-*s",      ct, size, pc,     dt, wincols-21, cropstr(n->name, wincols-21)); break;
-    case 3: mvprintw(row, 0, "%c %8s [%5.1f%% %10s] %c%-*s", ct, size, pc, gr, dt, wincols-32, cropstr(n->name, wincols-32));
+    case 0: mvprintw(row, x, " %c%-*s",                       dt, wincols- 2-x, cropstr(n->name, wincols- 2-x)); break;
+    case 1: mvprintw(row, x, "[%10s] %c%-*s",             gr, dt, wincols-14-x, cropstr(n->name, wincols-14-x)); break;
+    case 2: mvprintw(row, x, "[%5.1f%%] %c%-*s",      pc,     dt, wincols-10-x, cropstr(n->name, wincols-10-x)); break;
+    case 3: mvprintw(row, x, "[%5.1f%% %10s] %c%-*s", pc, gr, dt, wincols-21-x, cropstr(n->name, wincols-21-x));
   }
 
   if(n->flags & FF_BSEL)
@@ -382,6 +399,9 @@ int browse_key(int ch) {
       if(++graph > 3)
         graph = 0;
       info_show = 0;
+      break;
+    case 'c':
+      show_items = !show_items;
       break;
     case 'i':
       info_show = !info_show;
