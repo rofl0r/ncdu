@@ -153,6 +153,10 @@ Order by filename (press again for descending order)
 
 Order by filesize (press again for descending order)
 
+=item C
+
+Order by number of items (press again for descending order)
+
 =item a
 
 Toggle between showing disk usage and showing apparent size.
@@ -172,6 +176,10 @@ Toggle dirs before files when sorting.
 Toggle between showing percentage, graph, both, or none. Percentage is relative
 to the size of the current directory, graph is relative to the largest item in
 the current directory.
+
+=item c
+
+Toggle display of child item counts.
 
 =item e
 
