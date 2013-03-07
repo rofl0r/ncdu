@@ -36,16 +36,20 @@ AC_ARG_WITH([ncursesw],
             AC_HELP_STRING([--with-ncursesw], [compile/link with wide-char ncurses library @<:@default@:>@]),
             [ncurses=ncursesw])
 if test "$ncurses" = "auto" -o "$ncurses" = "ncursesw"; then
-  AC_CHECK_LIB([ncursesw],
-               [initscr],
-               [LIBS="$LIBS -lncursesw"; ncurses=ncursesw],
-               [ncurses=ncurses])
+  PKG_CHECK_MODULES([NCURSES], [ncursesw], [LIBS="$LIBS $NCURSES_LIBS"; ncurses=ncursesw],
+    [AC_CHECK_LIB([ncursesw],
+                 [initscr],
+                 [LIBS="$LIBS -lncursesw"; ncurses=ncursesw],
+                 [ncurses=ncurses])
+    ])
 fi
 if test "$ncurses" = "ncurses"; then
-  AC_CHECK_LIB([ncurses],
-               [initscr],
-               [LIBS="$LIBS -lncurses"],
-               [AC_MSG_ERROR(ncurses library is required)])
+  PKG_CHECK_MODULES([NCURSES], [ncurses], [LIBS="$LIBS $NCURSES_LIBS"],
+    [AC_CHECK_LIB([ncurses],
+                 [initscr],
+                 [LIBS="$LIBS -lncurses"],
+                 [AC_MSG_ERROR(ncurses library is required)])
+    ])
 fi
 
 
