@@ -8,6 +8,7 @@ AM_INIT_AUTOMAKE([foreign subdir-objects])
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_RANLIB
+PKG_PROG_PKG_CONFIG
 
 # Check for header files.
 AC_CHECK_HEADERS(
