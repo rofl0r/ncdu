@@ -40,6 +40,7 @@
 int pstate;
 int read_only = 0;
 long update_delay = 100;
+int cachedir_tags = 0;
 
 static int min_rows = 17, min_cols = 60;
 static int ncurses_init = 0;
@@ -125,6 +126,7 @@ static void argv_parse(int argc, char **argv) {
     { '2', 0, "-2" },
     {  1,  1, "--exclude" },
     { 'X', 1, "-X,--exclude-from" },
+    { 'C', 0, "-C,--cachedir-tag" },
     {0,0,NULL}
   };
 
@@ -146,6 +148,7 @@ static void argv_parse(int argc, char **argv) {
       printf("  -0,-1,-2                   UI to use when scanning (0=none,2=full ncurses)\n");
       printf("  --exclude PATTERN          Exclude files that match PATTERN\n");
       printf("  -X, --exclude-from FILE    Exclude files that match any pattern in FILE\n");
+      printf("  -C, --cachedir-tag         Exclude directories containing CACHEDIR.TAG\n");
       exit(0);
     case 'q': update_delay = 2000; break;
     case 'v':
@@ -164,6 +167,9 @@ static void argv_parse(int argc, char **argv) {
         printf("Can't open %s: %s\n", val, strerror(errno));
         exit(1);
       }
+      break;
+    case 'C':
+      cachedir_tags = 1;
       break;
     case -2:
       printf("ncdu: %s.\n", val);

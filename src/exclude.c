@@ -99,3 +99,26 @@ void exclude_clear() {
   excludes = NULL;
 }
 
+
+/* 
+ * Exclusion of directories that contain only cached information.
+ * See http://www.brynosaurus.com/cachedir/
+ */
+static const char cachedir_tag_signature[] =
+    "Signature: 8a477f597d28d172789f06886806bc55";
+
+int has_cachedir_tag(const char *name) {
+    char buf[1024];
+    FILE *f;
+    int match = 0;
+    const int signature_l = strlen(cachedir_tag_signature);
+
+    snprintf(buf, sizeof(buf), "%s/CACHEDIR.TAG", name);
+    f = fopen(buf, "rb");
+    if (f != NULL) {
+        match = ((fread(buf, 1, signature_l, f) == signature_l) &&
+                    !strncmp(buf, cachedir_tag_signature, signature_l));
+        fclose(f);
+    }
+    return match;
+}
