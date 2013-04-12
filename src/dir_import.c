@@ -216,7 +216,7 @@ static int rstring_esc(char **dest, int *destlen) {
       ap(0xE0 | (n>>12));
       ap(0x80 | ((n>>6) & 0x3F));
       ap(0x80 | (n & 0x3F));
-    } else // this happens if there was an invalid character (n >= (1<<16))
+    } else /* this happens if there was an invalid character (n >= (1<<16)) */
       E(1, "Invalid character in \\u escape");
     con(5);
     break;

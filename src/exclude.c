@@ -116,16 +116,14 @@ int has_cachedir_tag(const char *name) {
   FILE *f;
   int match = 0;
 
-  // Compute the required length for `path`.
+  /* Compute the required length for `path`. */
   l = strlen(name) + sizeof CACHEDIR_TAG_FILENAME + 2;
-  if((l > path_l) || (path == NULL)) {
-    // We always at least double the size to prevent too frequent
-    // re-allocation.
+  if(l > path_l || path == NULL) {
     path_l = path_l * 2;
     if(path_l < l)
       path_l = l;
-    // We don't need to copy the content of `path`, so it's more efficient
-    // to use `free` + `malloc`. (Calling `free(NULL)` is allowed.)
+    /* We don't need to copy the content of `path`, so it's more efficient to
+     * use `free` + `malloc`. */
     free(path);
     path = malloc(path_l);
   }
