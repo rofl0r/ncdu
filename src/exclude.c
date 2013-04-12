@@ -108,18 +108,29 @@ void exclude_clear() {
 #define CACHEDIR_TAG_SIGNATURE "Signature: 8a477f597d28d172789f06886806bc55"
 
 int has_cachedir_tag(const char *name) {
-  int path_l;
-  char *path;
+  static path_l = 1024;
+  static char *path = NULL;
+  int l;
   const int signature_l = sizeof CACHEDIR_TAG_SIGNATURE - 1;
   char buf[signature_l];
   FILE *f;
   int match = 0;
 
-  path_l = strlen(name) + sizeof CACHEDIR_TAG_FILENAME + 2;
-  path = malloc(path_l);
+  // Compute the required length for `path`.
+  l = strlen(name) + sizeof CACHEDIR_TAG_FILENAME + 2;
+  if((l > path_l) || (path == NULL)) {
+    // We always at least double the size to prevent too frequent
+    // re-allocation.
+    path_l = path_l * 2;
+    if(path_l < l)
+      path_l = l;
+    // We don't need to copy the content of `path`, so it's more efficient
+    // to use `free` + `malloc`. (Calling `free(NULL)` is allowed.)
+    free(path);
+    path = malloc(path_l);
+  }
   snprintf(path, path_l, "%s/%s", name, CACHEDIR_TAG_FILENAME);
   f = fopen(path, "rb");
-  free(path);
 
   if(f != NULL) {
     match = ((fread(buf, 1, signature_l, f) == signature_l) &&
