@@ -104,16 +104,23 @@ void exclude_clear() {
  * Exclusion of directories that contain only cached information.
  * See http://www.brynosaurus.com/cachedir/
  */
+#define CACHEDIR_TAG_FILENAME "CACHEDIR.TAG"
 #define CACHEDIR_TAG_SIGNATURE "Signature: 8a477f597d28d172789f06886806bc55"
 
 int has_cachedir_tag(const char *name) {
-  char buf[1024];
+  int path_l;
+  char *path;
+  const int signature_l = sizeof CACHEDIR_TAG_SIGNATURE - 1;
+  char buf[signature_l];
   FILE *f;
   int match = 0;
-  const int signature_l = sizeof CACHEDIR_TAG_SIGNATURE - 1;
 
-  snprintf(buf, sizeof(buf), "%s/CACHEDIR.TAG", name);
-  f = fopen(buf, "rb");
+  path_l = strlen(name) + sizeof CACHEDIR_TAG_FILENAME + 2;
+  path = malloc(path_l);
+  snprintf(path, path_l, "%s/%s", name, CACHEDIR_TAG_FILENAME);
+  f = fopen(path, "rb");
+  free(path);
+
   if(f != NULL) {
     match = ((fread(buf, 1, signature_l, f) == signature_l) &&
                 !memcmp(buf, CACHEDIR_TAG_SIGNATURE, signature_l));
