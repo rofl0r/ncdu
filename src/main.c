@@ -126,7 +126,7 @@ static void argv_parse(int argc, char **argv) {
     { '2', 0, "-2" },
     {  1,  1, "--exclude" },
     { 'X', 1, "-X,--exclude-from" },
-    { 'C', 0, "-C,--cachedir-tag" },
+    { 'C', 0, "--exclude-caches" },
     {0,0,NULL}
   };
 
@@ -148,7 +148,7 @@ static void argv_parse(int argc, char **argv) {
       printf("  -0,-1,-2                   UI to use when scanning (0=none,2=full ncurses)\n");
       printf("  --exclude PATTERN          Exclude files that match PATTERN\n");
       printf("  -X, --exclude-from FILE    Exclude files that match any pattern in FILE\n");
-      printf("  -C, --cachedir-tag         Exclude directories containing CACHEDIR.TAG\n");
+      printf("  --exclude-caches           Exclude directories containing CACHEDIR.TAG\n");
       exit(0);
     case 'q': update_delay = 2000; break;
     case 'v':
