@@ -122,6 +122,13 @@ can be added multiple times to add more patterns.
 Exclude files that match any pattern in I<FILE>. Patterns should be separated
 by a newline.
 
+=item --exclude-caches
+
+Exclude directories containing CACHEDIR.TAG.  The directories will still be
+displayed, but not their content, and they are not counted towards the disk
+usage statistics.
+See http://www.brynosaurus.com/cachedir/
+
 =back
 
 
