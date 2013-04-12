@@ -197,8 +197,10 @@ static int dir_scan_item(struct dir *d) {
     stat_to_dir(d, &st);
 
   if(cachedir_tags && (d->flags & FF_DIR) && !(d->flags & (FF_ERR|FF_EXL|FF_OTHFS)))
-    if(has_cachedir_tag(d->name))
+    if(has_cachedir_tag(d->name)) {
       d->flags |= FF_EXL;
+      d->size = d->asize = 0;
+    }
 
   /* Recurse into the dir or output the item */
   if(d->flags & FF_DIR && !(d->flags & (FF_ERR|FF_EXL|FF_OTHFS)))
