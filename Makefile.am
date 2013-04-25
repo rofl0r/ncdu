@@ -1,3 +1,4 @@
+AM_CPPFLAGS=-I$(srcdir)/deps
 bin_PROGRAMS=ncdu
 
 ncdu_SOURCES=\
@@ -16,6 +17,8 @@ ncdu_SOURCES=\
 	src/util.c
 
 noinst_HEADERS=\
+	deps/yopt.h\
+	deps/khash.h\
 	src/browser.h\
 	src/delete.h\
 	src/dir.h\
@@ -23,10 +26,8 @@ noinst_HEADERS=\
 	src/exclude.h\
 	src/global.h\
 	src/help.h\
-	src/khash.h\
 	src/path.h\
-	src/util.h\
-	src/yopt.h
+	src/util.h
 
 
 man_MANS=ncdu.1

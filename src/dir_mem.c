@@ -24,10 +24,11 @@
 */
 
 #include "global.h"
-#include "khash.h"
 
 #include <string.h>
 #include <stdlib.h>
+
+#include <khash.h>
 
 
 static struct dir *root;   /* root directory struct we're scanning */

@@ -34,7 +34,7 @@
 #include <sys/time.h>
 #include <locale.h>
 
-#include "yopt.h"
+#include <yopt.h>
 
 
 int pstate;
