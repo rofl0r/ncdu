@@ -1,3 +1,12 @@
+1.10 - 2013-05-09
+	- Added 'c' key to display item counts
+	- Added 'C' key to order by item counts
+	- Added CACHEDIR.TAG support and --exclude-caches option
+	- Use locale-dependent thousand separator
+	- Use pkg-config to detect ncurses
+	- Clip file/dir sizes to 8 EiB minus one byte
+	- Fix buffer overflow when formatting huge file sizes
+
 1.9 - 2012-09-27
 	- Added option to dump scanned directory information to a file (-o)
 	- Added option to load scanned directory information from a file (-f)
