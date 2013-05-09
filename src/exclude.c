@@ -108,10 +108,10 @@ void exclude_clear() {
 #define CACHEDIR_TAG_SIGNATURE "Signature: 8a477f597d28d172789f06886806bc55"
 
 int has_cachedir_tag(const char *name) {
-  static path_l = 1024;
+  static int path_l = 1024;
   static char *path = NULL;
   int l;
-  const int signature_l = sizeof CACHEDIR_TAG_SIGNATURE - 1;
+  const size_t signature_l = sizeof CACHEDIR_TAG_SIGNATURE - 1;
   char buf[signature_l];
   FILE *f;
   int match = 0;

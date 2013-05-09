@@ -90,7 +90,7 @@ static void browse_draw_info(struct dir *dr) {
 static void browse_draw_item(struct dir *n, int row) {
   char ct, dt, *size, gr[11], *items;
   int i, o, x;
-  float pc;
+  float pc = 0.0f;
 
   if(n->flags & FF_BSEL)
     attron(A_REVERSE);
