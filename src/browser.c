@@ -350,7 +350,7 @@ int browse_key(int ch) {
       info_show = 0;
       break;
     case 't':
-      dirlist_set_sort(DL_NOCHANGE, DL_NOCHANGE, dirlist_sort_df);
+      dirlist_set_sort(DL_NOCHANGE, DL_NOCHANGE, !dirlist_sort_df);
       info_show = 0;
       break;
     case 'a':
