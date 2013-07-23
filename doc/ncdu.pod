@@ -97,6 +97,12 @@ option has no effect when C<-o> is used, because there will not be a browser
 interface in that case. It has no effect when C<-f> is used, either, because
 the deletion feature is disabled in that case anyway.
 
+=item --si
+
+List sizes using base 10 prefixes, that is, powers of 1000 (KB, MB, etc), as
+defined in the International System of Units (SI), instead of the usual base 2
+prefixes, that is, powers of 1024 (KiB, MiB, etc).
+
 =back
 
 =head2 Scan Options

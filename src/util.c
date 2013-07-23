@@ -32,6 +32,7 @@
 
 int winrows, wincols;
 int subwinr, subwinc;
+int si;
 char thou_sep;
 
 
@@ -60,14 +61,26 @@ char *formatsize(int64_t from) {
   static char dat[9]; /* "xxx.xMiB" */
   float r = from;
   char c = ' ';
-  if(r < 1000.0f)      { }
-  else if(r < 1023e3f) { c = 'K'; r/=1024.0f; }
-  else if(r < 1023e6f) { c = 'M'; r/=1048576.0f; }
-  else if(r < 1023e9f) { c = 'G'; r/=1073741824.0f; }
-  else if(r < 1023e12f){ c = 'T'; r/=1099511627776.0f; }
-  else if(r < 1023e15f){ c = 'P'; r/=1125899906842624.0f; }
-  else                 { c = 'E'; r/=1152921504606846976.0f; }
-  sprintf(dat, "%5.1f%c%cB", r, c, c == ' ' ? ' ' : 'i');
+  if (si) {
+    if(r < 1000.0f)   { }
+    else if(r < 1e6f) { c = 'K'; r/=1e3f; }
+    else if(r < 1e9f) { c = 'M'; r/=1e6f; }
+    else if(r < 1e12f){ c = 'G'; r/=1e9f; }
+    else if(r < 1e15f){ c = 'T'; r/=1e12f; }
+    else if(r < 1e18f){ c = 'P'; r/=1e15f; }
+    else              { c = 'E'; r/=1e18f; }
+    sprintf(dat, "%5.1f%cB", r, c);
+  }
+  else {
+    if(r < 1000.0f)      { }
+    else if(r < 1023e3f) { c = 'K'; r/=1024.0f; }
+    else if(r < 1023e6f) { c = 'M'; r/=1048576.0f; }
+    else if(r < 1023e9f) { c = 'G'; r/=1073741824.0f; }
+    else if(r < 1023e12f){ c = 'T'; r/=1099511627776.0f; }
+    else if(r < 1023e15f){ c = 'P'; r/=1125899906842624.0f; }
+    else                 { c = 'E'; r/=1152921504606846976.0f; }
+    sprintf(dat, "%5.1f%c%cB", r, c, c == ' ' ? ' ' : 'i');
+  }
   return dat;
 }
 

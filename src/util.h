@@ -35,6 +35,9 @@ extern int winrows, wincols;
 /* used by the nc* functions and macros */
 extern int subwinr, subwinc;
 
+/* used by formatsize to choose between base 2 or 10 prefixes */
+extern int si;
+
 
 /* Instead of using several ncurses windows, we only draw to stdscr.
  * the functions nccreate, ncprint and the macros ncaddstr and ncaddch

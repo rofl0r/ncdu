@@ -127,10 +127,12 @@ static void argv_parse(int argc, char **argv) {
     {  1,  1, "--exclude" },
     { 'X', 1, "-X,--exclude-from" },
     { 'C', 0, "--exclude-caches" },
+    { 's', 0, "--si" },
     {0,0,NULL}
   };
 
   dir_ui = -1;
+  si = 0;
 
   yopt_init(&yopt, argc, argv, opts);
   while((v = yopt_next(&yopt, &val)) != -1) {
@@ -146,6 +148,7 @@ static void argv_parse(int argc, char **argv) {
       printf("  -o FILE                    Export scanned directory to FILE\n");
       printf("  -f FILE                    Import scanned directory from FILE\n");
       printf("  -0,-1,-2                   UI to use when scanning (0=none,2=full ncurses)\n");
+      printf("  --si                       Use base 10 (SI) prefixes instead of base 2\n");
       printf("  --exclude PATTERN          Exclude files that match PATTERN\n");
       printf("  -X, --exclude-from FILE    Exclude files that match any pattern in FILE\n");
       printf("  --exclude-caches           Exclude directories containing CACHEDIR.TAG\n");
@@ -156,6 +159,7 @@ static void argv_parse(int argc, char **argv) {
       exit(0);
     case 'x': dir_scan_smfs = 1; break;
     case 'r': read_only = 1; break;
+    case 's': si = 1; break;
     case 'o': export = val; break;
     case 'f': import = val; break;
     case '0': dir_ui = 0; break;
