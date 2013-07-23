@@ -58,7 +58,7 @@ char *cropstr(const char *from, int s) {
 
 
 char *formatsize(int64_t from) {
-  static char dat[9]; /* "xxx.xMiB" */
+  static char dat[10]; /* "xxx.x MiB" */
   float r = from;
   char c = ' ';
   if (si) {
@@ -69,7 +69,7 @@ char *formatsize(int64_t from) {
     else if(r < 1e15f){ c = 'T'; r/=1e12f; }
     else if(r < 1e18f){ c = 'P'; r/=1e15f; }
     else              { c = 'E'; r/=1e18f; }
-    sprintf(dat, "%5.1f%cB", r, c);
+    sprintf(dat, "%5.1f %cB", r, c);
   }
   else {
     if(r < 1000.0f)      { }
@@ -79,7 +79,7 @@ char *formatsize(int64_t from) {
     else if(r < 1023e12f){ c = 'T'; r/=1099511627776.0f; }
     else if(r < 1023e15f){ c = 'P'; r/=1125899906842624.0f; }
     else                 { c = 'E'; r/=1152921504606846976.0f; }
-    sprintf(dat, "%5.1f%c%cB", r, c, c == ' ' ? ' ' : 'i');
+    sprintf(dat, "%5.1f %c%cB", r, c, c == ' ' ? ' ' : 'i');
   }
   return dat;
 }

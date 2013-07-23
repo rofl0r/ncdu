@@ -142,8 +142,8 @@ static void browse_draw_item(struct dir *n, int row) {
 
   x = 0;
 
-  mvprintw(row, x, "%c %8s ", ct, size);
-  x += 11;
+  mvprintw(row, x, "%c %9s ", ct, size);
+  x += 12;
 
   if (show_items) {
     if (n->items > 99999)
@@ -169,7 +169,7 @@ static void browse_draw_item(struct dir *n, int row) {
 
 void browse_draw() {
   struct dir *t;
-  char fmtsize[9], *tmp;
+  char fmtsize[10], *tmp;
   int selected = 0, i;
 
   erase();
