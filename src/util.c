@@ -28,6 +28,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ncurses.h>
+#include <stdarg.h>
 #include <locale.h>
 
 int winrows, wincols;
