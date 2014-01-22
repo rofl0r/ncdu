@@ -98,13 +98,12 @@ static void browse_draw_item(struct dir *n, int row) {
   /* reference to parent dir has a different format */
   if(n == dirlist_parent) {
     mvhline(row, 0, ' ', wincols);
-    o = graph == 0 ? 12 :
-        graph == 1 ? 24 :
-        graph == 2 ? 20 :
-                     31 ;
-    if (show_items) {
+    o = graph == 0 ? 13 :
+        graph == 1 ? 25 :
+        graph == 2 ? 21 :
+                     32 ;
+    if(show_items)
       o += 7;
-    }
     mvaddstr(row, o, "/..");
     if(n->flags & FF_BSEL)
       attroff(A_REVERSE);
