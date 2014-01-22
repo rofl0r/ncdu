@@ -209,11 +209,13 @@ delete_nxt:
 
 
 void delete_process() {
+  struct dir *par;
+
   /* confirm */
   seloption = 1;
   while(state == DS_CONFIRM && !noconfirm)
     if(input_handle(0)) {
-      browse_init(root);
+      browse_init(root->parent);
       return;
     }
 
@@ -229,13 +231,13 @@ void delete_process() {
   /* delete */
   seloption = 0;
   state = DS_PROGRESS;
-  if(delete_dir(root))
-    browse_init(root);
-  else {
+  par = root->parent;
+  delete_dir(root);
+  if(nextsel)
     nextsel->flags |= FF_BSEL;
-    browse_init(nextsel);
+  browse_init(par);
+  if(nextsel)
     dirlist_top(-4);
-  }
 }
 
 

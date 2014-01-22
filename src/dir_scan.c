@@ -266,12 +266,6 @@ static int process() {
   if(!dir_fatalerr && !(dir = dir_read(&fail)))
     dir_seterr("Error reading directory: %s", strerror(errno));
 
-  /* Special case: empty directory = error */
-  if(!dir_fatalerr && !*dir) {
-    dir_seterr("Directory empty");
-    free(dir);
-  }
-
   if(!dir_fatalerr) {
     curdev = (uint64_t)fs.st_dev;
     d = dir_createstruct(dir_curpath);

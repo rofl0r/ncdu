@@ -187,9 +187,9 @@ void browse_draw() {
 
   /* second line - the path */
   mvhline(1, 0, '-', wincols);
-  if(t) {
+  if(dirlist_par) {
     mvaddch(1, 3, ' ');
-    tmp = getpath(t->parent);
+    tmp = getpath(dirlist_par);
     mvaddstr(1, 4, cropstr(tmp, wincols-8));
     mvaddch(1, 4+((int)strlen(tmp) > wincols-8 ? wincols-8 : (int)strlen(tmp)), ' ');
   }
@@ -363,8 +363,8 @@ int browse_key(int ch) {
     case 10:
     case KEY_RIGHT:
     case 'l':
-      if(sel != NULL && sel->sub != NULL) {
-        dirlist_open(sel->sub);
+      if(sel != NULL && sel->flags & FF_DIR) {
+        dirlist_open(sel == dirlist_parent ? dirlist_par->parent : sel);
         dirlist_top(-3);
       }
       info_show = 0;
@@ -372,8 +372,8 @@ int browse_key(int ch) {
     case KEY_LEFT:
     case 'h':
     case '<':
-      if(sel != NULL && sel->parent->parent != NULL) {
-        dirlist_open(sel->parent);
+      if(dirlist_par && dirlist_par->parent != NULL) {
+        dirlist_open(dirlist_par->parent);
         dirlist_top(-3);
       }
       info_show = 0;
@@ -385,10 +385,10 @@ int browse_key(int ch) {
         message = "Directory imported from file, won't refresh.";
         break;
       }
-      if(sel != NULL) {
+      if(dirlist_par) {
         dir_ui = 2;
-        dir_mem_init(sel->parent);
-        dir_scan_init(getpath(sel->parent));
+        dir_mem_init(dirlist_par);
+        dir_scan_init(getpath(dirlist_par));
       }
       info_show = 0;
       break;
@@ -425,7 +425,7 @@ int browse_key(int ch) {
       info_show = 0;
       if((t = dirlist_get(1)) == sel)
         if((t = dirlist_get(-1)) == sel || t == dirlist_parent)
-          t = sel->parent;
+          t = NULL;
       delete_init(sel, t);
       break;
     }
@@ -441,9 +441,9 @@ int browse_key(int ch) {
 }
 
 
-void browse_init(struct dir *cur) {
+void browse_init(struct dir *par) {
   pstate = ST_BROWSE;
   message = NULL;
-  dirlist_open(cur);
+  dirlist_open(par);
 }
 

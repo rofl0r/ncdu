@@ -29,7 +29,8 @@
 
 
 /* public variables */
-struct dir *dirlist_parent = NULL;
+struct dir *dirlist_parent = NULL,
+           *dirlist_par    = NULL;
 int64_t dirlist_maxs       = 0,
         dirlist_maxa       = 0;
 
@@ -186,29 +187,33 @@ static void dirlist_fixup() {
 
 
 void dirlist_open(struct dir *d) {
+  dirlist_par = d;
+
   /* set the head of the list */
-  head_real = head = d == NULL ? NULL : d->parent == NULL ? d->sub : d->parent->sub;
+  head_real = head = d == NULL ? NULL : d->sub;
 
   /* reset internal status */
   dirlist_maxs = dirlist_maxa = 0;
 
   /* stop if this is not a directory list we can work with */
-  if(head == NULL) {
+  if(d == NULL) {
     dirlist_parent = NULL;
     return;
   }
 
   /* sort the dir listing */
-  head_real = head = dirlist_sort(head);
+  if(head)
+    head_real = head = dirlist_sort(head);
 
   /* set the reference to the parent dir */
   dirlist_parent_alloc.flags &= ~FF_BSEL;
-  if(head->parent->parent) {
+  dirlist_parent_alloc.flags |= FF_DIR;
+  if(d->parent) {
     dirlist_parent = &dirlist_parent_alloc;
     strcpy(dirlist_parent->name, "..");
     dirlist_parent->next = head;
-    dirlist_parent->parent = head->parent;
-    dirlist_parent->sub = head->parent;
+    dirlist_parent->parent = d;
+    dirlist_parent->sub = d;
     head = dirlist_parent;
   } else
     dirlist_parent = NULL;

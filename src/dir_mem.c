@@ -198,7 +198,7 @@ static int final(int fail) {
     freedir(orig);
   }
 
-  browse_init(root->sub);
+  browse_init(root);
   dirlist_top(-3);
   return 0;
 }

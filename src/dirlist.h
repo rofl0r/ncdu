@@ -68,6 +68,9 @@ void dirlist_set_hidden(int hidden);
 /* The 'reference to parent dir' */
 extern struct dir *dirlist_parent;
 
+/* The actual parent dir */
+extern struct dir *dirlist_par;
+
 /* current sorting configuration (set with dirlist_set_sort()) */
 extern int dirlist_sort_desc, dirlist_sort_col, dirlist_sort_df;
 

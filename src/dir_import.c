@@ -547,8 +547,6 @@ static int item(uint64_t dev) {
 
   if(!isroot)
     dir_curpath_leave();
-  else /* The root item must not be empty. */
-    E(ctx->items <= 1, "Empty directory");
 
   return 0;
 }
