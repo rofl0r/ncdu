@@ -32,7 +32,6 @@
 
 #include <unistd.h>
 #include <sys/time.h>
-#include <locale.h>
 
 #include <yopt.h>
 
@@ -255,7 +254,6 @@ static void init_nc() {
 
 /* main program */
 int main(int argc, char **argv) {
-  setlocale(LC_ALL, "");
   read_locale();
   argv_parse(argc, argv);
 

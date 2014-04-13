@@ -29,7 +29,9 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include <stdarg.h>
+#ifdef HAVE_LOCALE_H
 #include <locale.h>
+#endif
 
 int winrows, wincols;
 int subwinr, subwinc;
@@ -113,12 +115,13 @@ char *fullsize(int64_t from) {
 
 
 void read_locale() {
+  thou_sep = '.';
+#ifdef HAVE_LOCALE_H
+  setlocale(LC_ALL, "");
   char *locale_thou_sep = localeconv()->thousands_sep;
-  if (locale_thou_sep && 1 == strlen(locale_thou_sep)) {
+  if(locale_thou_sep && 1 == strlen(locale_thou_sep))
     thou_sep = locale_thou_sep[0];
-  } else {
-    thou_sep = '.';
-  }
+#endif
 }
 
 

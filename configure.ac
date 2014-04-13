@@ -12,8 +12,10 @@ PKG_PROG_PKG_CONFIG
 
 # Check for header files.
 AC_CHECK_HEADERS(
-  [limits.h sys/time.h sys/types.h sys/stat.h dirent.h unistd.h fnmatch.h ncurses.h locale.h],[],
+  [limits.h sys/time.h sys/types.h sys/stat.h dirent.h unistd.h fnmatch.h ncurses.h],[],
   AC_MSG_ERROR([required header file not found]))
+
+AC_CHECK_HEADERS(locale.h)
 
 # Check for typedefs, structures, and compiler characteristics.
 AC_TYPE_INT64_T
@@ -23,7 +25,7 @@ AC_STRUCT_ST_BLOCKS
 
 # Check for library functions.
 AC_CHECK_FUNCS(
-  [getcwd gettimeofday fnmatch chdir rmdir unlink lstat setlocale],[],
+  [getcwd gettimeofday fnmatch chdir rmdir unlink lstat],[],
   AC_MSG_ERROR([required function missing]))
 
 
