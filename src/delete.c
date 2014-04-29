@@ -46,7 +46,7 @@ static void delete_draw_confirm() {
 
   ncprint(1, 2, "Are you sure you want to delete \"%s\"%c",
     cropstr(root->name, 21), root->flags & FF_DIR ? ' ' : '?');
-  if(root->flags & FF_DIR)
+  if(root->flags & FF_DIR && root->sub != NULL)
     ncprint(2, 18, "and all of its contents?");
 
   if(seloption == 0)
