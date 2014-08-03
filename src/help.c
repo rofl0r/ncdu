@@ -60,7 +60,7 @@ void help_draw() {
   browse_draw();
 
   nccreate(15, 60, "ncdu help");
-  ncaddstr(13, 38, "Press q to continue");
+  ncaddstr(13, 42, "Press q to close");
 
   if(page == 1)
     attron(A_REVERSE);
