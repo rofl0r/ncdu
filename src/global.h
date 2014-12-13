@@ -55,6 +55,7 @@
 #define ST_BROWSE 1
 #define ST_DEL    2
 #define ST_HELP   3
+#define ST_SHELL  4
 
 
 /* structure representing a file or directory */

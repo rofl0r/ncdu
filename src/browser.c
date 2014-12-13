@@ -428,6 +428,9 @@ int browse_key(int ch) {
           t = NULL;
       delete_init(sel, t);
       break;
+     case 'b':
+      shell_init();
+      break;
     }
 
   /* make sure the info_* options are correct */

@@ -210,6 +210,14 @@ Show information about the current selected item.
 
 Refresh/recalculate the current directory.
 
+=item b
+
+Spawn shell in current directory.
+
+We first check the $SHELL environment variable of the user for the preferred
+shell interpreter. If it's not set, we fall back to the compile time
+configured default shell (usually /bin/bash).
+
 =item q
 
 Quit

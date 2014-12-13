@@ -25,7 +25,7 @@ AC_STRUCT_ST_BLOCKS
 
 # Check for library functions.
 AC_CHECK_FUNCS(
-  [getcwd gettimeofday fnmatch chdir rmdir unlink lstat],[],
+  [getcwd gettimeofday fnmatch chdir rmdir unlink lstat system getenv],[],
   AC_MSG_ERROR([required function missing]))
 
 
@@ -55,7 +55,18 @@ if test "$ncurses" = "ncurses"; then
     ])
 fi
 
+# Configure default shell for spawning shell when $SHELL is not set
+AC_ARG_WITH([shell],
+  [AS_HELP_STRING([--with-shell],
+                  [used interpreter as default shell (default is /bin/bash)])],
+                  [DEFAULT_SHELL=$withval],
+                  [DEFAULT_SHELL=/bin/bash])
+AC_MSG_NOTICE([Using $DEFAULT_SHELL as the default shell if \$SHELL is not set])
+AC_CHECK_PROG(TEST_SHELL, $DEFAULT_SHELL, yes, no, [/])
+if test "x$TEST_SHELL" != "xyes"; then
+  AC_MSG_ERROR([Default shell interpreter $DEFAULT_SHELL not found])
+fi
+AC_DEFINE_UNQUOTED(DEFAULT_SHELL, "$DEFAULT_SHELL", [Used default shell interpreter])
 
 
 AC_OUTPUT([Makefile])
-

@@ -50,6 +50,7 @@ char *keys[KEYS*2] = {
             "e", "Show/hide hidden or excluded files",
             "i", "Show information about selected item",
             "r", "Recalculate the current directory",
+            "b", "Spawn shell in current directory",
             "q", "Quit ncdu"
 };
 

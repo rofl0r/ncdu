@@ -12,6 +12,7 @@ ncdu_SOURCES=\
 	src/dir_scan.c\
 	src/exclude.c\
 	src/help.c\
+	src/shell.c\
 	src/main.c\
 	src/path.c\
 	src/util.c
@@ -26,6 +27,7 @@ noinst_HEADERS=\
 	src/exclude.h\
 	src/global.h\
 	src/help.h\
+	src/shell.h\
 	src/path.h\
 	src/util.h
 
