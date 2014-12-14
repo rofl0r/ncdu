@@ -32,7 +32,7 @@
 int page, start;
 
 
-#define KEYS 16
+#define KEYS 17
 char *keys[KEYS*2] = {
 /*|----key----|  |----------------description----------------|*/
         "up, k", "Move cursor up",

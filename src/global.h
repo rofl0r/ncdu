@@ -103,5 +103,6 @@ int input_handle(int);
 #include "help.h"
 #include "path.h"
 #include "util.h"
+#include "shell.h"
 
 #endif

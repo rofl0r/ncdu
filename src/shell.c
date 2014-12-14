@@ -34,7 +34,7 @@
 #include <unistd.h>
 
 void shell_draw() {
-  char *full_path, *shell;
+  char *full_path;
   int res;
 
   /* suspend ncurses mode */
@@ -60,7 +60,7 @@ void shell_draw() {
     /* resume ncurses mode */
     reset_prog_mode();
 
-    if (res == -1 || WEXITSTATUS(res) != 0) {
+    if (res == -1 || !WIFEXITED(res) || WEXITSTATUS(res) == 127) {
       clear();
       printw("ERROR: Can't execute shell interpreter: %s\n"
              "\n"
