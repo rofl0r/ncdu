@@ -1,3 +1,9 @@
+1.11 - 2014-04-05
+	- Added 'b' key to spawn shell in the current directory
+	- Support scanning (and refreshing) of empty directories
+	- Added --si flag for base 10 prefixes
+	- Fix toggle dirs before files
+
 1.10 - 2013-05-09
 	- Added 'c' key to display item counts
 	- Added 'C' key to order by item counts
