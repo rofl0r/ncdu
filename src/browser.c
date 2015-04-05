@@ -429,6 +429,10 @@ int browse_key(int ch) {
       delete_init(sel, t);
       break;
      case 'b':
+      if(dir_import_active) {
+        message = "Shell feature not available for imported directories.";
+        break;
+      }
       shell_init();
       break;
     }
