@@ -5,7 +5,7 @@
 # x86_64 isn't really necessary. I can't test any other arches.
 
 
-MUSL_VERSION=0.9.9
+MUSL_VERSION=1.1.6
 NCURSES_VERSION=5.9
 
 export CFLAGS="-O3 -g -static"
@@ -73,7 +73,7 @@ getmusl() {
     arm)    DIR=arm-linux-musleabi ;;
     i486)   DIR=i486-linux-musl ;;
   esac
-  fem https://bitbucket.org/GregorR/musl-cross/downloads/ crossx86-$DIR-$MUSL_VERSION.tar.xz "musl-$TARGET" $DIR
+  fem https://googledrive.com/host/0BwnS5DMB0YQ6bDhPZkpOYVFhbk0/musl-$MUSL_VERSION/ crossx86-$DIR-$MUSL_VERSION.tar.xz "musl-$TARGET" $DIR
 }
 
 
