@@ -52,9 +52,12 @@ void shell_draw() {
            "Press any key to continue.",
            full_path, res);
   } else {
-    char *shell = getenv("SHELL");
-    if (shell == NULL)
-      shell = DEFAULT_SHELL;
+    char *shell = getenv("NCDU_SHELL");
+    if (shell == NULL) {
+      shell = getenv("SHELL");
+      if (shell == NULL)
+        shell = DEFAULT_SHELL;
+    }
 
     res = system(shell);
 

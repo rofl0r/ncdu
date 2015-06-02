@@ -214,9 +214,15 @@ Refresh/recalculate the current directory.
 
 Spawn shell in current directory.
 
-We first check the $SHELL environment variable of the user for the preferred
-shell interpreter. If it's not set, we fall back to the compile time
-configured default shell (usually /bin/bash).
+We first check the $NCDU_SHELL environment variable of the user for the
+preferred shell interpreter. If it's not set, $SHELL is checked. If that
+variable also isn't defined, we fall back to the compile time configured
+default shell (usually /bin/bash). This allows you to specify which program to
+launch when 'b' is pressed. For example, if you want ncdu to execute the
+Midnight Commander file manager in the current directory:
+
+  export NCDU_SHELL=mc
+  ncdu
 
 =item q
 
