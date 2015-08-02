@@ -370,6 +370,7 @@ int browse_key(int ch) {
       info_show = 0;
       break;
     case KEY_LEFT:
+    case KEY_BACKSPACE:
     case 'h':
     case '<':
       if(dirlist_par && dirlist_par->parent != NULL) {
