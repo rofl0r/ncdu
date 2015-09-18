@@ -56,6 +56,7 @@
 #define ST_DEL    2
 #define ST_HELP   3
 #define ST_SHELL  4
+#define ST_QUIT   5
 
 
 /* structure representing a file or directory */
@@ -104,5 +105,6 @@ int input_handle(int);
 #include "path.h"
 #include "util.h"
 #include "shell.h"
+#include "quit.h"
 
 #endif
