@@ -130,6 +130,7 @@ static void argv_parse(int argc, char **argv) {
     { 'X', 1, "-X,--exclude-from" },
     { 'C', 0, "--exclude-caches" },
     { 's', 0, "--si" },
+    { 'Q', 0, "--confirm-quit" },
     {0,0,NULL}
   };
 
@@ -154,6 +155,7 @@ static void argv_parse(int argc, char **argv) {
       printf("  --exclude PATTERN          Exclude files that match PATTERN\n");
       printf("  -X, --exclude-from FILE    Exclude files that match any pattern in FILE\n");
       printf("  --exclude-caches           Exclude directories containing CACHEDIR.TAG\n");
+      printf("  --confirm-quit             Confirm quitting ncdu\n");
       exit(0);
     case 'q': update_delay = 2000; break;
     case 'v':
@@ -167,6 +169,7 @@ static void argv_parse(int argc, char **argv) {
     case '0': dir_ui = 0; break;
     case '1': dir_ui = 1; break;
     case '2': dir_ui = 2; break;
+    case 'Q': confirm_quit = 1; break;
     case  1 : exclude_add(val); break; /* --exclude */
     case 'X':
       if(exclude_addfile(val)) {

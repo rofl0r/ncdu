@@ -397,7 +397,9 @@ int browse_key(int ch) {
       if(info_show)
         info_show = 0;
       else
-        quit_init();
+        if (confirm_quit)
+          quit_init();
+        else return 1;
       break;
     case 'g':
       if(++graph > 3)

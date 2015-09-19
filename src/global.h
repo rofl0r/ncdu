@@ -90,6 +90,8 @@ extern int read_only;
 extern long update_delay;
 /* filter directories with CACHEDIR.TAG */
 extern int cachedir_tags;
+/* flag if we should ask for confirmation when quitting */
+extern int confirm_quit;
 
 /* handle input from keyboard and update display */
 int input_handle(int);

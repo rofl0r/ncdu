@@ -103,6 +103,11 @@ List sizes using base 10 prefixes, that is, powers of 1000 (KB, MB, etc), as
 defined in the International System of Units (SI), instead of the usual base 2
 prefixes, that is, powers of 1024 (KiB, MiB, etc).
 
+=item --confirm-quit
+
+Requires a confirmation before quitting ncdu. Very helpful when you
+accidentally press 'q' during or after a very long scan.
+
 =back
 
 =head2 Scan Options
