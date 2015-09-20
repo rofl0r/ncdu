@@ -27,14 +27,11 @@
 
 #include <ncurses.h>
 
-/* extern? */ int page, start;
-
 int quit_key(int ch) {
   switch(ch) {
   case 'y':
   case 'Y':
     return 1;
-    break;
   default:
     pstate = ST_BROWSE;
   }
@@ -49,7 +46,5 @@ void quit_draw() {
 }
 
 void quit_init() {
-  page = 1;
-  start = 0;
   pstate = ST_QUIT;
 }
