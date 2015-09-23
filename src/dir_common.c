@@ -211,7 +211,7 @@ void dir_draw() {
 int dir_key(int ch) {
   if(dir_fatalerr)
     return 1;
-  if(confirm_quit_while_scanning_stage_1_passed) {
+  if(confirm_quit && confirm_quit_while_scanning_stage_1_passed) {
     if (ch == 'y'|| ch == 'Y') {
       return 1;
     } else {
@@ -219,8 +219,11 @@ int dir_key(int ch) {
       return 0;
     }
   } else if(ch == 'q') {
-    confirm_quit_while_scanning_stage_1_passed = 1;
-    return 0;
+    if(confirm_quit) {
+      confirm_quit_while_scanning_stage_1_passed = 1;
+      return 0;
+    } else
+      return 1;
   }
   return 0;
 }
