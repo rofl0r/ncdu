@@ -35,6 +35,7 @@ char *dir_curpath;   /* Full path of the last seen item. */
 struct dir_output dir_output;
 char *dir_fatalerr; /* Error message on a fatal error. (NULL if there was no fatal error) */
 int dir_ui;         /* User interface to use */
+int confirm_quit_while_scanning_stage_1_passed; /* Additional check before quitting */
 static char *lasterr; /* Path where the last error occured. */
 static int curpathl; /* Allocated length of dir_curpath */
 static int lasterrl; /* ^ of lasterr */
@@ -134,7 +135,10 @@ static void draw_progress() {
   if(dir_output.size)
     ncprint(2, 23, "size: %s", formatsize(dir_output.size));
   ncprint(3, 2, "Current item: %s", cropstr(dir_curpath, width-18));
-  ncaddstr(8, width-18, "Press q to abort");
+  if (confirm_quit_while_scanning_stage_1_passed)
+    ncaddstr(8, width-26, "Press y to confirm abort");
+  else
+    ncaddstr(8, width-18, "Press q to abort");
 
   /* show warning if we couldn't open a dir */
   if(lasterr) {
@@ -207,7 +211,16 @@ void dir_draw() {
 int dir_key(int ch) {
   if(dir_fatalerr)
     return 1;
-  if(ch == 'q')
-    return 1;
+  if(confirm_quit_while_scanning_stage_1_passed) {
+    if (ch == 'y'|| ch == 'Y') {
+      return 1;
+    } else {
+      confirm_quit_while_scanning_stage_1_passed = 0;
+      return 0;
+    }
+  } else if(ch == 'q') {
+    confirm_quit_while_scanning_stage_1_passed = 1;
+    return 0;
+  }
   return 0;
 }
