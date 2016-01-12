@@ -173,7 +173,7 @@ static void argv_parse(int argc, char **argv) {
     case  1 : exclude_add(val); break; /* --exclude */
     case 'X':
       if(exclude_addfile(val)) {
-        printf("Can't open %s: %s\n", val, strerror(errno));
+        fprintf(stderr, "Can't open %s: %s\n", val, strerror(errno));
         exit(1);
       }
       break;
@@ -181,14 +181,14 @@ static void argv_parse(int argc, char **argv) {
       cachedir_tags = 1;
       break;
     case -2:
-      printf("ncdu: %s.\n", val);
+      fprintf(stderr, "ncdu: %s.\n", val);
       exit(1);
     }
   }
 
   if(export) {
     if(dir_export_init(export)) {
-      printf("Can't open %s: %s\n", export, strerror(errno));
+      fprintf(stderr, "Can't open %s: %s\n", export, strerror(errno));
       exit(1);
     }
     if(strcmp(export, "-") == 0)
@@ -198,7 +198,7 @@ static void argv_parse(int argc, char **argv) {
 
   if(import) {
     if(dir_import_init(import)) {
-      printf("Can't open %s: %s\n", import, strerror(errno));
+      fprintf(stderr, "Can't open %s: %s\n", import, strerror(errno));
       exit(1);
     }
     if(strcmp(import, "-") == 0)
