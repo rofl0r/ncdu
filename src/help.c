@@ -1,6 +1,6 @@
 /* ncdu - NCurses Disk Usage
 
-  Copyright (c) 2007-2014 Yoran Heling
+  Copyright (c) 2007-2016 Yoran Heling
 
   Permission is hereby granted, free of charge, to any person obtaining
   a copy of this software and associated documentation files (the
@@ -154,7 +154,7 @@ void help_draw() {
       ncaddstr(y+2, x+30, "Usage");
       ncprint( y+4, x+30, "%s", PACKAGE_VERSION);
       ncaddstr( 9,  7, "Written by Yoran Heling <projects@yorhel.nl>");
-      ncaddstr(10, 16, "http://dev.yorhel.nl/ncdu/");
+      ncaddstr(10, 16, "https://dev.yorhel.nl/ncdu/");
       break;
   }
 }

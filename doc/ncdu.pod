@@ -325,7 +325,7 @@ If you have a directory with more than 2 billion files, quite literally
 anything can happen.
 
 Please report any other bugs you may find at the bug tracker, which can be
-found on the web site at http://dev.yorhel.nl/ncdu
+found on the web site at https://dev.yorhel.nl/ncdu
 
 
 =head1 AUTHOR

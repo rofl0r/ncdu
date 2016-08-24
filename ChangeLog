@@ -1,3 +1,8 @@
+1.12 - 2016-08-24
+	- Add NCDU_SHELL environment variable
+	- Add --confirm-quit flag
+	- Fix compilation due to missing sys/wait.h include
+
 1.11 - 2015-04-05
 	- Added 'b' key to spawn shell in the current directory
 	- Support scanning (and refreshing) of empty directories

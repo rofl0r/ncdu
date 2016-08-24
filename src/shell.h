@@ -1,6 +1,6 @@
 /* ncdu - NCurses Disk Usage
 
-  Copyright (c) 2007-2014 Yoran Heling
+  Copyright (c) 2007-2016 Yoran Heling
   Shell support: Copyright (c) 2014 Thomas Jarosch
 
   Permission is hereby granted, free of charge, to any person obtaining
