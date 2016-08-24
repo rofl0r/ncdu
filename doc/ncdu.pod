@@ -219,14 +219,13 @@ Refresh/recalculate the current directory.
 
 Spawn shell in current directory.
 
-We first check the $NCDU_SHELL environment variable of the user for the
-preferred shell interpreter. If it's not set, $SHELL is checked. If that
-variable also isn't defined, we fall back to the compile time configured
-default shell (usually /bin/sh). This allows you to specify which program to
-launch when 'b' is pressed. For example, if you want ncdu to execute the
-Midnight Commander file manager in the current directory:
+Ncdu will determine your preferred shell from the C<NCDU_SHELL> or C<SHELL>
+variable (in that order), or will call C</bin/sh> if neither are set.  This
+allows you to also configure another command to be run when he 'b' key is
+pressed. For example, to spawn the L<vifm(1)> file manager instead of a shell,
+run ncdu as follows:
 
-  export NCDU_SHELL=mc
+  export NCDU_SHELL=vifm
   ncdu
 
 =item q
@@ -318,7 +317,12 @@ or multicolumn characters.
 
 All sizes are internally represented as a signed 64bit integer. If you have a
 directory larger than 8 EiB minus one byte, ncdu will clip its size to 8 EiB
-minus one byte.
+minus one byte. When deleting items in a directory with a clipped size, the
+resulting sizes will be incorrect.
+
+Item counts are stored in a signed 32-bit integer without overflow detection.
+If you have a directory with more than 2 billion files, quite literally
+anything can happen.
 
 Please report any other bugs you may find at the bug tracker, which can be
 found on the web site at http://dev.yorhel.nl/ncdu
