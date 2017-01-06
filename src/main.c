@@ -162,7 +162,7 @@ static void argv_parse(int argc, char **argv) {
       printf("ncdu %s\n", PACKAGE_VERSION);
       exit(0);
     case 'x': dir_scan_smfs = 1; break;
-    case 'r': read_only = 1; break;
+    case 'r': read_only++; break;
     case 's': si = 1; break;
     case 'o': export = val; break;
     case 'f': import = val; break;

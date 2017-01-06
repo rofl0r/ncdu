@@ -417,8 +417,8 @@ int browse_key(int ch) {
       info_show = 0;
       break;
     case 'd':
-      if(read_only || dir_import_active) {
-        message = read_only
+      if(read_only >= 1 || dir_import_active) {
+        message = read_only >= 1
           ? "File deletion disabled in read-only mode."
           : "File deletion not available for imported directories.";
         break;
@@ -432,8 +432,10 @@ int browse_key(int ch) {
       delete_init(sel, t);
       break;
      case 'b':
-      if(dir_import_active) {
-        message = "Shell feature not available for imported directories.";
+      if(read_only >= 2 || dir_import_active) {
+        message = read_only >= 2
+          ? "Shell feature disabled in read-only mode."
+          : "Shell feature not available for imported directories.";
         break;
       }
       shell_init();

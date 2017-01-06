@@ -35,8 +35,8 @@ I<FILE> is equivalent to C<->, the file is read from standard input.
 
 For the sake of preventing a screw-up, the current version of ncdu will assume
 that the directory information in the imported file does not represent the
-filesystem on which the file is being imported. That is, the refresh and file
-deletion options in the browser will be disabled.
+filesystem on which the file is being imported. That is, the refresh, file
+deletion and shell spawning options in the browser will be disabled.
 
 =item I<dir>
 
@@ -96,6 +96,16 @@ Read-only mode. This will disable the built-in file deletion feature. This
 option has no effect when C<-o> is used, because there will not be a browser
 interface in that case. It has no effect when C<-f> is used, either, because
 the deletion feature is disabled in that case anyway.
+
+WARNING: This option will only prevent deletion through the file browser. It is
+still possible to spawn a shell from ncdu and delete or modify files from
+there. To disable that feature as well, pass the C<-r> option twice (see
+C<-rr>).
+
+=item -rr
+
+In addition to C<-r>, this will also disable the shell spawning feature of the
+file browser.
 
 =item --si
 
