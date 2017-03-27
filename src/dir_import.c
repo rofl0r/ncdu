@@ -107,7 +107,7 @@ static int fill(int n) {
     if(r != n) {
       if(feof(ctx->stream))
         ctx->eof = 1;
-      else if(ferror(ctx->stream)) {
+      else if(ferror(ctx->stream) && errno != EINTR) {
         dir_seterr("Read error: %s", strerror(errno));
         return 1;
       }
