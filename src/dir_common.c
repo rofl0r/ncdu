@@ -131,14 +131,26 @@ static void draw_progress() {
 
   nccreate(10, width, antext);
 
-  ncprint(2, 2, "Total items: %-8d", dir_output.items);
-  if(dir_output.size)
-    ncprint(2, 23, "size: %s", formatsize(dir_output.size));
+  ncaddstr(2, 2, "Total items: ");
+  uic_set(UIC_KEYNUM);
+  printw("%-8d", dir_output.items);
+
+  if(dir_output.size) {
+    ncaddstrc(UIC_DEFAULT, 2, 23, "size: ");
+    printsize(UIC_DEFAULT, dir_output.size);
+  }
+
+  uic_set(UIC_DEFAULT);
   ncprint(3, 2, "Current item: %s", cropstr(dir_curpath, width-18));
-  if (confirm_quit_while_scanning_stage_1_passed)
-    ncaddstr(8, width-26, "Press y to confirm abort");
-  else
-    ncaddstr(8, width-18, "Press q to abort");
+  if(confirm_quit_while_scanning_stage_1_passed) {
+    ncaddstr(8, width-26, "Press ");
+    addchc(UIC_KEYNUM, 'y');
+    addstrc(UIC_DEFAULT, " to confirm abort");
+  } else {
+    ncaddstr(8, width-18, "Press ");
+    addchc(UIC_KEYNUM, 'q');
+    addstrc(UIC_DEFAULT, " to abort");
+  }
 
   /* show warning if we couldn't open a dir */
   if(lasterr) {
@@ -181,6 +193,9 @@ static void draw_error(char *cur, char *msg) {
 
 
 void dir_draw() {
+  float f;
+  char *unit;
+
   switch(dir_ui) {
   case 0:
     if(dir_fatalerr)
@@ -189,10 +204,11 @@ void dir_draw() {
   case 1:
     if(dir_fatalerr)
       fprintf(stderr, "\r%s.\n", dir_fatalerr);
-    else if(dir_output.size)
-      fprintf(stderr, "\r%-55s %8d files /%s",
-        cropstr(dir_curpath, 55), dir_output.items, formatsize(dir_output.size));
-    else
+    else if(dir_output.size) {
+      f = formatsize(dir_output.size, &unit);
+      fprintf(stderr, "\r%-55s %8d files /%5.1f %s",
+        cropstr(dir_curpath, 55), dir_output.items, f, unit);
+    } else
       fprintf(stderr, "\r%-65s %8d files", cropstr(dir_curpath, 65), dir_output.items);
     break;
   case 2:

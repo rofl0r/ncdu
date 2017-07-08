@@ -61,28 +61,23 @@ void help_draw() {
   browse_draw();
 
   nccreate(15, 60, "ncdu help");
-  ncaddstr(13, 42, "Press q to close");
+  ncaddstr(13, 42, "Press ");
+  uic_set(UIC_KEYNUM);
+  addch('q');
+  uic_set(UIC_DEFAULT);
+  addstr(" to close");
 
-  if(page == 1)
-    attron(A_REVERSE);
-  ncaddstr(0, 30, "1:Keys");
-  attroff(A_REVERSE);
-  if(page == 2)
-    attron(A_REVERSE);
-  ncaddstr(0, 39, "2:Format");
-  attroff(A_REVERSE);
-  if(page == 3)
-    attron(A_REVERSE);
-  ncaddstr(0, 50, "3:About");
-  attroff(A_REVERSE);
+  nctab(30, page == 1, 1, "Keys");
+  nctab(39, page == 2, 2, "Format");
+  nctab(50, page == 3, 3, "About");
 
   switch(page) {
     case 1:
       line = 1;
       for(i=start*2; i<start*2+20; i+=2) {
-        attron(A_BOLD);
+        uic_set(UIC_KEYNUM);
         ncaddstr(++line, 13-strlen(keys[i]), keys[i]);
-        attroff(A_BOLD);
+        uic_set(UIC_DEFAULT);
         ncaddstr(line, 15, keys[i+1]);
       }
       if(start != KEYS-10)
@@ -93,7 +88,7 @@ void help_draw() {
       ncaddstr(2, 3, "X  [size] [graph] [file or directory]");
       attroff(A_BOLD);
       ncaddstr(3, 4, "The X is only present in the following cases:");
-      attron(A_BOLD);
+      uic_set(UIC_FLAG);
       ncaddch( 5, 4, '!');
       ncaddch( 6, 4, '.');
       ncaddch( 7, 4, '<');
@@ -101,7 +96,7 @@ void help_draw() {
       ncaddch( 9, 4, '@');
       ncaddch(10, 4, 'H');
       ncaddch(11, 4, 'e');
-      attroff(A_BOLD);
+      uic_set(UIC_DEFAULT);
       ncaddstr( 5, 7, "An error occured while reading this directory");
       ncaddstr( 6, 7, "An error occured while reading a subdirectory");
       ncaddstr( 7, 7, "File or directory is excluded from the statistics");

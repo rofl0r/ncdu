@@ -249,6 +249,7 @@ static void init_nc() {
     exit(1);
   }
 
+  uic_init();
   cbreak();
   noecho();
   curs_set(0);
