@@ -40,8 +40,7 @@ int    dirlist_sort_desc   = 1,
        dirlist_hidden      = 0;
 
 /* private state vars */
-static struct dir dirlist_parent_alloc;
-static struct dir *head, *head_real, *selected, *top = NULL;
+static struct dir *parent_alloc, *head, *head_real, *selected, *top = NULL;
 
 
 
@@ -206,14 +205,15 @@ void dirlist_open(struct dir *d) {
     head_real = head = dirlist_sort(head);
 
   /* set the reference to the parent dir */
-  dirlist_parent_alloc.flags &= ~FF_BSEL;
-  dirlist_parent_alloc.flags |= FF_DIR;
   if(d->parent) {
-    dirlist_parent = &dirlist_parent_alloc;
+    if(!parent_alloc)
+      parent_alloc = calloc(1, SDIRSIZE + 3);
+    dirlist_parent = parent_alloc;
     strcpy(dirlist_parent->name, "..");
     dirlist_parent->next = head;
     dirlist_parent->parent = d;
     dirlist_parent->sub = d;
+    dirlist_parent->flags = FF_DIR;
     head = dirlist_parent;
   } else
     dirlist_parent = NULL;

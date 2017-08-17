@@ -66,7 +66,7 @@ struct dir {
   struct dir *parent, *next, *prev, *sub, *hlnk;
   int items;
   unsigned char flags;
-  char name[3]; /* must be large enough to hold ".." */
+  char name[];
 };
 /* sizeof(total dir) = SDIRSIZE + strlen(name) = offsetof(struct dir, name) + strlen(name) + 1 */
 #define SDIRSIZE (offsetof(struct dir, name)+1)

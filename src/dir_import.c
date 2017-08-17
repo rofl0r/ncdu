@@ -431,10 +431,13 @@ static int itemdir(uint64_t dev) {
 
 
 static int iteminfo(struct dir **item, uint64_t dev, int isdir) {
-  static struct dir dir;
-  struct dir *tmp, *d = &dir;
+  static struct dir *dirbuf;
+  struct dir *tmp, *d;
   uint64_t iv;
 
+  if(!dirbuf)
+    dirbuf = malloc(sizeof(struct dir));
+  d = dirbuf;
   memset(d, 0, sizeof(struct dir));
   d->flags |= isdir ? FF_DIR : FF_FILE;
   d->dev = dev;
