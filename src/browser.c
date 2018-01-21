@@ -64,13 +64,13 @@ static void browse_draw_info(struct dir *dr) {
     ncmove(6, 18);
     printsize(UIC_DEFAULT, dr->size);
     addstrc(UIC_DEFAULT, " (");
-    addstrc(UIC_KEYNUM, fullsize(dr->size));
+    addstrc(UIC_NUM, fullsize(dr->size));
     addstrc(UIC_DEFAULT, " B)");
 
     ncmove(7, 18);
     printsize(UIC_DEFAULT, dr->asize);
     addstrc(UIC_DEFAULT, " (");
-    addstrc(UIC_KEYNUM, fullsize(dr->asize));
+    addstrc(UIC_NUM, fullsize(dr->asize));
     addstrc(UIC_DEFAULT, " B)");
     break;
 
@@ -88,7 +88,7 @@ static void browse_draw_info(struct dir *dr) {
   }
 
   ncaddstr(9, 31, "Press ");
-  addchc(UIC_KEYNUM, 'i');
+  addchc(UIC_KEY, 'i');
   addstrc(UIC_DEFAULT, " to hide this window");
 }
 
@@ -129,7 +129,7 @@ static void browse_draw_graph(struct dir *n, int *x) {
     pc = (float)(show_as ? n->parent->asize : n->parent->size);
     if(pc < 1)
       pc = 1.0f;
-    uic_set(c == UIC_SEL ? UIC_KEYNUM_SEL : UIC_KEYNUM);
+    uic_set(c == UIC_SEL ? UIC_NUM_SEL : UIC_NUM);
     printw("%5.1f", ((float)(show_as ? n->asize : n->size) / pc) * 100.0f);
     addchc(c, '%');
   }
@@ -158,10 +158,10 @@ static void browse_draw_items(struct dir *n, int *x) {
 
   if(n->items > 99999) {
     addstrc(c, "> ");
-    addstrc(c == UIC_SEL ? UIC_KEYNUM_SEL : UIC_KEYNUM, "100");
+    addstrc(c == UIC_SEL ? UIC_NUM_SEL : UIC_NUM, "100");
     addchc(c, 'k');
   } else if(n->items) {
-    uic_set(c == UIC_SEL ? UIC_KEYNUM_SEL : UIC_KEYNUM);
+    uic_set(c == UIC_SEL ? UIC_NUM_SEL : UIC_NUM);
     printw("%6s", fullsize(n->items));
   }
 }
@@ -189,7 +189,9 @@ static void browse_draw_item(struct dir *n, int row) {
   browse_draw_items(n, &x);
   move(row, x);
 
-  addchc(c == UIC_SEL ? UIC_DIR_SEL : UIC_DIR, n->flags & FF_DIR ? '/' : ' ');
+  if(n->flags & FF_DIR)
+    c = c == UIC_SEL ? UIC_DIR_SEL : UIC_DIR;
+  addchc(c, n->flags & FF_DIR ? '/' : ' ');
   addstrc(c, cropstr(n->name, wincols-x-1));
 }
 
@@ -206,7 +208,7 @@ void browse_draw() {
   uic_set(UIC_HD);
   mvhline(0, 0, ' ', wincols);
   mvprintw(0,0,"%s %s ~ Use the arrow keys to navigate, press ", PACKAGE_NAME, PACKAGE_VERSION);
-  addchc(UIC_KEYNUM_HD, '?');
+  addchc(UIC_KEY_HD, '?');
   addstrc(UIC_HD, " for help");
   if(dir_import_active)
     mvaddstr(0, wincols-10, "[imported]");
@@ -229,10 +231,10 @@ void browse_draw() {
     mvaddstr(winrows-1, 0, " Total disk usage: ");
     printsize(UIC_HD, t->parent->size);
     addstrc(UIC_HD, "  Apparent size: ");
-    uic_set(UIC_KEYNUM_HD);
+    uic_set(UIC_NUM_HD);
     printsize(UIC_HD, t->parent->asize);
     addstrc(UIC_HD, "  Items: ");
-    uic_set(UIC_KEYNUM_HD);
+    uic_set(UIC_NUM_HD);
     printw("%d", t->parent->items);
   } else
     mvaddstr(winrows-1, 0, " No items to display.");

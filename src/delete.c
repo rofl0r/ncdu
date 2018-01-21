@@ -71,7 +71,7 @@ static void delete_draw_progress() {
 
   ncaddstr(1, 2, cropstr(getpath(curdir), 47));
   ncaddstr(4, 41, "Press ");
-  addchc(UIC_KEYNUM, 'q');
+  addchc(UIC_KEY, 'q');
   addstrc(UIC_DEFAULT, " to abort");
 }
 

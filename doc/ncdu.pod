@@ -118,6 +118,12 @@ prefixes, that is, powers of 1024 (KiB, MiB, etc).
 Requires a confirmation before quitting ncdu. Very helpful when you
 accidentally press 'q' during or after a very long scan.
 
+=item --color I<SCHEME>
+
+Select a color scheme. Currently only two schemes are recognized: I<off> to
+disable colors (the default) and I<dark> for a color scheme intended for dark
+backgrounds.
+
 =back
 
 =head2 Scan Options

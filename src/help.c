@@ -62,7 +62,7 @@ void help_draw() {
 
   nccreate(15, 60, "ncdu help");
   ncaddstr(13, 42, "Press ");
-  uic_set(UIC_KEYNUM);
+  uic_set(UIC_KEY);
   addch('q');
   uic_set(UIC_DEFAULT);
   addstr(" to close");
@@ -75,7 +75,7 @@ void help_draw() {
     case 1:
       line = 1;
       for(i=start*2; i<start*2+20; i+=2) {
-        uic_set(UIC_KEYNUM);
+        uic_set(UIC_KEY);
         ncaddstr(++line, 13-strlen(keys[i]), keys[i]);
         uic_set(UIC_DEFAULT);
         ncaddstr(line, 15, keys[i+1]);

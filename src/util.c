@@ -33,6 +33,7 @@
 #include <locale.h>
 #endif
 
+int uic_theme;
 int winrows, wincols;
 int subwinr, subwinc;
 int si;
@@ -87,7 +88,7 @@ float formatsize(int64_t from, char **unit) {
 void printsize(enum ui_coltype t, int64_t from) {
   char *unit;
   float r = formatsize(from, &unit);
-  uic_set(t == UIC_HD ? UIC_KEYNUM_HD : t == UIC_SEL ? UIC_KEYNUM_SEL : UIC_KEYNUM);
+  uic_set(t == UIC_HD ? UIC_NUM_HD : t == UIC_SEL ? UIC_NUM_SEL : UIC_NUM);
   printw("%5.1f", r);
   addchc(t, ' ');
   addstrc(t, unit);
@@ -201,7 +202,7 @@ void ncprint(int r, int c, char *fmt, ...) {
 
 
 void nctab(int c, int sel, int num, char *str) {
-  uic_set(sel ? UIC_KEYNUM_HD : UIC_KEYNUM);
+  uic_set(sel ? UIC_KEY_HD : UIC_KEY);
   ncprint(0, c, "%d", num);
   uic_set(sel ? UIC_HD : UIC_DEFAULT);
   addch(':');
@@ -211,24 +212,36 @@ void nctab(int c, int sel, int num, char *str) {
 
 
 static int colors[] = {
-#define C(name, fg, bg, attr) 0,
+#define C(name, ...) 0,
   UI_COLORS
 #undef C
   0
 };
 static int lastcolor = 0;
 
-void uic_init() {
-  start_color();
-  use_default_colors();
 
-  int i=0;
-#define C(name, fg, bg, attr) \
-    init_pair(i+1, fg, bg);\
-    colors[i] = attr | COLOR_PAIR(i+1);\
-    i++;
+static const struct {
+  short fg, bg;
+  int attr;
+} color_defs[] = {
+#define C(name, off_fg, off_bg, off_a, dark_fg, dark_bg, dark_a) \
+  {off_fg,  off_bg,  off_a}, \
+  {dark_fg, dark_bg, dark_a},
   UI_COLORS
 #undef C
+  {0,0,0}
+};
+
+void uic_init() {
+  size_t i, j;
+
+  start_color();
+  use_default_colors();
+  for(i=0; i<sizeof(colors)/sizeof(*colors)-1; i++) {
+    j = i*2 + uic_theme;
+    init_pair(i+1, color_defs[j].fg, color_defs[j].bg);
+    colors[i] = color_defs[j].attr | COLOR_PAIR(i+1);
+  }
 }
 
 void uic_set(enum ui_coltype c) {

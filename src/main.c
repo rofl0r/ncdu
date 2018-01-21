@@ -131,6 +131,7 @@ static void argv_parse(int argc, char **argv) {
     { 'C', 0, "--exclude-caches" },
     { 's', 0, "--si" },
     { 'Q', 0, "--confirm-quit" },
+    { 'c', 1, "--color" },
     {0,0,NULL}
   };
 
@@ -179,6 +180,14 @@ static void argv_parse(int argc, char **argv) {
       break;
     case 'C':
       cachedir_tags = 1;
+      break;
+    case 'c':
+      if(strcmp(val, "off") == 0)  { uic_theme = 0; }
+      if(strcmp(val, "dark") == 0) { uic_theme = 1; }
+      else {
+        fprintf(stderr, "Unknown --color option: %s\n", val);
+        exit(1);
+      }
       break;
     case -2:
       fprintf(stderr, "ncdu: %s.\n", val);

@@ -132,7 +132,7 @@ static void draw_progress() {
   nccreate(10, width, antext);
 
   ncaddstr(2, 2, "Total items: ");
-  uic_set(UIC_KEYNUM);
+  uic_set(UIC_NUM);
   printw("%-8d", dir_output.items);
 
   if(dir_output.size) {
@@ -144,11 +144,11 @@ static void draw_progress() {
   ncprint(3, 2, "Current item: %s", cropstr(dir_curpath, width-18));
   if(confirm_quit_while_scanning_stage_1_passed) {
     ncaddstr(8, width-26, "Press ");
-    addchc(UIC_KEYNUM, 'y');
+    addchc(UIC_KEY, 'y');
     addstrc(UIC_DEFAULT, " to confirm abort");
   } else {
     ncaddstr(8, width-18, "Press ");
-    addchc(UIC_KEYNUM, 'q');
+    addchc(UIC_KEY, 'q');
     addstrc(UIC_DEFAULT, " to abort");
   }
 

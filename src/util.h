@@ -30,30 +30,36 @@
 #include <ncurses.h>
 
 
-/* UI colors: C(name, foreground, background, attrs) */
+/* UI colors: (foreground, background, attrs)
+ *  NAME         OFF                        DARK
+ */
 #define UI_COLORS \
-  C(DEFAULT,    -1,            -1,          0     )\
-  C(BOX_TITLE,  COLOR_BLUE,    -1,          A_BOLD)\
-  C(HD,         COLOR_BLACK,   COLOR_CYAN,  0     )    /* header & footer */\
-  C(SEL,        COLOR_WHITE,   COLOR_GREEN, A_BOLD)\
-  C(KEYNUM,     COLOR_YELLOW,  -1,          A_BOLD)\
-  C(KEYNUM_HD,  COLOR_YELLOW,  COLOR_CYAN,  A_BOLD)\
-  C(KEYNUM_SEL, COLOR_YELLOW,  COLOR_GREEN, A_BOLD)\
-  C(DIR,        COLOR_BLUE,    -1,          A_BOLD)\
-  C(DIR_SEL,    COLOR_BLUE,    COLOR_GREEN, A_BOLD)\
-  C(FLAG,       COLOR_RED,     -1,          0     )\
-  C(FLAG_SEL,   COLOR_RED,     COLOR_GREEN, 0     )\
-  C(GRAPH,      COLOR_MAGENTA, -1,          0     )\
-  C(GRAPH_SEL,  COLOR_MAGENTA, COLOR_GREEN, 0     )
+  C(DEFAULT,     -1,-1,0               ,    -1,           -1,         0     )\
+  C(BOX_TITLE,   -1,-1,A_BOLD          ,    COLOR_BLUE,   -1,         A_BOLD)\
+  C(HD,          -1,-1,A_REVERSE       ,    COLOR_BLACK,  COLOR_CYAN, 0     )    /* header & footer */\
+  C(SEL,         -1,-1,A_REVERSE       ,    COLOR_WHITE,  COLOR_GREEN,A_BOLD)\
+  C(NUM,         -1,-1,0               ,    COLOR_YELLOW, -1,         A_BOLD)\
+  C(NUM_HD,      -1,-1,A_REVERSE       ,    COLOR_YELLOW, COLOR_CYAN, A_BOLD)\
+  C(NUM_SEL,     -1,-1,A_REVERSE       ,    COLOR_YELLOW, COLOR_GREEN,A_BOLD)\
+  C(KEY,         -1,-1,A_BOLD          ,    COLOR_YELLOW, -1,         A_BOLD)\
+  C(KEY_HD,      -1,-1,A_BOLD|A_REVERSE,    COLOR_YELLOW, COLOR_CYAN, A_BOLD)\
+  C(DIR,         -1,-1,0               ,    COLOR_BLUE,   -1,         A_BOLD)\
+  C(DIR_SEL,     -1,-1,A_REVERSE       ,    COLOR_BLUE,   COLOR_GREEN,A_BOLD)\
+  C(FLAG,        -1,-1,0               ,    COLOR_RED,    -1,         0     )\
+  C(FLAG_SEL,    -1,-1,A_REVERSE       ,    COLOR_RED,    COLOR_GREEN,0     )\
+  C(GRAPH,       -1,-1,0               ,    COLOR_MAGENTA,-1,         0     )\
+  C(GRAPH_SEL,   -1,-1,A_REVERSE       ,    COLOR_MAGENTA,COLOR_GREEN,0     )
 
 enum ui_coltype {
-#define C(name, fg, bg, attr) UIC_##name,
+#define C(name, ...) UIC_##name,
   UI_COLORS
 #undef C
   UIC_NONE
 };
 
 /* Color & attribute manipulation */
+extern int uic_theme;
+
 void uic_init();
 void uic_set(enum ui_coltype);
 
