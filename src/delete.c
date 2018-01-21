@@ -70,7 +70,9 @@ static void delete_draw_progress() {
   nccreate(6, 60, "Deleting...");
 
   ncaddstr(1, 2, cropstr(getpath(curdir), 47));
-  ncaddstr(4, 41, "Press q to abort");
+  ncaddstr(4, 41, "Press ");
+  addchc(UIC_KEY, 'q');
+  addstrc(UIC_DEFAULT, " to abort");
 }
 
 

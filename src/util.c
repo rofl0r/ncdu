@@ -33,6 +33,7 @@
 #include <locale.h>
 #endif
 
+int uic_theme;
 int winrows, wincols;
 int subwinr, subwinc;
 int si;
@@ -60,31 +61,37 @@ char *cropstr(const char *from, int s) {
 }
 
 
-char *formatsize(int64_t from) {
-  static char dat[10]; /* "xxx.x MiB" */
+float formatsize(int64_t from, char **unit) {
   float r = from;
-  char c = ' ';
   if (si) {
-    if(r < 1000.0f)   { }
-    else if(r < 1e6f) { c = 'K'; r/=1e3f; }
-    else if(r < 1e9f) { c = 'M'; r/=1e6f; }
-    else if(r < 1e12f){ c = 'G'; r/=1e9f; }
-    else if(r < 1e15f){ c = 'T'; r/=1e12f; }
-    else if(r < 1e18f){ c = 'P'; r/=1e15f; }
-    else              { c = 'E'; r/=1e18f; }
-    sprintf(dat, "%5.1f %cB", r, c);
+    if(r < 1000.0f)   { *unit = " B"; }
+    else if(r < 1e6f) { *unit = "KB"; r/=1e3f; }
+    else if(r < 1e9f) { *unit = "MB"; r/=1e6f; }
+    else if(r < 1e12f){ *unit = "GB"; r/=1e9f; }
+    else if(r < 1e15f){ *unit = "TB"; r/=1e12f; }
+    else if(r < 1e18f){ *unit = "PB"; r/=1e15f; }
+    else              { *unit = "EB"; r/=1e18f; }
   }
   else {
-    if(r < 1000.0f)      { }
-    else if(r < 1023e3f) { c = 'K'; r/=1024.0f; }
-    else if(r < 1023e6f) { c = 'M'; r/=1048576.0f; }
-    else if(r < 1023e9f) { c = 'G'; r/=1073741824.0f; }
-    else if(r < 1023e12f){ c = 'T'; r/=1099511627776.0f; }
-    else if(r < 1023e15f){ c = 'P'; r/=1125899906842624.0f; }
-    else                 { c = 'E'; r/=1152921504606846976.0f; }
-    sprintf(dat, "%5.1f %c%cB", r, c, c == ' ' ? ' ' : 'i');
+    if(r < 1000.0f)      { *unit = "  B"; }
+    else if(r < 1023e3f) { *unit = "KiB"; r/=1024.0f; }
+    else if(r < 1023e6f) { *unit = "MiB"; r/=1048576.0f; }
+    else if(r < 1023e9f) { *unit = "GiB"; r/=1073741824.0f; }
+    else if(r < 1023e12f){ *unit = "TiB"; r/=1099511627776.0f; }
+    else if(r < 1023e15f){ *unit = "PiB"; r/=1125899906842624.0f; }
+    else                 { *unit = "EiB"; r/=1152921504606846976.0f; }
   }
-  return dat;
+  return r;
+}
+
+
+void printsize(enum ui_coltype t, int64_t from) {
+  char *unit;
+  float r = formatsize(from, &unit);
+  uic_set(t == UIC_HD ? UIC_NUM_HD : t == UIC_SEL ? UIC_NUM_SEL : UIC_NUM);
+  printw("%5.1f", r);
+  addchc(t, ' ');
+  addstrc(t, unit);
 }
 
 
@@ -179,9 +186,9 @@ void nccreate(int height, int width, const char *title) {
   mvvline(subwinr+1, subwinc+width-1, ACS_VLINE, height-2);
 
   /* title */
-  attron(A_BOLD);
+  uic_set(UIC_BOX_TITLE);
   mvaddstr(subwinr, subwinc+4, title);
-  attroff(A_BOLD);
+  uic_set(UIC_DEFAULT);
 }
 
 
@@ -192,6 +199,57 @@ void ncprint(int r, int c, char *fmt, ...) {
   vw_printw(stdscr, fmt, arg);
   va_end(arg);
 }
+
+
+void nctab(int c, int sel, int num, char *str) {
+  uic_set(sel ? UIC_KEY_HD : UIC_KEY);
+  ncprint(0, c, "%d", num);
+  uic_set(sel ? UIC_HD : UIC_DEFAULT);
+  addch(':');
+  addstr(str);
+  uic_set(UIC_DEFAULT);
+}
+
+
+static int colors[] = {
+#define C(name, ...) 0,
+  UI_COLORS
+#undef C
+  0
+};
+static int lastcolor = 0;
+
+
+static const struct {
+  short fg, bg;
+  int attr;
+} color_defs[] = {
+#define C(name, off_fg, off_bg, off_a, dark_fg, dark_bg, dark_a) \
+  {off_fg,  off_bg,  off_a}, \
+  {dark_fg, dark_bg, dark_a},
+  UI_COLORS
+#undef C
+  {0,0,0}
+};
+
+void uic_init() {
+  size_t i, j;
+
+  start_color();
+  use_default_colors();
+  for(i=0; i<sizeof(colors)/sizeof(*colors)-1; i++) {
+    j = i*2 + uic_theme;
+    init_pair(i+1, color_defs[j].fg, color_defs[j].bg);
+    colors[i] = color_defs[j].attr | COLOR_PAIR(i+1);
+  }
+}
+
+void uic_set(enum ui_coltype c) {
+  attroff(lastcolor);
+  lastcolor = colors[(int)c];
+  attron(lastcolor);
+}
+
 
 
 /* removes item from the hlnk circular linked list and size counts of the parents */

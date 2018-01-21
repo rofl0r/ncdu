@@ -42,14 +42,8 @@ static void browse_draw_info(struct dir *dr) {
   nccreate(11, 60, "Item info");
 
   if(dr->hlnk) {
-    if(info_page == 0)
-      attron(A_REVERSE);
-    ncaddstr(0, 41, "1:Info");
-    attroff(A_REVERSE);
-    if(info_page == 1)
-      attron(A_REVERSE);
-    ncaddstr(0, 50, "2:Links");
-    attroff(A_REVERSE);
+    nctab(41, info_page == 0, 1, "Info");
+    nctab(50, info_page == 1, 2, "Links");
   }
 
   switch(info_page) {
@@ -66,8 +60,18 @@ static void browse_draw_info(struct dir *dr) {
     ncaddstr(3,  9, cropstr(getpath(dr->parent), 49));
     ncaddstr(4,  9, dr->flags & FF_DIR ? "Directory"
         : dr->flags & FF_FILE ? "File" : "Other (link, device, socket, ..)");
-    ncprint(6, 18, "%s (%s B)", formatsize(dr->size),  fullsize(dr->size));
-    ncprint(7, 18, "%s (%s B)", formatsize(dr->asize), fullsize(dr->asize));
+
+    ncmove(6, 18);
+    printsize(UIC_DEFAULT, dr->size);
+    addstrc(UIC_DEFAULT, " (");
+    addstrc(UIC_NUM, fullsize(dr->size));
+    addstrc(UIC_DEFAULT, " B)");
+
+    ncmove(7, 18);
+    printsize(UIC_DEFAULT, dr->asize);
+    addstrc(UIC_DEFAULT, " (");
+    addstrc(UIC_NUM, fullsize(dr->asize));
+    addstrc(UIC_DEFAULT, " B)");
     break;
 
   case 1:
@@ -83,35 +87,16 @@ static void browse_draw_info(struct dir *dr) {
     break;
   }
 
-  ncaddstr(9, 32, "Press i to hide this window");
+  ncaddstr(9, 31, "Press ");
+  addchc(UIC_KEY, 'i');
+  addstrc(UIC_DEFAULT, " to hide this window");
 }
 
 
-static void browse_draw_item(struct dir *n, int row) {
-  char ct, dt, *size, gr[11], *items;
-  int i, o, x;
-  float pc = 0.0f;
-
-  if(n->flags & FF_BSEL)
-    attron(A_REVERSE);
-
-  /* reference to parent dir has a different format */
-  if(n == dirlist_parent) {
-    mvhline(row, 0, ' ', wincols);
-    o = graph == 0 ? 13 :
-        graph == 1 ? 25 :
-        graph == 2 ? 21 :
-                     32 ;
-    if(show_items)
-      o += 7;
-    mvaddstr(row, o, "/..");
-    if(n->flags & FF_BSEL)
-      attroff(A_REVERSE);
-    return;
-  }
-
-  /* determine indication character */
-  ct =  n->flags & FF_EXL ? '<' :
+static void browse_draw_flag(struct dir *n, int *x) {
+  addchc(n->flags & FF_BSEL ? UIC_FLAG_SEL : UIC_FLAG,
+      n == dirlist_parent ? ' ' :
+        n->flags & FF_EXL ? '<' :
         n->flags & FF_ERR ? '!' :
        n->flags & FF_SERR ? '.' :
       n->flags & FF_OTHFS ? '>' :
@@ -120,89 +105,140 @@ static void browse_draw_item(struct dir *n, int row) {
     || n->flags & FF_DIR) ? '@' :
         n->flags & FF_DIR
         && n->sub == NULL ? 'e' :
-                            ' ' ;
-  dt = n->flags & FF_DIR ? '/' : ' ';
-  size = formatsize(show_as ? n->asize : n->size);
+                            ' ');
+  *x += 2;
+}
 
-  /* create graph (if necessary) */
-  if(graph) {
-    /* percentage */
-    if((pc = (float)(show_as ? n->parent->asize : n->parent->size)) < 1)
+
+static void browse_draw_graph(struct dir *n, int *x) {
+  float pc = 0.0f;
+  int o, i;
+  enum ui_coltype c = n->flags & FF_BSEL ? UIC_SEL : UIC_DEFAULT;
+
+  if(!graph)
+    return;
+
+  *x += graph == 1 ? 13 : graph == 2 ? 9 : 20;
+  if(n == dirlist_parent)
+    return;
+
+  addchc(c, '[');
+
+  /* percentage (6 columns) */
+  if(graph == 2 || graph == 3) {
+    pc = (float)(show_as ? n->parent->asize : n->parent->size);
+    if(pc < 1)
       pc = 1.0f;
-    pc = ((float)(show_as ? n->asize : n->size) / pc) * 100.0f;
-    /* graph */
-    if(graph == 1 || graph == 3) {
-      o = (int)(10.0f*(float)(show_as ? n->asize : n->size) / (float)(show_as ? dirlist_maxa : dirlist_maxs));
-      for(i=0; i<10; i++)
-        gr[i] = i < o ? '#' : ' ';
-      gr[10] = '\0';
-    }
+    uic_set(c == UIC_SEL ? UIC_NUM_SEL : UIC_NUM);
+    printw("%5.1f", ((float)(show_as ? n->asize : n->size) / pc) * 100.0f);
+    addchc(c, '%');
   }
 
-  x = 0;
+  if(graph == 3)
+    addch(' ');
 
-  mvprintw(row, x, "%c %9s ", ct, size);
-  x += 12;
-
-  if (show_items) {
-    if (n->items > 99999)
-      items = "> 100k";
-    else
-      items = n->items ? fullsize(n->items) : "";
-    mvprintw(row, x, "%6s ", items);
-    x += 7;
+  /* graph (10 columns) */
+  if(graph == 1 || graph == 3) {
+    uic_set(c == UIC_SEL ? UIC_GRAPH_SEL : UIC_GRAPH);
+    o = (int)(10.0f*(float)(show_as ? n->asize : n->size) / (float)(show_as ? dirlist_maxa : dirlist_maxs));
+    for(i=0; i<10; i++)
+      addch(i < o ? '#' : ' ');
   }
 
-  /* format and add item to the list */
-  switch(graph) {
-    case 0: mvprintw(row, x, " %c%-*s",                       dt, wincols- 2-x, cropstr(n->name, wincols- 2-x)); break;
-    case 1: mvprintw(row, x, "[%10s] %c%-*s",             gr, dt, wincols-14-x, cropstr(n->name, wincols-14-x)); break;
-    case 2: mvprintw(row, x, "[%5.1f%%] %c%-*s",      pc,     dt, wincols-10-x, cropstr(n->name, wincols-10-x)); break;
-    case 3: mvprintw(row, x, "[%5.1f%% %10s] %c%-*s", pc, gr, dt, wincols-21-x, cropstr(n->name, wincols-21-x));
-  }
+  addchc(c, ']');
+}
 
-  if(n->flags & FF_BSEL)
-    attroff(A_REVERSE);
+
+static void browse_draw_items(struct dir *n, int *x) {
+  enum ui_coltype c = n->flags & FF_BSEL ? UIC_SEL : UIC_DEFAULT;
+
+  if(!show_items)
+    return;
+  *x += 7;
+
+  if(n->items > 99999) {
+    addstrc(c, "> ");
+    addstrc(c == UIC_SEL ? UIC_NUM_SEL : UIC_NUM, "100");
+    addchc(c, 'k');
+  } else if(n->items) {
+    uic_set(c == UIC_SEL ? UIC_NUM_SEL : UIC_NUM);
+    printw("%6s", fullsize(n->items));
+  }
+}
+
+
+static void browse_draw_item(struct dir *n, int row) {
+  int x = 0;
+
+  enum ui_coltype c = n->flags & FF_BSEL ? UIC_SEL : UIC_DEFAULT;
+  uic_set(c);
+  mvhline(row, 0, ' ', wincols);
+  move(row, 0);
+
+  browse_draw_flag(n, &x);
+  move(row, x);
+
+  if(n != dirlist_parent)
+    printsize(c, show_as ? n->asize : n->size);
+  x += 10;
+  move(row, x);
+
+  browse_draw_graph(n, &x);
+  move(row, x);
+
+  browse_draw_items(n, &x);
+  move(row, x);
+
+  if(n->flags & FF_DIR)
+    c = c == UIC_SEL ? UIC_DIR_SEL : UIC_DIR;
+  addchc(c, n->flags & FF_DIR ? '/' : ' ');
+  addstrc(c, cropstr(n->name, wincols-x-1));
 }
 
 
 void browse_draw() {
   struct dir *t;
-  char fmtsize[10], *tmp;
+  char *tmp;
   int selected = 0, i;
 
   erase();
   t = dirlist_get(0);
 
   /* top line - basic info */
-  attron(A_REVERSE);
+  uic_set(UIC_HD);
   mvhline(0, 0, ' ', wincols);
-  mvhline(winrows-1, 0, ' ', wincols);
-  mvprintw(0,0,"%s %s ~ Use the arrow keys to navigate, press ? for help", PACKAGE_NAME, PACKAGE_VERSION);
+  mvprintw(0,0,"%s %s ~ Use the arrow keys to navigate, press ", PACKAGE_NAME, PACKAGE_VERSION);
+  addchc(UIC_KEY_HD, '?');
+  addstrc(UIC_HD, " for help");
   if(dir_import_active)
     mvaddstr(0, wincols-10, "[imported]");
   else if(read_only)
     mvaddstr(0, wincols-11, "[read-only]");
-  attroff(A_REVERSE);
 
   /* second line - the path */
-  mvhline(1, 0, '-', wincols);
+  mvhlinec(UIC_DEFAULT, 1, 0, '-', wincols);
   if(dirlist_par) {
-    mvaddch(1, 3, ' ');
+    mvaddchc(UIC_DEFAULT, 1, 3, ' ');
     tmp = getpath(dirlist_par);
-    mvaddstr(1, 4, cropstr(tmp, wincols-8));
-    mvaddch(1, 4+((int)strlen(tmp) > wincols-8 ? wincols-8 : (int)strlen(tmp)), ' ');
+    mvaddstrc(UIC_DIR, 1, 4, cropstr(tmp, wincols-8));
+    mvaddchc(UIC_DEFAULT, 1, 4+((int)strlen(tmp) > wincols-8 ? wincols-8 : (int)strlen(tmp)), ' ');
   }
 
   /* bottom line - stats */
-  attron(A_REVERSE);
+  uic_set(UIC_HD);
+  mvhline(winrows-1, 0, ' ', wincols);
   if(t) {
-    strcpy(fmtsize, formatsize(t->parent->size));
-    mvprintw(winrows-1, 0, " Total disk usage: %s  Apparent size: %s  Items: %d",
-      fmtsize, formatsize(t->parent->asize), t->parent->items);
+    mvaddstr(winrows-1, 0, " Total disk usage: ");
+    printsize(UIC_HD, t->parent->size);
+    addstrc(UIC_HD, "  Apparent size: ");
+    uic_set(UIC_NUM_HD);
+    printsize(UIC_HD, t->parent->asize);
+    addstrc(UIC_HD, "  Items: ");
+    uic_set(UIC_NUM_HD);
+    printw("%d", t->parent->items);
   } else
     mvaddstr(winrows-1, 0, " No items to display.");
-  attroff(A_REVERSE);
+  uic_set(UIC_DEFAULT);
 
   /* nothing to display? stop here. */
   if(!t)
