@@ -26,6 +26,7 @@
 #include "global.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 
 /* public variables */
