@@ -75,6 +75,9 @@ static void output_int(uint64_t n) {
 
 
 static void output_info(struct dir *d, const char *name, struct dir_ext *e) {
+  if(!extended_info || !(d->flags & FF_EXT))
+    e = NULL;
+
   fputs("{\"name\":\"", stream);
   output_string(name);
   fputc('"', stream);
@@ -96,6 +99,17 @@ static void output_info(struct dir *d, const char *name, struct dir_ext *e) {
   fputs(",\"ino\":", stream);
   output_int(d->ino);
 
+  if(e) {
+    fputs(",\"uid\":", stream);
+    output_int(e->uid);
+    fputs(",\"gid\":", stream);
+    output_int(e->gid);
+    fputs(",\"mode\":", stream);
+    output_int(e->mode);
+    fputs(",\"mtime\":", stream);
+    output_int(e->mtime);
+  }
+
   /* TODO: Including the actual number of links would be nicer. */
   if(d->flags & FF_HLNKC)
     fputs(",\"hlnkc\":true", stream);
@@ -108,8 +122,6 @@ static void output_info(struct dir *d, const char *name, struct dir_ext *e) {
     fputs(",\"excluded\":\"pattern\"", stream);
   else if(d->flags & FF_OTHFS)
     fputs(",\"excluded\":\"othfs\"", stream);
-
-  /* TODO: Output extended info if -e is given */
 
   fputc('}', stream);
 }
@@ -136,7 +148,7 @@ static int item(struct dir *item, const char *name, struct dir_ext *ext) {
   /* File header.
    * TODO: Add scan options? */
   if(!stack.top) {
-    fputs("[1,0,{\"progname\":\""PACKAGE"\",\"progver\":\""PACKAGE_VERSION"\",\"timestamp\":", stream);
+    fputs("[1,1,{\"progname\":\""PACKAGE"\",\"progver\":\""PACKAGE_VERSION"\",\"timestamp\":", stream);
     output_int((uint64_t)time(NULL));
     fputc('}', stream);
   }

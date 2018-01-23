@@ -85,7 +85,7 @@ struct dir {
  * memory region as struct dir, placed after the name field. See util.h for
  * macros to help manage this. */
 struct dir_ext {
-  struct timespec mtime;
+  uint64_t mtime;
   int uid, gid;
   unsigned short mode;
 };
