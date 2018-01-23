@@ -3,10 +3,16 @@
 # This script is based on static/build.sh from the ncdc git repo.
 # Only i486 and arm arches are supported. i486 should perform well enough, so
 # x86_64 isn't really necessary. I can't test any other arches.
+#
+# This script assumes that you have the musl-cross cross compilers installed in
+# $MUSL_CROSS_PATH.
+#
+# Usage:
+#   ./build.sh $arch
+#   where $arch = 'arm' or 'i486'
 
-
-MUSL_VERSION=1.1.6
-NCURSES_VERSION=5.9
+MUSL_CROSS_PATH=/opt/cross
+NCURSES_VERSION=6.0
 
 export CFLAGS="-O3 -g -static"
 
@@ -66,17 +72,6 @@ postbuild() {
 }
 
 
-# Pre-built cross-compilation binaries for musl. Handy. :)
-getmusl() {
-  # Order of $HOST is different than the tar/dir names, so we need this case.
-  case $TARGET in
-    arm)    DIR=arm-linux-musleabi ;;
-    i486)   DIR=i486-linux-musl ;;
-  esac
-  fem https://googledrive.com/host/0BwnS5DMB0YQ6bDhPZkpOYVFhbk0/musl-$MUSL_VERSION/ crossx86-$DIR-$MUSL_VERSION.tar.xz "musl-$TARGET" $DIR
-}
-
-
 getncurses() {
   fem http://ftp.gnu.org/pub/gnu/ncurses/ ncurses-$NCURSES_VERSION.tar.gz ncurses
   prebuild ncurses || return
@@ -97,8 +92,8 @@ getncdu() {
   prebuild ncdu || return
   srcdir=../../..
   $srcdir/configure --host=$HOST --with-ncursesw PKG_CONFIG=false\
-    CPPFLAGS=" -D_GNU_SOURCE -I$PREFIX/include -I$PREFIX/include/ncursesw"\
-    LDFLAGS="-static -L$PREFIX/lib -lncursesw" || exit
+    CPPFLAGS="-I$PREFIX/include -I$PREFIX/include/ncursesw"\
+    LDFLAGS="-static -L$PREFIX/lib -lncursesw" CFLAGS="$CFLAGS -Wall -Wextra" || exit
   make || exit
 
   VER=`cd '../../..' && git describe --abbrev=5 --dirty= | sed s/^v//`
@@ -114,17 +109,16 @@ getncdu() {
 buildarch() {
   TARGET=$1
   case $TARGET in
-    arm)    HOST=arm-musl-linuxeabi ;;
-    i486)   HOST=i486-musl-linux ;;
+    arm)    HOST=arm-musl-linuxeabi  DIR=arm-linux-musleabi ;;
+    i486)   HOST=i486-musl-linux     DIR=i486-linux-musl    ;;
     *)      echo "Unknown target: $TARGET" ;;
   esac
   PREFIX="`pwd`/$TARGET/inst"
   mkdir -p $TARGET $PREFIX
+  ln -s lib $PREFIX/lib64
 
-  getmusl
-  MBIN="`pwd`/tarballs/musl-$TARGET/bin"
   OLDPATH="$PATH"
-  PATH="$PATH:$MBIN"
+  PATH="$PATH:$MUSL_CROSS_PATH/$DIR/bin"
   getncurses
   getncdu
   PATH="$OLDPATH"
@@ -132,4 +126,3 @@ buildarch() {
 
 
 buildarch $1
-
