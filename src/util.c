@@ -162,6 +162,7 @@ int ncresize(int minrows, int mincols) {
 void nccreate(int height, int width, const char *title) {
   int i;
 
+  uic_set(UIC_DEFAULT);
   subwinr = winrows/2-height/2;
   subwinc = wincols/2-width/2;
 
