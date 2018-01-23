@@ -45,28 +45,39 @@ int dir_scan_smfs; /* Stay on the same filesystem */
 
 static uint64_t curdev;   /* current device we're scanning on */
 
+/* scratch space */
+static struct dir    *buf_dir;
+static struct dir_ext buf_ext[1];
 
-/* Populates the struct dir item with information from the stat struct. Sets
- * everything necessary for output_dir.item() except FF_ERR and FF_EXL. */
-static void stat_to_dir(struct dir *d, struct stat *fs) {
-  d->ino = (uint64_t)fs->st_ino;
-  d->dev = (uint64_t)fs->st_dev;
+
+
+/* Populates the buf_dir and buf_ext with information from the stat struct.
+ * Sets everything necessary for output_dir.item() except FF_ERR and FF_EXL. */
+static void stat_to_dir(struct stat *fs) {
+  buf_dir->flags |= FF_EXT; /* We always read extended data because it doesn't have an additional cost */
+  buf_dir->ino = (uint64_t)fs->st_ino;
+  buf_dir->dev = (uint64_t)fs->st_dev;
 
   if(S_ISREG(fs->st_mode))
-    d->flags |= FF_FILE;
+    buf_dir->flags |= FF_FILE;
   else if(S_ISDIR(fs->st_mode))
-    d->flags |= FF_DIR;
+    buf_dir->flags |= FF_DIR;
 
   if(!S_ISDIR(fs->st_mode) && fs->st_nlink > 1)
-    d->flags |= FF_HLNKC;
+    buf_dir->flags |= FF_HLNKC;
 
-  if(dir_scan_smfs && curdev != d->dev)
-    d->flags |= FF_OTHFS;
+  if(dir_scan_smfs && curdev != buf_dir->dev)
+    buf_dir->flags |= FF_OTHFS;
 
-  if(!(d->flags & (FF_OTHFS|FF_EXL))) {
-    d->size = fs->st_blocks * S_BLKSIZE;
-    d->asize = fs->st_size;
+  if(!(buf_dir->flags & (FF_OTHFS|FF_EXL))) {
+    buf_dir->size = fs->st_blocks * S_BLKSIZE;
+    buf_dir->asize = fs->st_size;
   }
+
+  buf_ext->mode  = fs->st_mode;
+  buf_ext->mtime = fs->st_mtim;
+  buf_ext->uid   = (int)fs->st_uid;
+  buf_ext->gid   = (int)fs->st_gid;
 }
 
 
@@ -117,15 +128,15 @@ static char *dir_read(int *err) {
 static int dir_walk(char *);
 
 
-/* Tries to recurse into the given directory item */
-static int dir_scan_recurse(struct dir *d) {
+/* Tries to recurse into the current directory item (buf_dir is assumed to be the current dir) */
+static int dir_scan_recurse(const char *name) {
   int fail = 0;
   char *dir;
 
-  if(chdir(d->name)) {
+  if(chdir(name)) {
     dir_setlasterr(dir_curpath);
-    d->flags |= FF_ERR;
-    if(dir_output.item(d) || dir_output.item(NULL)) {
+    buf_dir->flags |= FF_ERR;
+    if(dir_output.item(buf_dir, name, buf_ext) || dir_output.item(NULL, 0, NULL)) {
       dir_seterr("Output error: %s", strerror(errno));
       return 1;
     }
@@ -134,8 +145,8 @@ static int dir_scan_recurse(struct dir *d) {
 
   if((dir = dir_read(&fail)) == NULL) {
     dir_setlasterr(dir_curpath);
-    d->flags |= FF_ERR;
-    if(dir_output.item(d) || dir_output.item(NULL)) {
+    buf_dir->flags |= FF_ERR;
+    if(dir_output.item(buf_dir, name, buf_ext) || dir_output.item(NULL, 0, NULL)) {
       dir_seterr("Output error: %s", strerror(errno));
       return 1;
     }
@@ -148,14 +159,14 @@ static int dir_scan_recurse(struct dir *d) {
 
   /* readdir() failed halfway, not fatal. */
   if(fail)
-    d->flags |= FF_ERR;
+    buf_dir->flags |= FF_ERR;
 
-  if(dir_output.item(d)) {
+  if(dir_output.item(buf_dir, name, buf_ext)) {
     dir_seterr("Output error: %s", strerror(errno));
     return 1;
   }
   fail = dir_walk(dir);
-  if(dir_output.item(NULL)) {
+  if(dir_output.item(NULL, 0, NULL)) {
     dir_seterr("Output error: %s", strerror(errno));
     return 1;
   }
@@ -172,45 +183,45 @@ static int dir_scan_recurse(struct dir *d) {
 
 /* Scans and adds a single item. Recurses into dir_walk() again if this is a
  * directory. Assumes we're chdir'ed in the directory in which this item
- * resides, i.e. d->name is a valid relative path to the item. */
-static int dir_scan_item(struct dir *d) {
+ * resides. */
+static int dir_scan_item(const char *name) {
   struct stat st;
   int fail = 0;
 
 #ifdef __CYGWIN__
   /* /proc/registry names may contain slashes */
-  if(strchr(d->name, '/') || strchr(d->name,  '\\')) {
-    d->flags |= FF_ERR;
+  if(strchr(name, '/') || strchr(name,  '\\')) {
+    buf_dir->flags |= FF_ERR;
     dir_setlasterr(dir_curpath);
   }
 #endif
 
   if(exclude_match(dir_curpath))
-    d->flags |= FF_EXL;
+    buf_dir->flags |= FF_EXL;
 
-  if(!(d->flags & (FF_ERR|FF_EXL)) && lstat(d->name, &st)) {
-    d->flags |= FF_ERR;
+  if(!(buf_dir->flags & (FF_ERR|FF_EXL)) && lstat(name, &st)) {
+    buf_dir->flags |= FF_ERR;
     dir_setlasterr(dir_curpath);
   }
 
-  if(!(d->flags & (FF_ERR|FF_EXL)))
-    stat_to_dir(d, &st);
+  if(!(buf_dir->flags & (FF_ERR|FF_EXL)))
+    stat_to_dir(&st);
 
-  if(cachedir_tags && (d->flags & FF_DIR) && !(d->flags & (FF_ERR|FF_EXL|FF_OTHFS)))
-    if(has_cachedir_tag(d->name)) {
-      d->flags |= FF_EXL;
-      d->size = d->asize = 0;
+  if(cachedir_tags && (buf_dir->flags & FF_DIR) && !(buf_dir->flags & (FF_ERR|FF_EXL|FF_OTHFS)))
+    if(has_cachedir_tag(buf_dir->name)) {
+      buf_dir->flags |= FF_EXL;
+      buf_dir->size = buf_dir->asize = 0;
     }
 
   /* Recurse into the dir or output the item */
-  if(d->flags & FF_DIR && !(d->flags & (FF_ERR|FF_EXL|FF_OTHFS)))
-    fail = dir_scan_recurse(d);
-  else if(d->flags & FF_DIR) {
-    if(dir_output.item(d) || dir_output.item(NULL)) {
+  if(buf_dir->flags & FF_DIR && !(buf_dir->flags & (FF_ERR|FF_EXL|FF_OTHFS)))
+    fail = dir_scan_recurse(name);
+  else if(buf_dir->flags & FF_DIR) {
+    if(dir_output.item(buf_dir, name, buf_ext) || dir_output.item(NULL, 0, NULL)) {
       dir_seterr("Output error: %s", strerror(errno));
       fail = 1;
     }
-  } else if(dir_output.item(d)) {
+  } else if(dir_output.item(buf_dir, name, buf_ext)) {
     dir_seterr("Output error: %s", strerror(errno));
     fail = 1;
   }
@@ -223,15 +234,15 @@ static int dir_scan_item(struct dir *d) {
  * the filenames as returned by dir_read(), and will be freed automatically by
  * this function. */
 static int dir_walk(char *dir) {
-  struct dir *d;
   int fail = 0;
   char *cur;
 
   fail = 0;
   for(cur=dir; !fail&&cur&&*cur; cur+=strlen(cur)+1) {
     dir_curpath_enter(cur);
-    d = dir_createstruct(cur);
-    fail = dir_scan_item(d);
+    memset(buf_dir, 0, offsetof(struct dir, name));
+    memset(buf_ext, 0, sizeof(struct dir_ext));
+    fail = dir_scan_item(cur);
     dir_curpath_leave();
   }
 
@@ -245,7 +256,9 @@ static int process() {
   char *dir;
   int fail = 0;
   struct stat fs;
-  struct dir *d;
+
+  memset(buf_dir, 0, offsetof(struct dir, name));
+  memset(buf_ext, 0, sizeof(struct dir_ext));
 
   if((path = path_real(dir_curpath)) == NULL)
     dir_seterr("Error obtaining full path: %s", strerror(errno));
@@ -268,18 +281,17 @@ static int process() {
 
   if(!dir_fatalerr) {
     curdev = (uint64_t)fs.st_dev;
-    d = dir_createstruct(dir_curpath);
     if(fail)
-      d->flags |= FF_ERR;
-    stat_to_dir(d, &fs);
+      buf_dir->flags |= FF_ERR;
+    stat_to_dir(&fs);
 
-    if(dir_output.item(d)) {
+    if(dir_output.item(buf_dir, dir_curpath, buf_ext)) {
       dir_seterr("Output error: %s", strerror(errno));
       fail = 1;
     }
     if(!fail)
       fail = dir_walk(dir);
-    if(!fail && dir_output.item(NULL)) {
+    if(!fail && dir_output.item(NULL, 0, NULL)) {
       dir_seterr("Output error: %s", strerror(errno));
       fail = 1;
     }
@@ -291,13 +303,11 @@ static int process() {
 }
 
 
-extern int confirm_quit_while_scanning_stage_1_passed;
-
 void dir_scan_init(const char *path) {
   dir_curpath_set(path);
   dir_setlasterr(NULL);
   dir_seterr(NULL);
   dir_process = process;
+  buf_dir = malloc(dir_memsize(""));
   pstate = ST_CALC;
-  confirm_quit_while_scanning_stage_1_passed = 0;
 }

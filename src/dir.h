@@ -60,15 +60,16 @@ struct dir_output {
    * scanned directory.
    *
    * The *item struct has the following fields set when item() is called:
-   *   size, asize, ino, dev, flags (only DIR,FILE,ERR,OTHFS,EXL,HLNKC) and name.
+   *   size, asize, ino, dev, flags (only DIR,FILE,ERR,OTHFS,EXL,HLNKC).
    * All other fields/flags should be initialzed to NULL or 0.
-   * *item may be overwritten or freed in subsequent calls, so this function
-   * should make a copy if necessary.
+   * The name and dir_ext fields are given separately.
+   * All pointers may be overwritten or freed in subsequent calls, so this
+   * function should make a copy if necessary.
    *
    * The function should return non-zero on error, at which point errno is
    * assumed to be set to something sensible.
    */
-  int (*item)(struct dir *);
+  int (*item)(struct dir *, const char *, struct dir_ext *);
 
   /* Finalizes the output to go to the next program state or exit ncdu. Called
    * after item(NULL) has been called for the root item or before any item()
@@ -128,11 +129,6 @@ void dir_setlasterr(const char *);
 /* Error message on fatal error, or NULL if there hasn't been a fatal error yet. */
 extern char *dir_fatalerr;
 void dir_seterr(const char *, ...);
-
-/* Return an empty struct dir with the given name, for use with
- * dir_output.item(). Returned memory may be freed/overwritten on a subsequent
- * call. */
-struct dir *dir_createstruct(const char *);
 
 extern int dir_ui;
 int dir_key(int);

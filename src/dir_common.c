@@ -35,7 +35,7 @@ char *dir_curpath;   /* Full path of the last seen item. */
 struct dir_output dir_output;
 char *dir_fatalerr; /* Error message on a fatal error. (NULL if there was no fatal error) */
 int dir_ui;         /* User interface to use */
-int confirm_quit_while_scanning_stage_1_passed; /* Additional check before quitting */
+static int confirm_quit_while_scanning_stage_1_passed; /* Additional check before quitting */
 static char *lasterr; /* Path where the last error occured. */
 static int curpathl; /* Allocated length of dir_curpath */
 static int lasterrl; /* ^ of lasterr */
@@ -103,20 +103,6 @@ void dir_seterr(const char *fmt, ...) {
   vsnprintf(dir_fatalerr, 1023, fmt, va);
   dir_fatalerr[1023] = 0;
   va_end(va);
-}
-
-
-struct dir *dir_createstruct(const char *name) {
-  static struct dir *d = NULL;
-  static size_t len = 0;
-  size_t req = SDIRSIZE+strlen(name);
-  if(len < req) {
-    len = req < SDIRSIZE+256 ? SDIRSIZE+256 : req < len*2 ? len*2 : req;
-    d = realloc(d, len);
-  }
-  memset(d, 0, SDIRSIZE);
-  strcpy(d->name, name);
-  return d;
 }
 
 

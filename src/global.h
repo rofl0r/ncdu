@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <limits.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -49,6 +50,7 @@
 #define FF_SERR   0x20 /* error in subdirectory */
 #define FF_HLNKC  0x40 /* hard link candidate (file with st_nlink > 1) */
 #define FF_BSEL   0x80 /* selected */
+#define FF_EXT   0x100 /* extended struct available */
 
 /* Program states */
 #define ST_CALC   0
@@ -65,11 +67,9 @@ struct dir {
   uint64_t ino, dev;
   struct dir *parent, *next, *prev, *sub, *hlnk;
   int items;
-  unsigned char flags;
+  unsigned short flags;
   char name[];
 };
-/* sizeof(total dir) = SDIRSIZE + strlen(name) = offsetof(struct dir, name) + strlen(name) + 1 */
-#define SDIRSIZE (offsetof(struct dir, name)+1)
 
 /* A note on the ino and dev fields above: ino is usually represented as ino_t,
  * which POSIX specifies to be an unsigned integer.  dev is usually represented
@@ -80,6 +80,15 @@ struct dir {
  * we encounter them, will just get typecasted into a positive value. No
  * information is lost in this conversion, and the semantics remain the same.
  */
+
+/* Extended information for a struct dir. This struct is stored in the same
+ * memory region as struct dir, placed after the name field. See util.h for
+ * macros to help manage this. */
+struct dir_ext {
+  struct timespec mtime;
+  int uid, gid;
+  unsigned short mode;
+};
 
 
 /* program state */

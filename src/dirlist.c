@@ -207,7 +207,7 @@ void dirlist_open(struct dir *d) {
   /* set the reference to the parent dir */
   if(d->parent) {
     if(!parent_alloc)
-      parent_alloc = calloc(1, SDIRSIZE + 3);
+      parent_alloc = calloc(1, dir_memsize(".."));
     dirlist_parent = parent_alloc;
     strcpy(dirlist_parent->name, "..");
     dirlist_parent->next = head;

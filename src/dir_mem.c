@@ -92,24 +92,6 @@ static void hlink_check(struct dir *d) {
 }
 
 
-/* Make a copy of *item so that we'll keep it in memory. In the special case
- * of !root && orig, we need to copy over the name of *orig instead of *item.
- */
-static struct dir *item_copy(struct dir *item) {
-  struct dir *t;
-
-  if(!root && orig) {
-    t = malloc(SDIRSIZE+strlen(orig->name));
-    memcpy(t, item, SDIRSIZE);
-    strcpy(t->name, orig->name);
-  } else {
-    t = malloc(SDIRSIZE+strlen(item->name));
-    memcpy(t, item, SDIRSIZE+strlen(item->name));
-  }
-  return t;
-}
-
-
 /* Add item to the correct place in the memory structure */
 static void item_add(struct dir *item) {
   if(!root) {
@@ -129,16 +111,25 @@ static void item_add(struct dir *item) {
 }
 
 
-static int item(struct dir *item) {
-  struct dir *t;
+static int item(struct dir *dir, const char *name, struct dir_ext *ext) {
+  struct dir *t, *item;
 
   /* Go back to parent dir */
-  if(!item) {
+  if(!dir) {
     curdir = curdir->parent;
     return 0;
   }
 
-  item = item_copy(item);
+  if(!root && orig)
+    name = orig->name;
+
+  /* TODO: Don't allocate ext if -e flag is not given */
+  item = malloc(dir->flags & FF_EXT ? dir_ext_memsize(name) : dir_memsize(name));
+  memcpy(item, dir, offsetof(struct dir, name));
+  strcpy(item->name, name);
+  if(dir->flags & FF_EXT)
+    memcpy(dir_ext_ptr(item), ext, sizeof(struct dir_ext));
+
   item_add(item);
 
   /* Ensure that any next items will go to this directory */
