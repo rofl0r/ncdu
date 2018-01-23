@@ -28,6 +28,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ncurses.h>
+#include <time.h>
 
 
 static int graph = 1, show_as = 0, info_show = 0, info_page = 0, info_start = 0, show_items = 0;
@@ -37,6 +38,8 @@ static char *message = NULL;
 
 static void browse_draw_info(struct dir *dr) {
   struct dir *t;
+  struct dir_ext *e = dir_ext_ptr(dr);
+  char mbuf[46];
   int i;
 
   nccreate(11, 60, "Item info");
@@ -51,15 +54,30 @@ static void browse_draw_info(struct dir *dr) {
     attron(A_BOLD);
     ncaddstr(2, 3, "Name:");
     ncaddstr(3, 3, "Path:");
-    ncaddstr(4, 3, "Type:");
+    if(!e)
+      ncaddstr(4, 3, "Type:");
+    else {
+      ncaddstr(4, 3, "Mode:");
+      ncaddstr(4, 21, "UID:");
+      ncaddstr(4, 33, "GID:");
+      ncaddstr(5, 3, "Last modified:");
+    }
     ncaddstr(6, 3, "   Disk usage:");
     ncaddstr(7, 3, "Apparent size:");
     attroff(A_BOLD);
 
     ncaddstr(2,  9, cropstr(dr->name, 49));
     ncaddstr(3,  9, cropstr(getpath(dr->parent), 49));
-    ncaddstr(4,  9, dr->flags & FF_DIR ? "Directory"
-        : dr->flags & FF_FILE ? "File" : "Other (link, device, socket, ..)");
+    ncaddstr(4,  9, dr->flags & FF_DIR ? "Directory" : dr->flags & FF_FILE ? "File" : "Other");
+
+    if(e) {
+      ncaddstr(4, 9, fmtmode(e->mode));
+      ncprint(4, 26, "%d", e->uid);
+      ncprint(4, 38, "%d", e->gid);
+      time_t t = (time_t)e->mtime;
+      strftime(mbuf, sizeof(mbuf), "%Y-%m-%d %H:%M:%S %z", localtime(&t));
+      ncaddstr(5, 18, mbuf);
+    }
 
     ncmove(6, 18);
     printsize(UIC_DEFAULT, dr->size);

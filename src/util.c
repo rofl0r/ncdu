@@ -121,6 +121,30 @@ char *fullsize(int64_t from) {
 }
 
 
+char *fmtmode(unsigned short mode) {
+  static char buf[11];
+  unsigned short ft = mode & S_IFMT;
+  buf[0] = ft == S_IFDIR  ? 'd'
+         : ft == S_IFREG  ? '-'
+         : ft == S_IFLNK  ? 'l'
+         : ft == S_IFIFO  ? 'p'
+         : ft == S_IFSOCK ? 's'
+         : ft == S_IFCHR  ? 'c'
+         : ft == S_IFBLK  ? 'b' : '?';
+  buf[1] = mode & 0400 ? 'r' : '-';
+  buf[2] = mode & 0200 ? 'w' : '-';
+  buf[3] = mode & 0100 ? 'x' : '-';
+  buf[4] = mode & 0040 ? 'r' : '-';
+  buf[5] = mode & 0020 ? 'w' : '-';
+  buf[6] = mode & 0010 ? 'x' : '-';
+  buf[7] = mode & 0004 ? 'r' : '-';
+  buf[8] = mode & 0002 ? 'w' : '-';
+  buf[9] = mode & 0001 ? 'x' : '-';
+  buf[10] = 0;
+  return buf;
+}
+
+
 void read_locale() {
   thou_sep = '.';
 #ifdef HAVE_LOCALE_H

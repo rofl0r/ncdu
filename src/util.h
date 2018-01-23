@@ -137,6 +137,9 @@ void printsize(enum ui_coltype, int64_t);
 /* int2string with thousand separators */
 char *fullsize(int64_t);
 
+/* format's a file mode as a ls -l string */
+char *fmtmode(unsigned short);
+
 /* read locale information from the environment */
 void read_locale();
 
