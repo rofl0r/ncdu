@@ -40,6 +40,7 @@ int pstate;
 int read_only = 0;
 long update_delay = 100;
 int cachedir_tags = 0;
+int extended_info = 0;
 
 static int min_rows = 17, min_cols = 60;
 static int ncurses_init = 0;
@@ -120,6 +121,7 @@ static void argv_parse(int argc, char **argv) {
     { 'q', 0, "-q" },
     { 'v', 0, "-v" },
     { 'x', 0, "-x" },
+    { 'e', 0, "-e" },
     { 'r', 0, "-r" },
     { 'o', 1, "-o" },
     { 'f', 1, "-f" },
@@ -148,6 +150,7 @@ static void argv_parse(int argc, char **argv) {
       printf("  -q                         Quiet mode, refresh interval 2 seconds\n");
       printf("  -v                         Print version\n");
       printf("  -x                         Same filesystem\n");
+      printf("  -e                         Enable extended information\n");
       printf("  -r                         Read only\n");
       printf("  -o FILE                    Export scanned directory to FILE\n");
       printf("  -f FILE                    Import scanned directory from FILE\n");
@@ -157,12 +160,14 @@ static void argv_parse(int argc, char **argv) {
       printf("  -X, --exclude-from FILE    Exclude files that match any pattern in FILE\n");
       printf("  --exclude-caches           Exclude directories containing CACHEDIR.TAG\n");
       printf("  --confirm-quit             Confirm quitting ncdu\n");
+      printf("  --color SCHEME             Set color scheme\n");
       exit(0);
     case 'q': update_delay = 2000; break;
     case 'v':
       printf("ncdu %s\n", PACKAGE_VERSION);
       exit(0);
     case 'x': dir_scan_smfs = 1; break;
+    case 'e': extended_info = 1; break;
     case 'r': read_only++; break;
     case 's': si = 1; break;
     case 'o': export = val; break;

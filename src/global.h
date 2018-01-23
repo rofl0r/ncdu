@@ -101,6 +101,8 @@ extern long update_delay;
 extern int cachedir_tags;
 /* flag if we should ask for confirmation when quitting */
 extern int confirm_quit;
+/* flag whether we want to enable use of struct dir_ext */
+extern int extended_info;
 
 /* handle input from keyboard and update display */
 int input_handle(int);

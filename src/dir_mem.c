@@ -123,11 +123,11 @@ static int item(struct dir *dir, const char *name, struct dir_ext *ext) {
   if(!root && orig)
     name = orig->name;
 
-  /* TODO: Don't allocate ext if -e flag is not given */
-  item = malloc(dir->flags & FF_EXT ? dir_ext_memsize(name) : dir_memsize(name));
+  int extended = extended_info && (dir->flags & FF_EXT);
+  item = malloc(extended ? dir_ext_memsize(name) : dir_memsize(name));
   memcpy(item, dir, offsetof(struct dir, name));
   strcpy(item->name, name);
-  if(dir->flags & FF_EXT)
+  if(extended)
     memcpy(dir_ext_ptr(item), ext, sizeof(struct dir_ext));
 
   item_add(item);
