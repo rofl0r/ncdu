@@ -37,7 +37,8 @@
 
 
 static struct dir *root, *nextsel, *curdir;
-static char noconfirm = 0, ignoreerr = 0, state, seloption;
+static char noconfirm = 0, ignoreerr = 0, state;
+static signed char seloption;
 static int lasterrno;
 
 
