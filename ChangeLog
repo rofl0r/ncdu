@@ -1,3 +1,12 @@
+1.13 - 2018-01-29
+	- Add "extended information" mode and -e flag
+	- Add file mode, modification time and uid/gid to info window with -e
+	- Add experimental color support and --color flag
+	- Add -rr option to disable shell spawning
+	- Remove directory nesting limit on file import
+	- Fix handling of interrupts during file import
+	- Fix undefined behavior that triggered crash on OS X
+
 1.12 - 2016-08-24
 	- Add NCDU_SHELL environment variable
 	- Add --confirm-quit flag
