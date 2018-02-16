@@ -172,6 +172,43 @@ See http://www.brynosaurus.com/cachedir/
 =back
 
 
+=head1 FILE FLAGS
+
+Each entry has a chance being prefixed by one of the following flags:
+
+=over
+
+=item <
+
+Excluded by using exlude patterns
+
+=item !
+
+Error while reading this item
+
+=item .
+
+Error in a subdirectory
+
+=item >
+
+Excluded because it was an other filesystem
+
+=item H
+
+The entry is a hard link
+
+=item @
+
+The path is neither a file nor a folder (e.g. a soft link or a device file)
+
+=item e
+
+The directory is empty
+
+=back
+
+
 =head1 KEYS
 
 =over
