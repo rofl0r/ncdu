@@ -172,43 +172,6 @@ See http://www.brynosaurus.com/cachedir/
 =back
 
 
-=head1 FILE FLAGS
-
-Each entry has a chance being prefixed by one of the following flags:
-
-=over
-
-=item <
-
-Excluded by using exlude patterns
-
-=item !
-
-Error while reading this item
-
-=item .
-
-Error in a subdirectory
-
-=item >
-
-Excluded because it was an other filesystem
-
-=item H
-
-The entry is a hard link
-
-=item @
-
-The path is neither a file nor a folder (e.g. a soft link or a device file)
-
-=item e
-
-The directory is empty
-
-=back
-
-
 =head1 KEYS
 
 =over
@@ -297,6 +260,47 @@ run ncdu as follows:
 =item q
 
 Quit
+
+=back
+
+
+=head1 FILE FLAGS
+
+Each entry has a chance being prefixed by a flag:
+
+B<X  [size] [graph] [file or directory]>
+
+The X is only present in the following cases:
+
+=over
+
+=item <
+
+File or directory is excluded from the statistics by using exlude patterns
+
+=item !
+
+An error occured while reading this directory
+
+=item .
+
+An error occured while reading a subdirectory
+
+=item >
+
+Directory is on an other filesystem
+
+=item H
+
+Same file was already counted (hard link)
+
+=item @
+
+This is neither a file nor a folder (symlink, socket, ...)
+
+=item e
+
+Empty directory
 
 =back
 
