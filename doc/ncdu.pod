@@ -266,41 +266,39 @@ Quit
 
 =head1 FILE FLAGS
 
-Each entry has a chance being prefixed by a flag:
-
-B<X  [size] [graph] [file or directory]>
-
-The X is only present in the following cases:
+Entries in the browser interface may be prefixed by a one-character flag. These
+flags have the following meaning:
 
 =over
 
-=item <
-
-File or directory is excluded from the statistics by using exlude patterns
-
 =item !
 
-An error occured while reading this directory
+An error occured while reading this directory.
 
 =item .
 
-An error occured while reading a subdirectory
+An error occured while reading a subdirectory, so the indicated size may not be
+correct.
+
+=item <
+
+File or directory is excluded from the statistics by using exlude patterns.
 
 =item >
 
-Directory is on an other filesystem
-
-=item H
-
-Same file was already counted (hard link)
+Directory is on an other filesystem.
 
 =item @
 
-This is neither a file nor a folder (symlink, socket, ...)
+This is neither a file nor a folder (symlink, socket, ...).
+
+=item H
+
+Same file was already counted (hard link).
 
 =item e
 
-Empty directory
+Empty directory.
 
 =back
 
