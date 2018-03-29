@@ -123,7 +123,7 @@ void dir_curpath_set(const char *);
 void dir_curpath_enter(const char *);
 void dir_curpath_leave();
 
-/* Sets the path where the last error occured, or reset on NULL. */
+/* Sets the path where the last error occurred, or reset on NULL. */
 void dir_setlasterr(const char *);
 
 /* Error message on fatal error, or NULL if there hasn't been a fatal error yet. */

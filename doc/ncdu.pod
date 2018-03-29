@@ -273,11 +273,11 @@ flags have the following meaning:
 
 =item !
 
-An error occured while reading this directory.
+An error occurred while reading this directory.
 
 =item .
 
-An error occured while reading a subdirectory, so the indicated size may not be
+An error occurred while reading a subdirectory, so the indicated size may not be
 correct.
 
 =item <
@@ -286,7 +286,7 @@ File or directory is excluded from the statistics by using exlude patterns.
 
 =item >
 
-Directory is on an other filesystem.
+Directory is on another filesystem.
 
 =item @
 

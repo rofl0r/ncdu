@@ -306,7 +306,7 @@ void dirlist_select(struct dir *d) {
  *  1 = selected has moved down
  * -1 = selected has moved up
  * -2 = selected = first item in the list (faster version of '1')
- * -3 = top should be considered as invalid (after sorting or opening an other dir)
+ * -3 = top should be considered as invalid (after sorting or opening another dir)
  * -4 = an item has been deleted
  * -5 = hidden flag has been changed
  *

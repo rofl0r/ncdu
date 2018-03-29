@@ -84,7 +84,7 @@ static void stat_to_dir(struct stat *fs) {
 /* Reads all filenames in the currently chdir'ed directory and stores it as a
  * nul-separated list of filenames. The list ends with an empty filename (i.e.
  * two nuls). . and .. are not included. Returned memory should be freed. *err
- * is set to 1 if some error occured. Returns NULL if that error was fatal.
+ * is set to 1 if some error occurred. Returns NULL if that error was fatal.
  * The reason for reading everything in memory first and then walking through
  * the list is to avoid eating too many file descriptors in a deeply recursive
  * directory. */

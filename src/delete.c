@@ -195,7 +195,7 @@ static int delete_dir(struct dir *dr) {
     r = unlink(dr->name);
 
 delete_nxt:
-  /* error occured, ask user what to do */
+  /* error occurred, ask user what to do */
   if(r == -1 && !ignoreerr) {
     state = DS_FAILED;
     lasterrno = errno;

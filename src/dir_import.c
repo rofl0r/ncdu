@@ -81,7 +81,7 @@ struct ctx {
 
 /* Fills readbuf with data from the stream. *buf will have at least n (<
  * READ_BUF_SIZE) bytes available, unless the stream reached EOF or an error
- * occured. If the file data contains a null-type, this is considered an error.
+ * occurred. If the file data contains a null-type, this is considered an error.
  * Returns 0 on success, non-zero on error. */
 static int fill(int n) {
   int r;

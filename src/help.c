@@ -97,10 +97,10 @@ void help_draw() {
       ncaddch(10, 4, 'H');
       ncaddch(11, 4, 'e');
       uic_set(UIC_DEFAULT);
-      ncaddstr( 5, 7, "An error occured while reading this directory");
-      ncaddstr( 6, 7, "An error occured while reading a subdirectory");
+      ncaddstr( 5, 7, "An error occurred while reading this directory");
+      ncaddstr( 6, 7, "An error occurred while reading a subdirectory");
       ncaddstr( 7, 7, "File or directory is excluded from the statistics");
-      ncaddstr( 8, 7, "Directory was on an other filesystem");
+      ncaddstr( 8, 7, "Directory was on another filesystem");
       ncaddstr( 9, 7, "This is not a file nor a dir (symlink, socket, ...)");
       ncaddstr(10, 7, "Same file was already counted (hard link)");
       ncaddstr(11, 7, "Empty directory");
