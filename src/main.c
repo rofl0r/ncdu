@@ -188,7 +188,7 @@ static void argv_parse(int argc, char **argv) {
       break;
     case 'c':
       if(strcmp(val, "off") == 0)  { uic_theme = 0; }
-      if(strcmp(val, "dark") == 0) { uic_theme = 1; }
+      else if(strcmp(val, "dark") == 0) { uic_theme = 1; }
       else {
         fprintf(stderr, "Unknown --color option: %s\n", val);
         exit(1);
