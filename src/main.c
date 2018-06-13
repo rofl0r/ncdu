@@ -103,6 +103,8 @@ int input_handle(int wait) {
     }
     screen_draw();
   }
+  if(errno == EPIPE || errno == EBADF)
+      return 1;
   return 0;
 }
 
