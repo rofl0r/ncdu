@@ -169,18 +169,29 @@ static void browse_draw_graph(struct dir *n, int *x) {
 
 static void browse_draw_items(struct dir *n, int *x) {
   enum ui_coltype c = n->flags & FF_BSEL ? UIC_SEL : UIC_DEFAULT;
+  enum ui_coltype cn = c == UIC_SEL ? UIC_NUM_SEL : UIC_NUM;
 
   if(!show_items)
     return;
   *x += 7;
 
-  if(n->items > 99999) {
-    addstrc(c, "> ");
-    addstrc(c == UIC_SEL ? UIC_NUM_SEL : UIC_NUM, "100");
-    addchc(c, 'k');
-  } else if(n->items) {
-    uic_set(c == UIC_SEL ? UIC_NUM_SEL : UIC_NUM);
+  if(!n->items)
+    return;
+  else if(n->items < 100*1000) {
+    uic_set(cn);
     printw("%6s", fullsize(n->items));
+  } else if(n->items < 1000*1000) {
+    uic_set(cn);
+    printw("%5.1f", n->items / 1000.0);
+    addstrc(c, "k");
+  } else if(n->items < 1000*1000*1000) {
+    uic_set(cn);
+    printw("%5.1f", n->items / 1e6);
+    addstrc(c, "M");
+  } else {
+    addstrc(c, "  > ");
+    addstrc(cn, "1");
+    addchc(c, 'B');
   }
 }
 
