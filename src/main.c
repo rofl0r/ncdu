@@ -121,7 +121,7 @@ static void argv_parse(int argc, char **argv) {
   static yopt_opt_t opts[] = {
     { 'h', 0, "-h,-?" },
     { 'q', 0, "-q" },
-    { 'v', 0, "-v" },
+    { 'v', 0, "-v,-V,--version" },
     { 'x', 0, "-x" },
     { 'e', 0, "-e" },
     { 'r', 0, "-r" },
@@ -150,7 +150,7 @@ static void argv_parse(int argc, char **argv) {
       printf("ncdu <options> <directory>\n\n");
       printf("  -h                         This help message\n");
       printf("  -q                         Quiet mode, refresh interval 2 seconds\n");
-      printf("  -v                         Print version\n");
+      printf("  -v,-V,--version            Print version\n");
       printf("  -x                         Same filesystem\n");
       printf("  -e                         Enable extended information\n");
       printf("  -r                         Read only\n");

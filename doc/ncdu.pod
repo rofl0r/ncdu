@@ -24,7 +24,7 @@ provides a fast way to see what directories are using your disk space.
 
 Print a short help message and quit.
 
-=item -v
+=item -v, -V, --version
 
 Print ncdu version and quit.
 
