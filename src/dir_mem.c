@@ -67,10 +67,8 @@ static void hlink_check(struct dir *d) {
 
   /* found in the table? update hlnk */
   if(!i) {
-    t = d->hlnk = kh_key(links, k);
-    if(t->hlnk != NULL)
-      for(t=t->hlnk; t->hlnk!=d->hlnk; t=t->hlnk)
-        ;
+    t = kh_key(links, k);
+    d->hlnk = t->hlnk == NULL ? t : t->hlnk;
     t->hlnk = d;
   }
 
