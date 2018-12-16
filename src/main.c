@@ -119,7 +119,7 @@ static void argv_parse(int argc, char **argv) {
   char *dir = NULL;
 
   static yopt_opt_t opts[] = {
-    { 'h', 0, "-h,-?" },
+    { 'h', 0, "-h,-?,--help" },
     { 'q', 0, "-q" },
     { 'v', 0, "-v,-V,--version" },
     { 'x', 0, "-x" },
@@ -148,7 +148,7 @@ static void argv_parse(int argc, char **argv) {
     case  0 : dir = val; break;
     case 'h':
       printf("ncdu <options> <directory>\n\n");
-      printf("  -h                         This help message\n");
+      printf("  -h,--help                  This help message\n");
       printf("  -q                         Quiet mode, refresh interval 2 seconds\n");
       printf("  -v,-V,--version            Print version\n");
       printf("  -x                         Same filesystem\n");

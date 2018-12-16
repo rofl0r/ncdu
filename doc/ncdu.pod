@@ -20,7 +20,7 @@ provides a fast way to see what directories are using your disk space.
 
 =over
 
-=item -h
+=item -h, --help
 
 Print a short help message and quit.
 
