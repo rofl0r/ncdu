@@ -31,7 +31,7 @@
 #include <time.h>
 
 
-static int graph = 1, show_as = 0, info_show = 0, info_page = 0, info_start = 0, show_items = 0;
+static int graph = 1, show_as = 0, info_show = 0, info_page = 0, info_start = 0, show_items = 0, show_mtime = 0;
 static char *message = NULL;
 
 
@@ -196,6 +196,30 @@ static void browse_draw_items(struct dir *n, int *x) {
 }
 
 
+static void browse_draw_mtime(struct dir *n, int *x) {
+  enum ui_coltype c = n->flags & FF_BSEL ? UIC_SEL : UIC_DEFAULT;
+  char mbuf[26];
+  struct dir_ext *e;
+  time_t t;
+
+  if (n->flags & FF_EXT) {
+    e = dir_ext_ptr(n);
+  } else if (!strcmp(n->name, "..") && (n->parent->flags & FF_EXT)) {
+    e = dir_ext_ptr(n->parent);
+  } else {
+    snprintf(mbuf, sizeof(mbuf), "no mtime");
+    goto no_mtime;
+  }
+  t = (time_t)e->mtime;
+
+  strftime(mbuf, sizeof(mbuf), "%Y-%m-%d %H:%M:%S %z", localtime(&t));
+  uic_set(c == UIC_SEL ? UIC_NUM_SEL : UIC_NUM);
+no_mtime:
+  printw("%26s", mbuf);
+  *x += 27;
+}
+
+
 static void browse_draw_item(struct dir *n, int row) {
   int x = 0;
 
@@ -217,6 +241,11 @@ static void browse_draw_item(struct dir *n, int row) {
 
   browse_draw_items(n, &x);
   move(row, x);
+
+  if (extended_info && show_mtime) {
+    browse_draw_mtime(n, &x);
+    move(row, x);
+  }
 
   if(n->flags & FF_DIR)
     c = c == UIC_SEL ? UIC_DIR_SEL : UIC_DIR;
@@ -409,6 +438,12 @@ int browse_key(int ch) {
       dirlist_set_sort(DL_COL_ITEMS, dirlist_sort_col == DL_COL_ITEMS ? !dirlist_sort_desc : 1, DL_NOCHANGE);
       info_show = 0;
       break;
+    case 'M':
+      if (extended_info) {
+        dirlist_set_sort(DL_COL_MTIME, dirlist_sort_col == DL_COL_MTIME ? !dirlist_sort_desc : 1, DL_NOCHANGE);
+        info_show = 0;
+      }
+      break;
     case 'e':
       dirlist_set_hidden(!dirlist_hidden);
       info_show = 0;
@@ -473,6 +508,10 @@ int browse_key(int ch) {
       break;
     case 'c':
       show_items = !show_items;
+      break;
+    case 'm':
+      if (extended_info)
+        show_mtime = !show_mtime;
       break;
     case 'i':
       info_show = !info_show;

@@ -163,7 +163,7 @@ struct dir *getroot(struct dir *);
     : (a)+(b) < 0 ? 0 : (a)+(b))
 
 /* Adds a value to the size, asize and items fields of *d and its parents */
-void addparentstats(struct dir *, int64_t, int64_t, int);
+void addparentstats(struct dir *, int64_t, int64_t, uint64_t, int);
 
 
 /* A simple stack implemented in macros */

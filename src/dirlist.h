@@ -37,6 +37,7 @@
 #define DL_COL_SIZE    1
 #define DL_COL_ASIZE   2
 #define DL_COL_ITEMS   3
+#define DL_COL_MTIME   4
 
 
 void dirlist_open(struct dir *);

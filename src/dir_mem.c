@@ -144,10 +144,13 @@ static int item(struct dir *dir, const char *name, struct dir_ext *ext) {
    * possible hard link, because hlnk_check() will take care of it in that
    * case. */
   if(item->flags & FF_HLNKC) {
-    addparentstats(item->parent, 0, 0, 1);
+    addparentstats(item->parent, 0, 0, 0, 1);
     hlink_check(item);
-  } else
-    addparentstats(item->parent, item->size, item->asize, 1);
+  } else if(item->flags & FF_EXT) {
+    addparentstats(item->parent, item->size, item->asize, dir_ext_ptr(item)->mtime, 1);
+  } else {
+    addparentstats(item->parent, item->size, item->asize, 0, 1);
+  }
 
   /* propagate ERR and SERR back up to the root */
   if(item->flags & FF_SERR || item->flags & FF_ERR)

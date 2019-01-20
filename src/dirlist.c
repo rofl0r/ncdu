@@ -50,6 +50,14 @@ static struct dir *parent_alloc, *head, *head_real, *selected, *top = NULL;
   ))
 
 
+static inline int cmp_mtime(struct dir *x, struct dir*y) {
+  int64_t x_mtime = 0, y_mtime = 0;
+  if (x->flags & FF_EXT)
+    x_mtime = dir_ext_ptr(x)->mtime;
+  if (y->flags & FF_EXT)
+    y_mtime = dir_ext_ptr(y)->mtime;
+  return (x_mtime > y_mtime ? 1 : (x_mtime == y_mtime ? 0 : -1));
+}
 
 static int dirlist_cmp(struct dir *x, struct dir *y) {
   int r;
@@ -80,7 +88,8 @@ static int dirlist_cmp(struct dir *x, struct dir *y) {
   r = dirlist_sort_col == DL_COL_NAME ? CMP_NAME :
       dirlist_sort_col == DL_COL_SIZE ? CMP_SIZE :
       dirlist_sort_col == DL_COL_ASIZE ? CMP_ASIZE :
-      CMP_ITEMS;
+      dirlist_sort_col == DL_COL_ITEMS ? CMP_ITEMS :
+      cmp_mtime(x, y);
   /* try 2 */
   if(!r)
     r = dirlist_sort_col == DL_COL_SIZE ? CMP_ASIZE : CMP_SIZE;

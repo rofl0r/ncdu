@@ -67,6 +67,9 @@ when importing (to read this extra information in memory). This flag has no
 effect when importing a file that has been exported without the extended
 information.
 
+This enables viewing and sorting by the latest child mtime, or modified time,
+using 'm' and 'M', respectively.
+
 =back
 
 =head2 Interface options
@@ -208,6 +211,11 @@ Order by number of items (press again for descending order)
 
 Toggle between showing disk usage and showing apparent size.
 
+=item M
+
+Order by latest child mtime, or modified time. (press again for descending order)
+Requires the -e flag.
+
 =item d
 
 Delete the selected file or directory. An error message will be shown when the
@@ -227,6 +235,10 @@ the current directory.
 =item c
 
 Toggle display of child item counts.
+
+=item m
+
+Toggle display of latest child mtime, or modified time. Requies the -e flag.
 
 =item e
 
