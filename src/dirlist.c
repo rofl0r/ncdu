@@ -371,7 +371,8 @@ void dirlist_set_sort(int col, int desc, int df) {
     dirlist_sort_df = df;
 
   /* sort the list (excluding the parent, which is always on top) */
-  head_real = dirlist_sort(head_real);
+  if(head_real)
+    head_real = dirlist_sort(head_real);
   if(dirlist_parent)
     dirlist_parent->next = head_real;
   else
