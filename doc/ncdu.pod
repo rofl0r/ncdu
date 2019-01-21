@@ -238,7 +238,7 @@ Toggle display of child item counts.
 
 =item m
 
-Toggle display of latest child mtime, or modified time. Requies the -e flag.
+Toggle display of latest child mtime, or modified time. Requires the -e flag.
 
 =item e
 
