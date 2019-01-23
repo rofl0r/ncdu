@@ -207,6 +207,12 @@ static int dir_scan_item(const char *name) {
   if(!(buf_dir->flags & (FF_ERR|FF_EXL)))
     stat_to_dir(&st);
 
+  if (!(buf_dir->flags & (FF_ERR|FF_EXL)) && follow_symlinks && S_ISLNK(st.st_mode))
+    if (!stat(name, &st)) {
+      if (!S_ISDIR(st.st_mode))
+        stat_to_dir(&st);
+    }
+
   if(cachedir_tags && (buf_dir->flags & FF_DIR) && !(buf_dir->flags & (FF_ERR|FF_EXL|FF_OTHFS)))
     if(has_cachedir_tag(buf_dir->name)) {
       buf_dir->flags |= FF_EXL;

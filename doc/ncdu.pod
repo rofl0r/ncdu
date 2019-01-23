@@ -172,6 +172,11 @@ displayed, but not their content, and they are not counted towards the disk
 usage statistics.
 See http://www.brynosaurus.com/cachedir/
 
+=item -L,--follow-symlinks
+
+Follow symlinks (except to directories) 00and count the size of the file
+they point to. Symlink loops and directories will be ignored.
+
 =back
 
 

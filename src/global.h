@@ -103,6 +103,8 @@ extern int cachedir_tags;
 extern int confirm_quit;
 /* flag whether we want to enable use of struct dir_ext */
 extern int extended_info;
+/* flag whether we want to follow symlinks */
+extern int follow_symlinks;
 
 /* handle input from keyboard and update display */
 int input_handle(int);

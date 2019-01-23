@@ -41,6 +41,7 @@ int read_only = 0;
 long update_delay = 100;
 int cachedir_tags = 0;
 int extended_info = 0;
+int follow_symlinks = 0;
 
 static int min_rows = 17, min_cols = 60;
 static int ncurses_init = 0;
@@ -132,6 +133,7 @@ static void argv_parse(int argc, char **argv) {
     { '2', 0, "-2" },
     {  1,  1, "--exclude" },
     { 'X', 1, "-X,--exclude-from" },
+    { 'L', 0, "-L,--follow-symlinks" },
     { 'C', 0, "--exclude-caches" },
     { 's', 0, "--si" },
     { 'Q', 0, "--confirm-quit" },
@@ -160,6 +162,7 @@ static void argv_parse(int argc, char **argv) {
       printf("  --si                       Use base 10 (SI) prefixes instead of base 2\n");
       printf("  --exclude PATTERN          Exclude files that match PATTERN\n");
       printf("  -X, --exclude-from FILE    Exclude files that match any pattern in FILE\n");
+      printf("  -L, --follow-symlinks      Follow symbolic links (excluding directories)\n");
       printf("  --exclude-caches           Exclude directories containing CACHEDIR.TAG\n");
       printf("  --confirm-quit             Confirm quitting ncdu\n");
       printf("  --color SCHEME             Set color scheme\n");
@@ -185,6 +188,7 @@ static void argv_parse(int argc, char **argv) {
         exit(1);
       }
       break;
+    case 'L': follow_symlinks = 1; break;
     case 'C':
       cachedir_tags = 1;
       break;
