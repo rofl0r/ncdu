@@ -185,7 +185,7 @@ static int dir_scan_recurse(const char *name) {
  * directory. Assumes we're chdir'ed in the directory in which this item
  * resides. */
 static int dir_scan_item(const char *name) {
-  struct stat st;
+  static struct stat st, stl;
   int fail = 0;
 
 #ifdef __CYGWIN__
@@ -204,14 +204,12 @@ static int dir_scan_item(const char *name) {
     dir_setlasterr(dir_curpath);
   }
 
-  if(!(buf_dir->flags & (FF_ERR|FF_EXL)))
-    stat_to_dir(&st);
-
-  if (!(buf_dir->flags & (FF_ERR|FF_EXL)) && follow_symlinks && S_ISLNK(st.st_mode))
-    if (!stat(name, &st)) {
-      if (!S_ISDIR(st.st_mode))
-        stat_to_dir(&st);
-    }
+  if(!(buf_dir->flags & (FF_ERR|FF_EXL))) {
+    if(follow_symlinks && S_ISLNK(st.st_mode) && !stat(name, &stl) && !S_ISDIR(stl.st_mode))
+      stat_to_dir(&stl);
+    else
+      stat_to_dir(&st);
+  }
 
   if(cachedir_tags && (buf_dir->flags & FF_DIR) && !(buf_dir->flags & (FF_ERR|FF_EXL|FF_OTHFS)))
     if(has_cachedir_tag(buf_dir->name)) {
