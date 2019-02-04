@@ -1,3 +1,13 @@
+1.14 - 2019-02-04
+	- Add mtime display and sorting (Alex Wilson)
+	- Add (limited) --follow-symlinks option (Simon Doppler)
+	- Display larger file counts in browser UI
+	- Add -V, --version, and --help alias flags
+	- Fix crash when attempting to sort an empty directory
+	- Fix 100% CPU bug when ncdu loses the terminal
+	- Fix '--color=off' flag
+	- Fix some typos
+
 1.13 - 2018-01-29
 	- Add "extended information" mode and -e flag
 	- Add file mode, modification time and uid/gid to info window with -e
