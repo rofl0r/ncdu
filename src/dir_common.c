@@ -87,7 +87,7 @@ void dir_setlasterr(const char *path) {
     lasterrl = req;
     lasterr = realloc(lasterr, lasterrl);
   }
-  strcpy(lasterr, dir_curpath);
+  strcpy(lasterr, path);
 }
 
 
