@@ -312,6 +312,7 @@ void dir_scan_init(const char *path) {
   dir_setlasterr(NULL);
   dir_seterr(NULL);
   dir_process = process;
-  buf_dir = malloc(dir_memsize(""));
+  if (!buf_dir)
+    buf_dir = malloc(dir_memsize(""));
   pstate = ST_CALC;
 }
