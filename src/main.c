@@ -86,6 +86,7 @@ int input_handle(int wait) {
     return wait == 0 ? 1 : 0;
 
   nodelay(stdscr, wait?1:0);
+  errno = 0;
   while((ch = getch()) != ERR) {
     if(ch == KEY_RESIZE) {
       if(ncresize(min_rows, min_cols))
