@@ -23,7 +23,7 @@
 
 */
 
-#include "path.h"
+#include "global.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -64,8 +64,8 @@ static int path_split(char *cur, char ***res) {
     }
 
   /* create array of the components */
-  old = malloc((j+1)*sizeof(char *));
-  *res = malloc((j+1)*sizeof(char *));
+  old = xmalloc((j+1)*sizeof(char *));
+  *res = xmalloc((j+1)*sizeof(char *));
   for(i=j=0; i<n; i++)
     if(i == 0 || (cur[i-1] == 0 && cur[i] != 0))
       old[j++] = cur+i;
@@ -98,11 +98,11 @@ static char *path_absolute(const char *path) {
   /* not an absolute path? prepend cwd */
   if(path[0] != '/') {
     n = RPATH_CNKSZ;
-    ret = malloc(n);
+    ret = xmalloc(n);
     errno = 0;
     while(!getcwd(ret, n) && errno == ERANGE) {
       n += RPATH_CNKSZ;
-      ret = realloc(ret, n);
+      ret = xrealloc(ret, n);
       errno = 0;
     }
     if(errno) {
@@ -112,12 +112,12 @@ static char *path_absolute(const char *path) {
 
     i = strlen(path) + strlen(ret) + 2;
     if(i > n)
-      ret = realloc(ret, i);
+      ret = xrealloc(ret, i);
     strcat(ret, "/");
     strcat(ret, path);
   /* otherwise, just make a copy */
   } else {
-    ret = malloc(strlen(path)+1);
+    ret = xmalloc(strlen(path)+1);
     strcpy(ret, path);
   }
   return ret;
@@ -133,7 +133,7 @@ static char *path_real_rec(char *cur, int *links) {
   char **arr, *tmp, *lnk = NULL, *ret = NULL;
 
   tmpl = strlen(cur)+1;
-  tmp = malloc(tmpl);
+  tmp = xmalloc(tmpl);
 
   /* split path */
   i = path_split(cur, &arr);
@@ -142,7 +142,7 @@ static char *path_real_rec(char *cur, int *links) {
   strcpy(tmp, "/");
   if(i > 0) {
     lnkl = RPATH_CNKSZ;
-    lnk = malloc(lnkl);
+    lnk = xmalloc(lnkl);
     if(chdir("/") < 0)
       goto path_real_done;
   }
@@ -153,7 +153,7 @@ static char *path_real_rec(char *cur, int *links) {
     /* check for symlink */
     while((n = readlink(arr[i], lnk, lnkl)) == lnkl || (n < 0 && errno == ERANGE)) {
       lnkl += RPATH_CNKSZ;
-      lnk = realloc(lnk, lnkl);
+      lnk = xrealloc(lnk, lnkl);
     }
     if(n < 0 && errno != EINVAL)
       goto path_real_done;
@@ -168,7 +168,7 @@ static char *path_real_rec(char *cur, int *links) {
         n += strlen(tmp);
       if(tmpl < n) {
         tmpl = n;
-        tmp = realloc(tmp, tmpl);
+        tmp = xrealloc(tmp, tmpl);
       }
       if(lnk[0] != '/')
         strcat(tmp, lnk);
@@ -179,7 +179,7 @@ static char *path_real_rec(char *cur, int *links) {
         n += strlen(arr[i])+1;
         if(tmpl < n) {
           tmpl = n;
-          tmp = realloc(tmp, tmpl);
+          tmp = xrealloc(tmp, tmpl);
         }
         strcat(tmp, "/");
         strcat(tmp, arr[i]);

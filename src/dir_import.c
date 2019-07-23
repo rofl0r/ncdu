@@ -596,12 +596,12 @@ int dir_import_init(const char *fn) {
   else if((stream = fopen(fn, "r")) == NULL)
     return 1;
 
-  ctx = malloc(sizeof(struct ctx));
+  ctx = xmalloc(sizeof(struct ctx));
   ctx->stream = stream;
   ctx->line = 1;
   ctx->byte = ctx->eof = ctx->items = 0;
   ctx->buf = ctx->lastfill = ctx->readbuf;
-  ctx->buf_dir = malloc(dir_memsize(""));
+  ctx->buf_dir = xmalloc(dir_memsize(""));
   ctx->readbuf[0] = 0;
 
   dir_curpath_set(fn);

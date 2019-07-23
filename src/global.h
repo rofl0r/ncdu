@@ -109,6 +109,9 @@ extern int follow_symlinks;
 /* handle input from keyboard and update display */
 int input_handle(int);
 
+/* de-initialize ncurses */
+void close_nc();
+
 
 /* import all other global functions and variables */
 #include "browser.h"

@@ -23,7 +23,7 @@
 
 */
 
-#include "exclude.h"
+#include "global.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,8 +45,8 @@ void exclude_add(char *pat) {
   while(*n != NULL)
     n = &((*n)->next);
 
-  *n = (struct exclude *) calloc(1, sizeof(struct exclude));
-  (*n)->pattern = (char *) malloc(strlen(pat)+1);
+  *n = (struct exclude *) xcalloc(1, sizeof(struct exclude));
+  (*n)->pattern = (char *) xmalloc(strlen(pat)+1);
   strcpy((*n)->pattern, pat);
 }
 
@@ -125,7 +125,7 @@ int has_cachedir_tag(const char *name) {
     /* We don't need to copy the content of `path`, so it's more efficient to
      * use `free` + `malloc`. */
     free(path);
-    path = malloc(path_l);
+    path = xmalloc(path_l);
   }
   snprintf(path, path_l, "%s/%s", name, CACHEDIR_TAG_FILENAME);
   f = fopen(path, "rb");

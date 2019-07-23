@@ -280,6 +280,15 @@ static void init_nc() {
 }
 
 
+void close_nc() {
+  if(ncurses_init) {
+    erase();
+    refresh();
+    endwin();
+  }
+}
+
+
 /* main program */
 int main(int argc, char **argv) {
   read_locale();
@@ -309,11 +318,7 @@ int main(int argc, char **argv) {
       break;
   }
 
-  if(ncurses_init) {
-    erase();
-    refresh();
-    endwin();
-  }
+  close_nc();
   exclude_clear();
 
   return 0;

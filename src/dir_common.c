@@ -44,7 +44,7 @@ static int lasterrl; /* ^ of lasterr */
 static void curpath_resize(int s) {
   if(curpathl < s) {
     curpathl = s < 128 ? 128 : s < curpathl*2 ? curpathl*2 : s;
-    dir_curpath = realloc(dir_curpath, curpathl);
+    dir_curpath = xrealloc(dir_curpath, curpathl);
   }
 }
 
@@ -85,7 +85,7 @@ void dir_setlasterr(const char *path) {
   int req = strlen(path)+1;
   if(lasterrl < req) {
     lasterrl = req;
-    lasterr = realloc(lasterr, lasterrl);
+    lasterr = xrealloc(lasterr, lasterrl);
   }
   strcpy(lasterr, path);
 }
@@ -99,7 +99,7 @@ void dir_seterr(const char *fmt, ...) {
 
   va_list va;
   va_start(va, fmt);
-  dir_fatalerr = malloc(1024); /* Should be enough for everything... */
+  dir_fatalerr = xmalloc(1024); /* Should be enough for everything... */
   vsnprintf(dir_fatalerr, 1023, fmt, va);
   dir_fatalerr[1023] = 0;
   va_end(va);

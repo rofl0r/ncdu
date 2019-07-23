@@ -100,7 +100,7 @@ static char *dir_read(int *err) {
     return NULL;
   }
 
-  buf = malloc(buflen);
+  buf = xmalloc(buflen);
   errno = 0;
 
   while((item = readdir(dir)) != NULL) {
@@ -109,7 +109,7 @@ static char *dir_read(int *err) {
     int req = off+3+strlen(item->d_name);
     if(req > buflen) {
       buflen = req < buflen*2 ? buflen*2 : req;
-      buf = realloc(buf, buflen);
+      buf = xrealloc(buf, buflen);
     }
     strcpy(buf+off, item->d_name);
     off += strlen(item->d_name)+1;
@@ -313,6 +313,6 @@ void dir_scan_init(const char *path) {
   dir_seterr(NULL);
   dir_process = process;
   if (!buf_dir)
-    buf_dir = malloc(dir_memsize(""));
+    buf_dir = xmalloc(dir_memsize(""));
   pstate = ST_CALC;
 }

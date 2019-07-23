@@ -123,7 +123,7 @@ static int item(struct dir *dir, const char *name, struct dir_ext *ext) {
 
   if(!extended_info)
     dir->flags &= ~FF_EXT;
-  item = malloc(dir->flags & FF_EXT ? dir_ext_memsize(name) : dir_memsize(name));
+  item = xmalloc(dir->flags & FF_EXT ? dir_ext_memsize(name) : dir_memsize(name));
   memcpy(item, dir, offsetof(struct dir, name));
   strcpy(item->name, name);
   if(dir->flags & FF_EXT)

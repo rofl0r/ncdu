@@ -30,7 +30,6 @@
   - path_real uses chdir(), so it's not thread safe
   - Process requires +x access for all directory components
   - Potentionally slow
-  - Doesn't check return value of malloc() and realloc()
   - path_real doesn't check for the existance of the last component
   - cwd is unreliable after path_real
 */

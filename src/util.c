@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include <stdarg.h>
+#include <unistd.h>
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
@@ -371,12 +372,12 @@ char *getpath(struct dir *cur) {
 
   if(datl == 0) {
     datl = i;
-    dat = malloc(i);
+    dat = xmalloc(i);
   } else if(datl < i) {
     datl = i;
-    dat = realloc(dat, i);
+    dat = xrealloc(dat, i);
   }
-  list = malloc(c*sizeof(struct dir *));
+  list = xmalloc(c*sizeof(struct dir *));
 
   c = 0;
   for(d=cur; d!=NULL; d=d->parent)
@@ -413,3 +414,21 @@ void addparentstats(struct dir *d, int64_t size, int64_t asize, uint64_t mtime, 
     d = d->parent;
   }
 }
+
+
+/* Apparently we can just resume drawing after endwin() and ncurses will pick
+ * up where it left. Probably not very portable...  */
+#define oom_msg "\nOut of memory, press enter to try again or Ctrl-C to give up.\n"
+#define wrap_oom(f) \
+  void *ptr;\
+  char buf[128];\
+  while((ptr = f) == NULL) {\
+    close_nc();\
+    write(2, oom_msg, sizeof(oom_msg));\
+    read(0, buf, sizeof(buf));\
+  }\
+  return ptr;
+
+void *xmalloc(size_t size) { wrap_oom(malloc(size)) }
+void *xcalloc(size_t n, size_t size) { wrap_oom(calloc(n, size)) }
+void *xrealloc(void *mem, size_t size) { wrap_oom(realloc(mem, size)) }
