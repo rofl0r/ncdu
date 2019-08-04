@@ -212,7 +212,7 @@ static int dir_scan_item(const char *name) {
   }
 
   if(cachedir_tags && (buf_dir->flags & FF_DIR) && !(buf_dir->flags & (FF_ERR|FF_EXL|FF_OTHFS)))
-    if(has_cachedir_tag(buf_dir->name)) {
+    if(has_cachedir_tag(name)) {
       buf_dir->flags |= FF_EXL;
       buf_dir->size = buf_dir->asize = 0;
     }
