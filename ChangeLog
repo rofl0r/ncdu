@@ -1,3 +1,8 @@
+1.14.1 - 2019-08-05
+	- Fix occasional early exit on OS X
+	- Fix --exclude-caches
+	- Improve handling of out-of-memory situations
+
 1.14 - 2019-02-04
 	- Add mtime display and sorting (Alex Wilson)
 	- Add (limited) --follow-symlinks option (Simon Doppler)

@@ -9,7 +9,7 @@
 #
 # Usage:
 #   ./build.sh $arch
-#   where $arch = 'arm' or 'i486'
+#   where $arch = 'arm', 'i486' or 'x86_64'
 
 MUSL_CROSS_PATH=/opt/cross
 NCURSES_VERSION=6.0
@@ -80,7 +80,7 @@ getncurses() {
     --without-tests --without-curses-h --without-pkg-config --without-shared --without-debug\
     --without-gpm --without-sysmouse --enable-widec --with-default-terminfo-dir=/usr/share/terminfo\
     --with-terminfo-dirs=/usr/share/terminfo:/lib/terminfo:/usr/local/share/terminfo\
-    --with-fallbacks="screen linux vt100 xterm" --host=$HOST\
+    --with-fallbacks="screen linux vt100 xterm xterm-256color" --host=$HOST\
     CPPFLAGS=-D_GNU_SOURCE || exit
   make || exit
   make install.libs || exit
@@ -111,6 +111,7 @@ buildarch() {
   case $TARGET in
     arm)    HOST=arm-musl-linuxeabi  DIR=arm-linux-musleabi ;;
     i486)   HOST=i486-musl-linux     DIR=i486-linux-musl    ;;
+    x86_64) HOST=x86_64-musl-linux   DIR=x86_64-linux-musl  ;;
     *)      echo "Unknown target: $TARGET" ;;
   esac
   PREFIX="`pwd`/$TARGET/inst"
