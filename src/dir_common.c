@@ -119,10 +119,10 @@ static void draw_progress() {
 
   ncaddstr(2, 2, "Total items: ");
   uic_set(UIC_NUM);
-  printw("%-8d", dir_output.items);
+  printw("%-9d", dir_output.items);
 
   if(dir_output.size) {
-    ncaddstrc(UIC_DEFAULT, 2, 23, "size: ");
+    ncaddstrc(UIC_DEFAULT, 2, 24, "size: ");
     printsize(UIC_DEFAULT, dir_output.size);
   }
 
