@@ -109,9 +109,9 @@ getncdu() {
 buildarch() {
   TARGET=$1
   case $TARGET in
-    arm)    HOST=arm-musl-linuxeabi  DIR=arm-linux-musleabi ;;
-    i486)   HOST=i486-musl-linux     DIR=i486-linux-musl    ;;
-    x86_64) HOST=x86_64-musl-linux   DIR=x86_64-linux-musl  ;;
+    arm)    HOST=arm-linux-musleabi  DIR=arm-linux-musleabi ;;
+    i486)   HOST=i486-linux-musl     DIR=i486-linux-musl    ;;
+    x86_64) HOST=x86_64-linux-musl   DIR=x86_64-linux-musl  ;;
     *)      echo "Unknown target: $TARGET" ;;
   esac
   PREFIX="`pwd`/$TARGET/inst"
@@ -119,7 +119,7 @@ buildarch() {
   ln -s lib $PREFIX/lib64
 
   OLDPATH="$PATH"
-  PATH="$PATH:$MUSL_CROSS_PATH/$DIR/bin"
+  export PATH="$PATH:$MUSL_CROSS_PATH/$DIR/bin"
   getncurses
   getncdu
   PATH="$OLDPATH"
