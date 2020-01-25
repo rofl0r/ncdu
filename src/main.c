@@ -42,6 +42,7 @@ long update_delay = 100;
 int cachedir_tags = 0;
 int extended_info = 0;
 int follow_symlinks = 0;
+int confirm_quit = 0;
 
 static int min_rows = 17, min_cols = 60;
 static int ncurses_init = 0;

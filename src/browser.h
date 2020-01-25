@@ -28,7 +28,6 @@
 
 #include "global.h"
 
-int  confirm_quit;
 int  browse_key(int);
 void browse_draw(void);
 void browse_init(struct dir *);

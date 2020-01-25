@@ -31,6 +31,7 @@
 #include <stdarg.h>
 
 
+int (*dir_process)();
 char *dir_curpath;   /* Full path of the last seen item. */
 struct dir_output dir_output;
 char *dir_fatalerr; /* Error message on a fatal error. (NULL if there was no fatal error) */
