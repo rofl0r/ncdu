@@ -28,7 +28,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <khash.h>
+#include <khashl.h>
 
 
 static struct dir *root;   /* root directory struct we're scanning */
@@ -36,10 +36,10 @@ static struct dir *curdir; /* directory item that we're currently adding items t
 static struct dir *orig;   /* original directory, when refreshing an already scanned dir */
 
 /* Table of struct dir items with more than one link (in order to detect hard links) */
-#define hlink_hash(d)     (kh_int64_hash_func((khint64_t)d->dev) ^ kh_int64_hash_func((khint64_t)d->ino))
+#define hlink_hash(d)     (kh_hash_uint64((khint64_t)d->dev) ^ kh_hash_uint64((khint64_t)d->ino))
 #define hlink_equal(a, b) ((a)->dev == (b)->dev && (a)->ino == (b)->ino)
-KHASH_INIT(hl, struct dir *, char, 0, hlink_hash, hlink_equal);
-static khash_t(hl) *links = NULL;
+KHASHL_SET_INIT(KH_LOCAL, hl_t, hl, struct dir *, hlink_hash, hlink_equal);
+static hl_t *links = NULL;
 
 
 /* recursively checks a dir structure for hard links and fills the lookup array */
@@ -52,7 +52,7 @@ static void hlink_init(struct dir *d) {
   if(!(d->flags & FF_HLNKC))
     return;
   int r;
-  kh_put(hl, links, d, &r);
+  hl_put(links, d, &r);
 }
 
 
@@ -63,7 +63,7 @@ static void hlink_check(struct dir *d) {
   int i;
 
   /* add to links table */
-  khiter_t k = kh_put(hl, links, d, &i);
+  khint_t k = hl_put(links, d, &i);
 
   /* found in the table? update hlnk */
   if(!i) {
@@ -165,7 +165,7 @@ static int item(struct dir *dir, const char *name, struct dir_ext *ext) {
 
 
 static int final(int fail) {
-  kh_destroy(hl, links);
+  hl_destroy(links);
   links = NULL;
 
   if(fail) {
@@ -208,7 +208,7 @@ void dir_mem_init(struct dir *_orig) {
   dir_output.items = 0;
 
   /* Init hash table for hard link detection */
-  links = kh_init(hl);
+  links = hl_init();
   if(orig)
     hlink_init(getroot(orig));
 }
