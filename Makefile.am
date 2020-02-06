@@ -20,7 +20,7 @@ ncdu_SOURCES=\
 
 noinst_HEADERS=\
 	deps/yopt.h\
-	deps/khash.h\
+	deps/khashl.h\
 	src/browser.h\
 	src/delete.h\
 	src/dir.h\
@@ -43,5 +43,5 @@ ncdu.1: $(srcdir)/doc/ncdu.pod
 	pod2man --center "ncdu manual" --release "@PACKAGE@-@VERSION@" "$(srcdir)/doc/ncdu.pod" >ncdu.1
 
 update-deps:
-	wget -q https://raw.github.com/attractivechaos/klib/master/khash.h -O "$(srcdir)/deps/khash.h"
+	wget -q https://raw.github.com/attractivechaos/klib/master/khashl.h -O "$(srcdir)/deps/khashl.h"
 	wget -q http://g.blicky.net/ylib.git/plain/yopt.h -O "$(srcdir)/deps/yopt.h"
