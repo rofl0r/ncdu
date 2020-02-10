@@ -1,4 +1,4 @@
-ncdu 1.14.1
+ncdu 1.14.2
 ===========
 
 DESCRIPTION
@@ -33,7 +33,7 @@ INSTALL
 
 COPYING
 
-  Copyright (c) 2007-2019 Yoran Heling
+  Copyright (c) 2007-2020 Yoran Heling
 
   Permission is hereby granted, free of charge, to any person obtaining
   a copy of this software and associated documentation files (the

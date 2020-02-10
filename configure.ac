@@ -1,5 +1,5 @@
 
-AC_INIT(ncdu, 1.14.1, projects@yorhel.nl)
+AC_INIT(ncdu, 1.14.2, projects@yorhel.nl)
 AC_CONFIG_SRCDIR([src/global.h])
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE([foreign subdir-objects])

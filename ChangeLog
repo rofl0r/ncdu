@@ -1,3 +1,8 @@
+1.14.2 - 2020-02-10
+	- Fix compilation with GCC 10 (-fno-common)
+	- Fix minor display issue when scanning 10M+ files
+	- Slightly reduce memory usage for hard link detection
+
 1.14.1 - 2019-08-05
 	- Fix occasional early exit on OS X
 	- Fix --exclude-caches
