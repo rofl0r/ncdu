@@ -106,7 +106,7 @@ int input_handle(int wait) {
     }
     screen_draw();
   }
-  if(errno == EPIPE || errno == EBADF)
+  if(errno == EPIPE || errno == EBADF || errno == EIO)
       return 1;
   return 0;
 }
