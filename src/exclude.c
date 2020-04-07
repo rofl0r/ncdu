@@ -111,8 +111,7 @@ int has_cachedir_tag(const char *name) {
   static int path_l = 1024;
   static char *path = NULL;
   int l;
-  const size_t signature_l = sizeof CACHEDIR_TAG_SIGNATURE - 1;
-  char buf[signature_l];
+  char buf[sizeof CACHEDIR_TAG_SIGNATURE - 1];
   FILE *f;
   int match = 0;
 
@@ -131,8 +130,8 @@ int has_cachedir_tag(const char *name) {
   f = fopen(path, "rb");
 
   if(f != NULL) {
-    match = ((fread(buf, 1, signature_l, f) == signature_l) &&
-                !memcmp(buf, CACHEDIR_TAG_SIGNATURE, signature_l));
+    match = ((fread(buf, 1, sizeof buf, f) == sizeof buf) &&
+                !memcmp(buf, CACHEDIR_TAG_SIGNATURE, sizeof buf));
     fclose(f);
   }
   return match;
