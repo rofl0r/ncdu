@@ -38,7 +38,7 @@ static struct dir *orig;   /* original directory, when refreshing an already sca
 /* Table of struct dir items with more than one link (in order to detect hard links) */
 #define hlink_hash(d)     (kh_hash_uint64((khint64_t)d->dev) ^ kh_hash_uint64((khint64_t)d->ino))
 #define hlink_equal(a, b) ((a)->dev == (b)->dev && (a)->ino == (b)->ino)
-KHASHL_SET_INIT(KH_LOCAL, hl_t, hl, struct dir *, hlink_hash, hlink_equal);
+KHASHL_SET_INIT(KH_LOCAL, hl_t, hl, struct dir *, hlink_hash, hlink_equal)
 static hl_t *links = NULL;
 
 
