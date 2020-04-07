@@ -330,7 +330,7 @@ void dirlist_select(struct dir *d) {
  */
 struct dir *dirlist_top(int hint) {
   struct dir *t;
-  int i = winrows-3, visible = 0;
+  int i, visible = 0;
 
   if(hint == -2 || hint == -3)
     top = NULL;
