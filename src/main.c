@@ -74,7 +74,7 @@ int input_handle(int wait) {
   if(wait != 1)
     screen_draw();
   else {
-    gettimeofday(&tv, (void *)NULL);
+    gettimeofday(&tv, NULL);
     tv.tv_usec = (1000*(tv.tv_sec % 1000) + (tv.tv_usec / 1000)) / update_delay;
     if(lastupdate != tv.tv_usec) {
       screen_draw();
