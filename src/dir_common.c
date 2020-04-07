@@ -112,7 +112,7 @@ static void draw_progress(void) {
   static const char loadtext[] = "Loading...";
   static size_t anpos = 0;
   const char *antext = dir_import_active ? loadtext : scantext;
-  char ani[16] = {};
+  char ani[16] = {0};
   size_t i;
   int width = wincols-5;
 
