@@ -33,7 +33,7 @@ mkdir -p tarballs
 
 
 # "Fetch, Extract, Move"
-fem() { # base-url name targerdir extractdir 
+fem() { # base-url name targerdir extractdir
   echo "====== Fetching and extracting $1 $2"
   cd tarballs
   if [ -n "$4" ]; then

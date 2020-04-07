@@ -100,7 +100,7 @@ void exclude_clear() {
 }
 
 
-/* 
+/*
  * Exclusion of directories that contain only cached information.
  * See http://www.brynosaurus.com/cachedir/
  */
