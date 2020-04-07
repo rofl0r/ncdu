@@ -179,6 +179,15 @@ this option will not follow symlinks to directories and will count each
 symlinked file as a unique file (i.e. unlike how hard links are handled). This
 is subject to change in later versions.
 
+=item --exclude-kernfs
+
+Exclude Linux pseudo filesystems, e.g. /proc (procfs), /sys (sysfs).
+This option is only available on Linux, but exported statistics can be loaded on
+all platforms.
+
+The complete list of currently known pseudo filesystems is: binfmt, bpf, cgroup,
+cgroup2, debug, devpts, proc, pstore, security, selinux, sys, trace.
+
 =back
 
 
@@ -306,6 +315,10 @@ File or directory is excluded from the statistics by using exlude patterns.
 =item >
 
 Directory is on another filesystem.
+
+=item ^
+
+Directory is excluded from the statistics due to being a Linux pseudo filesystem.
 
 =item @
 

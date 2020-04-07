@@ -480,6 +480,8 @@ static int iteminfo(void) {
       C(rstring(ctx->val, 8));
       if(strcmp(ctx->val, "otherfs") == 0)
         ctx->buf_dir->flags |= FF_OTHFS;
+      else if(strcmp(ctx->val, "kernfs") == 0)
+        ctx->buf_dir->flags |= FF_KERNFS;
       else
         ctx->buf_dir->flags |= FF_EXL;
     } else if(strcmp(ctx->val, "notreg") == 0) {     /* notreg */

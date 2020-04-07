@@ -137,6 +137,7 @@ static void argv_parse(int argc, char **argv) {
     { 'X', 1, "-X,--exclude-from" },
     { 'L', 0, "-L,--follow-symlinks" },
     { 'C', 0, "--exclude-caches" },
+    {  2,  0, "--exclude-kernfs" },
     { 's', 0, "--si" },
     { 'Q', 0, "--confirm-quit" },
     { 'c', 1, "--color" },
@@ -166,6 +167,9 @@ static void argv_parse(int argc, char **argv) {
       printf("  -X, --exclude-from FILE    Exclude files that match any pattern in FILE\n");
       printf("  -L, --follow-symlinks      Follow symbolic links (excluding directories)\n");
       printf("  --exclude-caches           Exclude directories containing CACHEDIR.TAG\n");
+#if HAVE_LINUX_MAGIC_H && HAVE_SYS_STATFS_H && HAVE_STATFS
+      printf("  --exclude-kernfs           Exclude Linux pseudo filesystems (procfs,sysfs,cgroup,...)\n");
+#endif
       printf("  --confirm-quit             Confirm quitting ncdu\n");
       printf("  --color SCHEME             Set color scheme (off/dark)\n");
       exit(0);
@@ -194,6 +198,14 @@ static void argv_parse(int argc, char **argv) {
     case 'C':
       cachedir_tags = 1;
       break;
+
+    case  2 :
+#if HAVE_LINUX_MAGIC_H && HAVE_SYS_STATFS_H && HAVE_STATFS
+      exclude_kernfs = 1; break;
+#else
+      fprintf(stderr, "This feature is not supported on your platform\n");
+      exit(1);
+#endif
     case 'c':
       if(strcmp(val, "off") == 0)  { uic_theme = 0; }
       else if(strcmp(val, "dark") == 0) { uic_theme = 1; }

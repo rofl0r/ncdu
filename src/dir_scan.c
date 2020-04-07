@@ -34,6 +34,11 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
+#if HAVE_LINUX_MAGIC_H && HAVE_SYS_STATFS_H && HAVE_STATFS
+#include <sys/statfs.h>
+#include <linux/magic.h>
+#endif
+
 
 /* set S_BLKSIZE if not defined already in sys/stat.h */
 #ifndef S_BLKSIZE
@@ -50,6 +55,27 @@ static struct dir    *buf_dir;
 static struct dir_ext buf_ext[1];
 
 
+#if HAVE_LINUX_MAGIC_H && HAVE_SYS_STATFS_H && HAVE_STATFS
+int exclude_kernfs; /* Exlude Linux pseudo filesystems */
+
+static int is_kernfs(unsigned long type) {
+  if(type == BINFMTFS_MAGIC ||
+     type == BPF_FS_MAGIC ||
+     type == CGROUP_SUPER_MAGIC ||
+     type == CGROUP2_SUPER_MAGIC||
+     type == DEBUGFS_MAGIC ||
+     type == DEVPTS_SUPER_MAGIC ||
+     type == PROC_SUPER_MAGIC ||
+     type == PSTOREFS_MAGIC ||
+     type == SECURITYFS_MAGIC ||
+     type == SELINUX_MAGIC ||
+     type == SYSFS_MAGIC ||
+     type == TRACEFS_MAGIC)
+    return 1;
+
+  return 0;
+}
+#endif
 
 /* Populates the buf_dir and buf_ext with information from the stat struct.
  * Sets everything necessary for output_dir.item() except FF_ERR and FF_EXL. */
@@ -69,7 +95,7 @@ static void stat_to_dir(struct stat *fs) {
   if(dir_scan_smfs && curdev != buf_dir->dev)
     buf_dir->flags |= FF_OTHFS;
 
-  if(!(buf_dir->flags & (FF_OTHFS|FF_EXL))) {
+  if(!(buf_dir->flags & (FF_OTHFS|FF_EXL|FF_KERNFS))) {
     buf_dir->size = fs->st_blocks * S_BLKSIZE;
     buf_dir->asize = fs->st_size;
   }
@@ -204,6 +230,17 @@ static int dir_scan_item(const char *name) {
     dir_setlasterr(dir_curpath);
   }
 
+#if HAVE_LINUX_MAGIC_H && HAVE_SYS_STATFS_H && HAVE_STATFS
+  if(exclude_kernfs && !(buf_dir->flags & (FF_ERR|FF_EXL)) && S_ISDIR(st.st_mode)) {
+    struct statfs fst;
+    if(statfs(dir_curpath, &fst)) {
+      buf_dir->flags |= FF_ERR;
+      dir_setlasterr(dir_curpath);
+    } else if(is_kernfs(fst.f_type))
+      buf_dir->flags |= FF_KERNFS;
+  }
+#endif
+
   if(!(buf_dir->flags & (FF_ERR|FF_EXL))) {
     if(follow_symlinks && S_ISLNK(st.st_mode) && !stat(name, &stl) && !S_ISDIR(stl.st_mode))
       stat_to_dir(&stl);
@@ -211,14 +248,14 @@ static int dir_scan_item(const char *name) {
       stat_to_dir(&st);
   }
 
-  if(cachedir_tags && (buf_dir->flags & FF_DIR) && !(buf_dir->flags & (FF_ERR|FF_EXL|FF_OTHFS)))
+  if(cachedir_tags && (buf_dir->flags & FF_DIR) && !(buf_dir->flags & (FF_ERR|FF_EXL|FF_OTHFS|FF_KERNFS)))
     if(has_cachedir_tag(name)) {
       buf_dir->flags |= FF_EXL;
       buf_dir->size = buf_dir->asize = 0;
     }
 
   /* Recurse into the dir or output the item */
-  if(buf_dir->flags & FF_DIR && !(buf_dir->flags & (FF_ERR|FF_EXL|FF_OTHFS)))
+  if(buf_dir->flags & FF_DIR && !(buf_dir->flags & (FF_ERR|FF_EXL|FF_OTHFS|FF_KERNFS)))
     fail = dir_scan_recurse(name);
   else if(buf_dir->flags & FF_DIR) {
     if(dir_output.item(buf_dir, name, buf_ext) || dir_output.item(NULL, 0, NULL)) {

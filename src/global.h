@@ -42,15 +42,16 @@
 #endif
 
 /* File Flags (struct dir -> flags) */
-#define FF_DIR    0x01
-#define FF_FILE   0x02
-#define FF_ERR    0x04 /* error while reading this item */
-#define FF_OTHFS  0x08 /* excluded because it was another filesystem */
-#define FF_EXL    0x10 /* excluded using exlude patterns */
-#define FF_SERR   0x20 /* error in subdirectory */
-#define FF_HLNKC  0x40 /* hard link candidate (file with st_nlink > 1) */
-#define FF_BSEL   0x80 /* selected */
-#define FF_EXT   0x100 /* extended struct available */
+#define FF_DIR     0x01
+#define FF_FILE    0x02
+#define FF_ERR     0x04 /* error while reading this item */
+#define FF_OTHFS   0x08 /* excluded because it was another filesystem */
+#define FF_EXL     0x10 /* excluded using exlude patterns */
+#define FF_SERR    0x20 /* error in subdirectory */
+#define FF_HLNKC   0x40 /* hard link candidate (file with st_nlink > 1) */
+#define FF_BSEL    0x80 /* selected */
+#define FF_EXT    0x100 /* extended struct available */
+#define FF_KERNFS 0x200 /* excluded because it was a Linux pseudo filesystem */
 
 /* Program states */
 #define ST_CALC   0

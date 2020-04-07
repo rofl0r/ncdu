@@ -113,6 +113,10 @@ void dir_scan_init(const char *path);
 extern int dir_import_active;
 int dir_import_init(const char *fn);
 
+#if HAVE_LINUX_MAGIC_H && HAVE_SYS_STATFS_H && HAVE_STATFS
+extern int exclude_kernfs;
+#endif
+
 
 /* The currently configured output functions. */
 extern struct dir_output dir_output;

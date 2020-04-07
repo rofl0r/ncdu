@@ -15,7 +15,7 @@ AC_CHECK_HEADERS(
   [limits.h sys/time.h sys/types.h sys/stat.h dirent.h unistd.h fnmatch.h ncurses.h],[],
   AC_MSG_ERROR([required header file not found]))
 
-AC_CHECK_HEADERS(locale.h)
+AC_CHECK_HEADERS([locale.h sys/statfs.h linux/magic.h])
 
 # Check for typedefs, structures, and compiler characteristics.
 AC_TYPE_INT64_T
@@ -28,6 +28,7 @@ AC_CHECK_FUNCS(
   [getcwd gettimeofday fnmatch chdir rmdir unlink lstat system getenv],[],
   AC_MSG_ERROR([required function missing]))
 
+AC_CHECK_FUNCS(statfs)
 
 
 # Look for ncurses library to link to
