@@ -29,11 +29,11 @@
 #include <string.h>
 
 
-int page, start;
+static int page, start;
 
 
 #define KEYS 19
-const char *keys[KEYS*2] = {
+static const char *keys[KEYS*2] = {
 /*|----key----|  |----------------description----------------|*/
         "up, k", "Move cursor up",
       "down, j", "Move cursor down",

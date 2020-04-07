@@ -34,7 +34,7 @@
 static FILE *stream;
 
 /* Stack of device IDs, also used to keep track of the level of nesting */
-struct stack {
+static struct stack {
   uint64_t *list;
   int size, top;
 } stack;

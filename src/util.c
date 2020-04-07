@@ -38,7 +38,7 @@ int uic_theme;
 int winrows, wincols;
 int subwinr, subwinc;
 int si;
-char thou_sep;
+static char thou_sep;
 
 
 char *cropstr(const char *from, int s) {

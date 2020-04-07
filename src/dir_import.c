@@ -59,7 +59,7 @@ int dir_import_active = 0;
 
 
 /* Use a struct for easy batch-allocation and deallocation of state data. */
-struct ctx {
+static struct ctx {
   FILE *stream;
 
   int line;

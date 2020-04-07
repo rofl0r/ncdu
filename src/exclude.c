@@ -31,7 +31,7 @@
 #include <fnmatch.h>
 
 
-struct exclude {
+static struct exclude {
   char *pattern;
   struct exclude *next;
 } *excludes = NULL;
