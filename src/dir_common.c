@@ -31,7 +31,7 @@
 #include <stdarg.h>
 
 
-int (*dir_process)();
+int (*dir_process)(void);
 char *dir_curpath;   /* Full path of the last seen item. */
 struct dir_output dir_output;
 char *dir_fatalerr; /* Error message on a fatal error. (NULL if there was no fatal error) */
@@ -107,7 +107,7 @@ void dir_seterr(const char *fmt, ...) {
 }
 
 
-static void draw_progress() {
+static void draw_progress(void) {
   static const char scantext[] = "Scanning...";
   static const char loadtext[] = "Loading...";
   static size_t anpos = 0;

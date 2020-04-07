@@ -42,7 +42,7 @@ static signed char seloption;
 static int lasterrno;
 
 
-static void delete_draw_confirm() {
+static void delete_draw_confirm(void) {
   nccreate(6, 60, "Confirm delete");
 
   ncprint(1, 2, "Are you sure you want to delete \"%s\"%c",
@@ -67,7 +67,7 @@ static void delete_draw_confirm() {
 }
 
 
-static void delete_draw_progress() {
+static void delete_draw_progress(void) {
   nccreate(6, 60, "Deleting...");
 
   ncaddstr(1, 2, cropstr(getpath(curdir), 47));
@@ -77,7 +77,7 @@ static void delete_draw_progress() {
 }
 
 
-static void delete_draw_error() {
+static void delete_draw_error(void) {
   nccreate(6, 60, "Error!");
 
   ncprint(1, 2, "Can't delete %s:", cropstr(getpath(curdir), 42));

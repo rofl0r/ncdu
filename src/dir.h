@@ -103,7 +103,7 @@ int dir_export_init(const char *fn);
 
 
 /* Function set by input code. Returns dir_output.final(). */
-extern int (*dir_process)();
+extern int (*dir_process)(void);
 
 /* Scanning a live directory */
 extern int dir_scan_smfs;
@@ -121,7 +121,7 @@ extern struct dir_output dir_output;
 extern char *dir_curpath;
 void dir_curpath_set(const char *);
 void dir_curpath_enter(const char *);
-void dir_curpath_leave();
+void dir_curpath_leave(void);
 
 /* Sets the path where the last error occurred, or reset on NULL. */
 void dir_setlasterr(const char *);
@@ -132,6 +132,6 @@ void dir_seterr(const char *, ...);
 
 extern int dir_ui;
 int dir_key(int);
-void dir_draw();
+void dir_draw(void);
 
 #endif

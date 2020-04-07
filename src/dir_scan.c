@@ -255,7 +255,7 @@ static int dir_walk(char *dir) {
 }
 
 
-static int process() {
+static int process(void) {
   char *path;
   char *dir;
   int fail = 0;

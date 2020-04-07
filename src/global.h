@@ -110,7 +110,7 @@ extern int follow_symlinks;
 int input_handle(int);
 
 /* de-initialize ncurses */
-void close_nc();
+void close_nc(void);
 
 
 /* import all other global functions and variables */

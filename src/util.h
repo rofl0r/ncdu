@@ -60,7 +60,7 @@ enum ui_coltype {
 /* Color & attribute manipulation */
 extern int uic_theme;
 
-void uic_init();
+void uic_init(void);
 void uic_set(enum ui_coltype);
 
 
@@ -141,7 +141,7 @@ char *fullsize(int64_t);
 char *fmtmode(unsigned short);
 
 /* read locale information from the environment */
-void read_locale();
+void read_locale(void);
 
 /* recursively free()s a directory tree */
 void freedir(struct dir *);
@@ -187,7 +187,7 @@ void addparentstats(struct dir *, int64_t, int64_t, uint64_t, int);
 
 
 /* Malloc wrappers that exit on OOM */
-void *xmalloc();
+void *xmalloc(size_t);
 void *xcalloc(size_t, size_t);
 void *xrealloc(void *, size_t);
 

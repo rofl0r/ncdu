@@ -29,7 +29,7 @@
 void exclude_add(char *);
 int  exclude_addfile(char *);
 int  exclude_match(char *);
-void exclude_clear();
+void exclude_clear(void);
 int  has_cachedir_tag(const char *name);
 
 #endif

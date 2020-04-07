@@ -161,7 +161,7 @@ static struct dir *dirlist_sort(struct dir *list) {
  * - makes sure one, and only one, visible item is selected
  * - updates the dirlist_(maxs|maxa) values
  * - makes sure that the FF_BSEL bits are correct */
-static void dirlist_fixup() {
+static void dirlist_fixup(void) {
   struct dir *t;
 
   /* we're going to determine the selected items from the list itself, so reset this one */

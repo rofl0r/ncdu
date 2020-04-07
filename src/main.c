@@ -50,7 +50,7 @@ static int ncurses_tty = 0; /* Explicitely open /dev/tty instead of using stdio 
 static long lastupdate = 999;
 
 
-static void screen_draw() {
+static void screen_draw(void) {
   switch(pstate) {
     case ST_CALC:   dir_draw();    break;
     case ST_BROWSE: browse_draw(); break;
@@ -236,7 +236,7 @@ static void argv_parse(int argc, char **argv) {
 
 
 /* Initializes ncurses only when not done yet. */
-static void init_nc() {
+static void init_nc(void) {
   int ok = 0;
   FILE *tty;
   SCREEN *term;

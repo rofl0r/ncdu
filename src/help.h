@@ -30,7 +30,7 @@
 
 int  help_key(int);
 void help_draw(void);
-void help_init();
+void help_init(void);
 
 
 #endif

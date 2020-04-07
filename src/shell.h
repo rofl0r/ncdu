@@ -30,6 +30,6 @@
 #include "global.h"
 
 void shell_draw(void);
-void shell_init();
+void shell_init(void);
 
 #endif

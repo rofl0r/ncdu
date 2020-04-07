@@ -159,7 +159,7 @@ static inline void con(int n) {
 
 
 /* Consumes any whitespace. If *ctx->buf == 0 after this function, we've reached EOF. */
-static int cons() {
+static int cons(void) {
   while(1) {
     C(!*ctx->buf && fill(1));
 
@@ -289,7 +289,7 @@ static int rint64(uint64_t *val, uint64_t max) {
 
 /* Parse and consume a JSON number. The result is discarded.
  * TODO: Improve validation. */
-static int rnum() {
+static int rnum(void) {
   int haschar = 0;
   C(rfill1);
   while(1) {
@@ -324,7 +324,7 @@ static int rkey(char *dest, int destlen) {
 
 
 /* (Recursively) parse and consume any JSON value. The result is discarded. */
-static int rval() {
+static int rval(void) {
   C(rfill1);
   switch(*ctx->buf) {
   case 't': /* true */
@@ -377,7 +377,7 @@ static int rval() {
 
 
 /* Consumes everything up to the root item, and checks that this item is a dir. */
-static int header() {
+static int header(void) {
   uint64_t v;
 
   C(cons());
@@ -422,7 +422,7 @@ static int itemdir(uint64_t dev) {
 
 /* Reads a JSON object representing a struct dir/dir_ext item. Writes to
  * ctx->buf_dir, ctx->buf_ext and ctx->buf_name. */
-static int iteminfo() {
+static int iteminfo(void) {
   uint64_t iv;
 
   E(*ctx->buf != '{', "Expected JSON object");
@@ -557,7 +557,7 @@ static int item(uint64_t dev) {
 }
 
 
-static int footer() {
+static int footer(void) {
   C(cons());
   E(*ctx->buf != ']', "Expected ']'");
   con(1);
@@ -567,7 +567,7 @@ static int footer() {
 }
 
 
-static int process() {
+static int process(void) {
   int fail = 0;
 
   header();
