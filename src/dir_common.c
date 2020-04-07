@@ -181,7 +181,7 @@ static void draw_error(char *cur, char *msg) {
 
 void dir_draw() {
   float f;
-  char *unit;
+  const char *unit;
 
   switch(dir_ui) {
   case 0:

@@ -35,7 +35,7 @@
 #include <sys/wait.h>
 
 void shell_draw() {
-  char *full_path;
+  const char *full_path;
   int res;
 
   /* suspend ncurses mode */
@@ -52,7 +52,7 @@ void shell_draw() {
            "Press any key to continue.",
            full_path, res);
   } else {
-    char *shell = getenv("NCDU_SHELL");
+    const char *shell = getenv("NCDU_SHELL");
     if (shell == NULL) {
       shell = getenv("SHELL");
       if (shell == NULL)

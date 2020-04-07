@@ -62,7 +62,7 @@ char *cropstr(const char *from, int s) {
 }
 
 
-float formatsize(int64_t from, char **unit) {
+float formatsize(int64_t from, const char **unit) {
   float r = from;
   if (si) {
     if(r < 1000.0f)   { *unit = " B"; }
@@ -87,7 +87,7 @@ float formatsize(int64_t from, char **unit) {
 
 
 void printsize(enum ui_coltype t, int64_t from) {
-  char *unit;
+  const char *unit;
   float r = formatsize(from, &unit);
   uic_set(t == UIC_HD ? UIC_NUM_HD : t == UIC_SEL ? UIC_NUM_SEL : UIC_NUM);
   printw("%5.1f", r);
@@ -218,7 +218,7 @@ void nccreate(int height, int width, const char *title) {
 }
 
 
-void ncprint(int r, int c, char *fmt, ...) {
+void ncprint(int r, int c, const char *fmt, ...) {
   va_list arg;
   va_start(arg, fmt);
   move(subwinr+r, subwinc+c);
@@ -227,7 +227,7 @@ void ncprint(int r, int c, char *fmt, ...) {
 }
 
 
-void nctab(int c, int sel, int num, char *str) {
+void nctab(int c, int sel, int num, const char *str) {
   uic_set(sel ? UIC_KEY_HD : UIC_KEY);
   ncprint(0, c, "%d", num);
   uic_set(sel ? UIC_HD : UIC_DEFAULT);
@@ -355,7 +355,7 @@ void freedir(struct dir *dr) {
 }
 
 
-char *getpath(struct dir *cur) {
+const char *getpath(struct dir *cur) {
   static char *dat;
   static int datl = 0;
   struct dir *d, **list;

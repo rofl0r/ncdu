@@ -32,7 +32,7 @@
 
 
 static int graph = 1, show_as = 0, info_show = 0, info_page = 0, info_start = 0, show_items = 0, show_mtime = 0;
-static char *message = NULL;
+static const char *message = NULL;
 
 
 
@@ -256,7 +256,7 @@ static void browse_draw_item(struct dir *n, int row) {
 
 void browse_draw() {
   struct dir *t;
-  char *tmp;
+  const char *tmp;
   int selected = 0, i;
 
   erase();
