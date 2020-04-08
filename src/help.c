@@ -95,17 +95,19 @@ void help_draw() {
       ncaddch( 6, 4, '.');
       ncaddch( 7, 4, '<');
       ncaddch( 8, 4, '>');
-      ncaddch( 9, 4, '@');
-      ncaddch(10, 4, 'H');
-      ncaddch(11, 4, 'e');
+      ncaddch( 9, 4, '^');
+      ncaddch(10, 4, '@');
+      ncaddch(11, 4, 'H');
+      ncaddch(12, 4, 'e');
       uic_set(UIC_DEFAULT);
       ncaddstr( 5, 7, "An error occurred while reading this directory");
       ncaddstr( 6, 7, "An error occurred while reading a subdirectory");
       ncaddstr( 7, 7, "File or directory is excluded from the statistics");
       ncaddstr( 8, 7, "Directory was on another filesystem");
-      ncaddstr( 9, 7, "This is not a file nor a dir (symlink, socket, ...)");
-      ncaddstr(10, 7, "Same file was already counted (hard link)");
-      ncaddstr(11, 7, "Empty directory");
+      ncaddstr( 9, 7, "Excluded Linux pseudo-filesystem");
+      ncaddstr(10, 7, "This is not a file nor a dir (symlink, socket, ...)");
+      ncaddstr(11, 7, "Same file was already counted (hard link)");
+      ncaddstr(12, 7, "Empty directory");
       break;
     case 3:
       /* Indeed, too much spare time */
