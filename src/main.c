@@ -167,7 +167,7 @@ static void argv_parse(int argc, char **argv) {
       printf("  -L, --follow-symlinks      Follow symbolic links (excluding directories)\n");
       printf("  --exclude-caches           Exclude directories containing CACHEDIR.TAG\n");
       printf("  --confirm-quit             Confirm quitting ncdu\n");
-      printf("  --color SCHEME             Set color scheme\n");
+      printf("  --color SCHEME             Set color scheme (off/dark)\n");
       exit(0);
     case 'q': update_delay = 2000; break;
     case 'v':
