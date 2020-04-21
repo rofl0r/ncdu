@@ -118,8 +118,8 @@ static char *dir_read(int *err) {
   DIR *dir;
   struct dirent *item;
   char *buf = NULL;
-  int buflen = 512;
-  int off = 0;
+  size_t buflen = 512;
+  size_t off = 0;
 
   if((dir = opendir(".")) == NULL) {
     *err = 1;
@@ -132,7 +132,7 @@ static char *dir_read(int *err) {
   while((item = readdir(dir)) != NULL) {
     if(item->d_name[0] == '.' && (item->d_name[1] == 0 || (item->d_name[1] == '.' && item->d_name[2] == 0)))
       continue;
-    int req = off+3+strlen(item->d_name);
+    size_t req = off+3+strlen(item->d_name);
     if(req > buflen) {
       buflen = req < buflen*2 ? buflen*2 : req;
       buf = xrealloc(buf, buflen);
