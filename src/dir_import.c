@@ -482,6 +482,8 @@ static int iteminfo(void) {
         ctx->buf_dir->flags |= FF_OTHFS;
       else if(strcmp(ctx->val, "kernfs") == 0)
         ctx->buf_dir->flags |= FF_KERNFS;
+      else if(strcmp(ctx->val, "frmlnk") == 0)
+        ctx->buf_dir->flags |= FF_FRMLNK;
       else
         ctx->buf_dir->flags |= FF_EXL;
     } else if(strcmp(ctx->val, "notreg") == 0) {     /* notreg */

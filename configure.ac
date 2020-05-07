@@ -30,6 +30,11 @@ AC_CHECK_FUNCS(
 
 AC_CHECK_FUNCS(statfs)
 
+AC_CHECK_HEADERS([sys/attr.h])
+
+AC_CHECK_FUNCS([getattrlist])
+
+AC_CHECK_DECLS([ATTR_CMNEXT_NOFIRMLINKPATH], [], [], [[#include <sys/attr.h>]])
 
 # Look for ncurses library to link to
 ncurses=auto

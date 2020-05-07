@@ -34,6 +34,10 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
+#if HAVE_SYS_ATTR_H && HAVE_GETATTRLIST && HAVE_DECL_ATTR_CMNEXT_NOFIRMLINKPATH
+#include <sys/attr.h>
+#endif
+
 #if HAVE_LINUX_MAGIC_H && HAVE_SYS_STATFS_H && HAVE_STATFS
 #include <sys/statfs.h>
 #include <linux/magic.h>
@@ -241,6 +245,25 @@ static int dir_scan_item(const char *name) {
   }
 #endif
 
+#if HAVE_SYS_ATTR_H && HAVE_GETATTRLIST && HAVE_DECL_ATTR_CMNEXT_NOFIRMLINKPATH
+  if(!follow_firmlinks) {
+    struct attrlist list = {
+      .bitmapcount = ATTR_BIT_MAP_COUNT,
+      .forkattr = ATTR_CMNEXT_NOFIRMLINKPATH,
+    };
+    struct {
+      uint32_t length;
+      attrreference_t reference;
+      char extra[PATH_MAX];
+    } __attribute__((aligned(4), packed)) attributes;
+    if (getattrlist(name, &list, &attributes, sizeof(attributes), FSOPT_ATTR_CMN_EXTENDED) == -1) {
+      buf_dir->flags |= FF_ERR;
+      dir_setlasterr(dir_curpath);
+    } else if (strcmp(dir_curpath, (char *)&attributes.reference + attributes.reference.attr_dataoffset))
+      buf_dir->flags |= FF_FRMLNK;
+  }
+#endif
+
   if(!(buf_dir->flags & (FF_ERR|FF_EXL))) {
     if(follow_symlinks && S_ISLNK(st.st_mode) && !stat(name, &stl) && !S_ISDIR(stl.st_mode))
       stat_to_dir(&stl);
@@ -248,14 +271,14 @@ static int dir_scan_item(const char *name) {
       stat_to_dir(&st);
   }
 
-  if(cachedir_tags && (buf_dir->flags & FF_DIR) && !(buf_dir->flags & (FF_ERR|FF_EXL|FF_OTHFS|FF_KERNFS)))
+  if(cachedir_tags && (buf_dir->flags & FF_DIR) && !(buf_dir->flags & (FF_ERR|FF_EXL|FF_OTHFS|FF_KERNFS|FF_FRMLNK)))
     if(has_cachedir_tag(name)) {
       buf_dir->flags |= FF_EXL;
       buf_dir->size = buf_dir->asize = 0;
     }
 
   /* Recurse into the dir or output the item */
-  if(buf_dir->flags & FF_DIR && !(buf_dir->flags & (FF_ERR|FF_EXL|FF_OTHFS|FF_KERNFS)))
+  if(buf_dir->flags & FF_DIR && !(buf_dir->flags & (FF_ERR|FF_EXL|FF_OTHFS|FF_KERNFS|FF_FRMLNK)))
     fail = dir_scan_recurse(name);
   else if(buf_dir->flags & FF_DIR) {
     if(dir_output.item(buf_dir, name, buf_ext) || dir_output.item(NULL, 0, NULL)) {

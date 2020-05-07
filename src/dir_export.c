@@ -116,7 +116,7 @@ static void output_info(struct dir *d, const char *name, struct dir_ext *e) {
   if(d->flags & FF_ERR)
     fputs(",\"read_error\":true", stream);
   /* excluded/error'd files are "unknown" with respect to the "notreg" field. */
-  if(!(d->flags & (FF_DIR|FF_FILE|FF_ERR|FF_EXL|FF_OTHFS|FF_KERNFS)))
+  if(!(d->flags & (FF_DIR|FF_FILE|FF_ERR|FF_EXL|FF_OTHFS|FF_KERNFS|FF_FRMLNK)))
     fputs(",\"notreg\":true", stream);
   if(d->flags & FF_EXL)
     fputs(",\"excluded\":\"pattern\"", stream);
@@ -124,6 +124,8 @@ static void output_info(struct dir *d, const char *name, struct dir_ext *e) {
     fputs(",\"excluded\":\"othfs\"", stream);
   else if(d->flags & FF_KERNFS)
     fputs(",\"excluded\":\"kernfs\"", stream);
+  else if(d->flags & FF_FRMLNK)
+    fputs(",\"excluded\":\"frmlnk\"", stream);
 
   fputc('}', stream);
 }

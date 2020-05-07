@@ -119,6 +119,7 @@ static void browse_draw_flag(struct dir *n, int *x) {
        n->flags & FF_SERR ? '.' :
       n->flags & FF_OTHFS ? '>' :
      n->flags & FF_KERNFS ? '^' :
+     n->flags & FF_FRMLNK ? 'F' :
       n->flags & FF_HLNKC ? 'H' :
      !(n->flags & FF_FILE
     || n->flags & FF_DIR) ? '@' :

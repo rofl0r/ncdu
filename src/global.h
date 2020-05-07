@@ -52,6 +52,7 @@
 #define FF_BSEL    0x80 /* selected */
 #define FF_EXT    0x100 /* extended struct available */
 #define FF_KERNFS 0x200 /* excluded because it was a Linux pseudo filesystem */
+#define FF_FRMLNK 0x400 /* excluded because it was a firmlink */
 
 /* Program states */
 #define ST_CALC   0
@@ -106,6 +107,8 @@ extern int confirm_quit;
 extern int extended_info;
 /* flag whether we want to follow symlinks */
 extern int follow_symlinks;
+/* flag whether we want to follow firmlinks */
+extern int follow_firmlinks;
 
 /* handle input from keyboard and update display */
 int input_handle(int);
