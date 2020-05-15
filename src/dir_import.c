@@ -494,7 +494,6 @@ static int iteminfo(void) {
         C(rlit("false", 5));
     } else
       C(rval());
-    /* TODO: Extended attributes */
 
     C(cons());
     if(*ctx->buf == '}')
