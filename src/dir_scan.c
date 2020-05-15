@@ -237,7 +237,7 @@ static int dir_scan_item(const char *name) {
 #if HAVE_LINUX_MAGIC_H && HAVE_SYS_STATFS_H && HAVE_STATFS
   if(exclude_kernfs && !(buf_dir->flags & (FF_ERR|FF_EXL)) && S_ISDIR(st.st_mode)) {
     struct statfs fst;
-    if(statfs(dir_curpath, &fst)) {
+    if(statfs(name, &fst)) {
       buf_dir->flags |= FF_ERR;
       dir_setlasterr(dir_curpath);
     } else if(is_kernfs(fst.f_type))
