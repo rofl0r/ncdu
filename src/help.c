@@ -57,6 +57,19 @@ static const char *keys[KEYS*2] = {
 };
 
 
+#define FLAGS 9
+static const char *flags[FLAGS*2] = {
+    "!", "An error occurred while reading this directory",
+    ".", "An error occurred while reading a subdirectory",
+    "<", "File or directory is excluded from the statistics",
+    "e", "Empty directory",
+    ">", "Directory was on another filesystem",
+    "@", "This is not a file nor a dir (symlink, socket, ...)",
+    "^", "Excluded Linux pseudo-filesystem",
+    "H", "Same file was already counted (hard link)",
+    "F", "Excluded firmlink",
+};
+
 void help_draw() {
   int i, line;
 
@@ -90,24 +103,15 @@ void help_draw() {
       ncaddstr(2, 3, "X  [size] [graph] [file or directory]");
       attroff(A_BOLD);
       ncaddstr(3, 4, "The X is only present in the following cases:");
-      uic_set(UIC_FLAG);
-      ncaddch( 5, 4, '!');
-      ncaddch( 6, 4, '.');
-      ncaddch( 7, 4, '<');
-      ncaddch( 8, 4, '>');
-      ncaddch( 9, 4, '^');
-      ncaddch(10, 4, '@');
-      ncaddch(11, 4, 'H');
-      ncaddch(12, 4, 'e');
-      uic_set(UIC_DEFAULT);
-      ncaddstr( 5, 7, "An error occurred while reading this directory");
-      ncaddstr( 6, 7, "An error occurred while reading a subdirectory");
-      ncaddstr( 7, 7, "File or directory is excluded from the statistics");
-      ncaddstr( 8, 7, "Directory was on another filesystem");
-      ncaddstr( 9, 7, "Excluded Linux pseudo-filesystem");
-      ncaddstr(10, 7, "This is not a file nor a dir (symlink, socket, ...)");
-      ncaddstr(11, 7, "Same file was already counted (hard link)");
-      ncaddstr(12, 7, "Empty directory");
+      line = 4;
+      for(i=start*2; i<start*2+14; i+=2) {
+        uic_set(UIC_FLAG);
+        ncaddstr(++line, 4, flags[i]);
+        uic_set(UIC_DEFAULT);
+        ncaddstr(line, 7, flags[i+1]);
+      }
+      if(start != FLAGS-7)
+        ncaddstr(12, 25, "-- more --");
       break;
     case 3:
       /* Indeed, too much spare time */
@@ -184,7 +188,7 @@ int help_key(int ch) {
     case KEY_DOWN:
     case ' ':
     case 'j':
-      if(start < KEYS-10)
+      if((page == 1 && start < KEYS-10) || (page == 2 && start < FLAGS-7))
         start++;
       break;
     case KEY_UP:
