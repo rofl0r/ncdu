@@ -315,7 +315,7 @@ correct.
 
 =item <
 
-File or directory is excluded from the statistics by using exlude patterns.
+File or directory is excluded from the statistics by using exclude patterns.
 
 =item >
 

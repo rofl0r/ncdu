@@ -30,7 +30,7 @@
   - path_real uses chdir(), so it's not thread safe
   - Process requires +x access for all directory components
   - Potentionally slow
-  - path_real doesn't check for the existance of the last component
+  - path_real doesn't check for the existence of the last component
   - cwd is unreliable after path_real
 */
 

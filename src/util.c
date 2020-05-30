@@ -109,7 +109,7 @@ char *fullsize(int64_t from) {
   } while((n /= 10) > 0);
   tmp[i] = '\0';
 
-  /* reverse and add thousand seperators */
+  /* reverse and add thousand separators */
   j = 0;
   while(i--) {
     dat[j++] = tmp[i];
@@ -288,7 +288,7 @@ static void freedir_hlnk(struct dir *d) {
 
   /* remove size from parents.
    * This works the same as with adding: only the parents in which THIS is the
-   * only occurence of the hard link will be modified, if the same file still
+   * only occurrence of the hard link will be modified, if the same file still
    * exists within the parent it shouldn't get removed from the count.
    * XXX: Same note as for dir_mem.c / hlink_check():
    *      this is probably not the most efficient algorithm */

@@ -60,7 +60,7 @@ static struct dir_ext buf_ext[1];
 
 
 #if HAVE_LINUX_MAGIC_H && HAVE_SYS_STATFS_H && HAVE_STATFS
-int exclude_kernfs; /* Exlude Linux pseudo filesystems */
+int exclude_kernfs; /* Exclude Linux pseudo filesystems */
 
 static int is_kernfs(unsigned long type) {
   if(type == BINFMTFS_MAGIC ||

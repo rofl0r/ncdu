@@ -47,7 +47,7 @@ int confirm_quit = 0;
 
 static int min_rows = 17, min_cols = 60;
 static int ncurses_init = 0;
-static int ncurses_tty = 0; /* Explicitely open /dev/tty instead of using stdio */
+static int ncurses_tty = 0; /* Explicitly open /dev/tty instead of using stdio */
 static long lastupdate = 999;
 
 

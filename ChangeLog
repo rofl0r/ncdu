@@ -77,7 +77,7 @@
 	- Count the size of a hard linked file once for each directory it appears in
 	- Fixed crash on browsing dirs with a small window size (#2991787)
 	- Fixed buffer overflow when some directories can't be scanned (#2981704)
-	- Fixed segfault when launched on a nonexistant directory (#3012787)
+	- Fixed segfault when launched on a nonexistent directory (#3012787)
 	- Fixed segfault when root dir only contains hidden files
 	- Improved browsing performance
 	- More intuitive multi-page browsing

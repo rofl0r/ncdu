@@ -35,7 +35,7 @@
  *   "-f<arg>"
  *   "-zf <arg>"
  *   "-zf<arg>"
- *   "--" (To stop looking for futher options)
+ *   "--" (To stop looking for further options)
  *   "<arg>" (Non-option arguments)
  *
  * Issues/non-features:
@@ -62,7 +62,7 @@ typedef struct {
 	int needarg;
 	/* Name(s) of this option, prefixed with '-' or '--' and separated by a
 	 * comma. E.g. "-z", "--gzip", "-z,--gzip".
-	 * An option can have any number of aliasses.
+	 * An option can have any number of aliases.
 	 */
 	const char *name;
 } yopt_opt_t;
