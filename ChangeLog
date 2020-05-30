@@ -1,3 +1,11 @@
+1.15 - 2020-05-30
+	- (Linux) Add --exclude-kernfs option to exclude pseudo filesystems (Christian Göttsche)
+	- (MacOS) Exclude firmlinks by default (Saagar Jha)
+	- (MacOS) Add --follow-firmlinks option to follow firmlinks (Saagar Jha)
+	- Fix bug in calculating the apparent size of directories containing hardlinks
+	- Fix integer overflow with directories containing >2GiB worth of file names
+	- Fix yet another possible 100% CPU bug when losing terminal
+
 1.14.2 - 2020-02-10
 	- Fix compilation with GCC 10 (-fno-common)
 	- Fix minor display issue when scanning 10M+ files
