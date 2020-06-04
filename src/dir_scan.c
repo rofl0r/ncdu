@@ -63,18 +63,45 @@ static struct dir_ext buf_ext[1];
 int exclude_kernfs; /* Exclude Linux pseudo filesystems */
 
 static int is_kernfs(unsigned long type) {
-  if(type == BINFMTFS_MAGIC ||
+  if(
+#ifdef BINFMTFS_MAGIC
+     type == BINFMTFS_MAGIC ||
+#endif
+#ifdef BPF_FS_MAGIC
      type == BPF_FS_MAGIC ||
+#endif
+#ifdef CGROUP_SUPER_MAGIC
      type == CGROUP_SUPER_MAGIC ||
+#endif
+#ifdef CGROUP2_SUPER_MAGIC
      type == CGROUP2_SUPER_MAGIC||
+#endif
+#ifdef DEBUGFS_MAGIC
      type == DEBUGFS_MAGIC ||
+#endif
+#ifdef DEVPTS_SUPER_MAGIC
      type == DEVPTS_SUPER_MAGIC ||
+#endif
+#ifdef PROC_SUPER_MAGIC
      type == PROC_SUPER_MAGIC ||
+#endif
+#ifdef PSTOREFS_MAGIC
      type == PSTOREFS_MAGIC ||
+#endif
+#ifdef SECURITYFS_MAGIC
      type == SECURITYFS_MAGIC ||
+#endif
+#ifdef SELINUX_MAGIC
      type == SELINUX_MAGIC ||
+#endif
+#ifdef SYSFS_MAGIC
      type == SYSFS_MAGIC ||
-     type == TRACEFS_MAGIC)
+#endif
+#ifdef TRACEFS_MAGIC
+     type == TRACEFS_MAGIC ||
+#endif
+     0
+    )
     return 1;
 
   return 0;
