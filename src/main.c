@@ -42,7 +42,7 @@ long update_delay = 100;
 int cachedir_tags = 0;
 int extended_info = 0;
 int follow_symlinks = 0;
-int follow_firmlinks = 0;
+int follow_firmlinks = 1;
 int confirm_quit = 0;
 
 static int min_rows = 17, min_cols = 60;
@@ -139,7 +139,8 @@ static void argv_parse(int argc, char **argv) {
     { 'L', 0, "-L,--follow-symlinks" },
     { 'C', 0, "--exclude-caches" },
     {  2,  0, "--exclude-kernfs" },
-    {  3,  0, "--follow-firmlinks" },
+    {  3,  0, "--follow-firmlinks" }, /* undocumented, this behavior is the current default */
+    {  4,  0, "--exclude-firmlinks" },
     { 's', 0, "--si" },
     { 'Q', 0, "--confirm-quit" },
     { 'c', 1, "--color" },
@@ -173,7 +174,7 @@ static void argv_parse(int argc, char **argv) {
       printf("  --exclude-kernfs           Exclude Linux pseudo filesystems (procfs,sysfs,cgroup,...)\n");
 #endif
 #if HAVE_SYS_ATTR_H && HAVE_GETATTRLIST && HAVE_DECL_ATTR_CMNEXT_NOFIRMLINKPATH
-      printf("  --follow-firmlinks         Follow firmlinks on macOS\n");
+      printf("  --exclude-firmlinks        Exclude firmlinks on macOS\n");
 #endif
       printf("  --confirm-quit             Confirm quitting ncdu\n");
       printf("  --color SCHEME             Set color scheme (off/dark)\n");
@@ -204,16 +205,23 @@ static void argv_parse(int argc, char **argv) {
       cachedir_tags = 1;
       break;
 
-    case  2 :
+    case  2 : /* --exclude-kernfs */
 #if HAVE_LINUX_MAGIC_H && HAVE_SYS_STATFS_H && HAVE_STATFS
       exclude_kernfs = 1; break;
 #else
       fprintf(stderr, "This feature is not supported on your platform\n");
       exit(1);
 #endif
-    case  3 :
+    case  3 : /* --follow-firmlinks */
 #if HAVE_SYS_ATTR_H && HAVE_GETATTRLIST && HAVE_DECL_ATTR_CMNEXT_NOFIRMLINKPATH
       follow_firmlinks = 1; break;
+#else
+      fprintf(stderr, "This feature is not supported on your platform\n");
+      exit(1);
+#endif
+    case  4 : /* --exclude-firmlinks */
+#if HAVE_SYS_ATTR_H && HAVE_GETATTRLIST && HAVE_DECL_ATTR_CMNEXT_NOFIRMLINKPATH
+      follow_firmlinks = 0; break;
 #else
       fprintf(stderr, "This feature is not supported on your platform\n");
       exit(1);

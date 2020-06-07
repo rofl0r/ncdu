@@ -179,12 +179,9 @@ this option will not follow symlinks to directories and will count each
 symlinked file as a unique file (i.e. unlike how hard links are handled). This
 is subject to change in later versions.
 
-=item --follow-firmlinks
+=item --exclude-firmlinks
 
-(MacOS only) follow firmlinks. WARNING: This may cause directories to be
-scanned and counted multiple times. Firmlink cycles are current (1.15) not
-detected, so it may also cause ncdu to get stuck in an infinite loop and
-eventually run out of memory.
+(MacOS only) Exclude firmlinks.
 
 =item --exclude-kernfs
 
@@ -428,6 +425,11 @@ resulting sizes will be incorrect.
 Item counts are stored in a signed 32-bit integer without overflow detection.
 If you have a directory with more than 2 billion files, quite literally
 anything can happen.
+
+On macOS 10.15 and later, running ncdu on the root directory without
+`--exclude-firmlinks` may cause directories to be scanned and counted multiple
+times. Firmlink cycles are currently (1.15.1) not detected, so it may also
+cause ncdu to get stuck in an infinite loop and eventually run out of memory.
 
 Please report any other bugs you may find at the bug tracker, which can be
 found on the web site at https://dev.yorhel.nl/ncdu
