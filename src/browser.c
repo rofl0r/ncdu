@@ -132,13 +132,13 @@ static void browse_draw_flag(struct dir *n, int *x) {
 
 static void browse_draw_graph(struct dir *n, int *x) {
   float pc = 0.0f;
-  int o, i;
+  int o, i, bar_size = wincols/7 > 10 ? wincols/7 : 10;
   enum ui_coltype c = n->flags & FF_BSEL ? UIC_SEL : UIC_DEFAULT;
 
   if(!graph)
     return;
 
-  *x += graph == 1 ? 13 : graph == 2 ? 9 : 20;
+  *x += graph == 1 ? (bar_size + 3) : graph == 2 ? 9 : (bar_size + 10);
   if(n == dirlist_parent)
     return;
 
@@ -157,11 +157,11 @@ static void browse_draw_graph(struct dir *n, int *x) {
   if(graph == 3)
     addch(' ');
 
-  /* graph (10 columns) */
+  /* graph (10+ columns) */
   if(graph == 1 || graph == 3) {
     uic_set(c == UIC_SEL ? UIC_GRAPH_SEL : UIC_GRAPH);
-    o = (int)(10.0f*(float)(show_as ? n->asize : n->size) / (float)(show_as ? dirlist_maxa : dirlist_maxs));
-    for(i=0; i<10; i++)
+    o = (int)((float)bar_size*(float)(show_as ? n->asize : n->size) / (float)(show_as ? dirlist_maxa : dirlist_maxs));
+    for(i=0; i<bar_size; i++)
       addch(i < o ? '#' : ' ');
   }
 
